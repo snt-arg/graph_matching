@@ -19,7 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Node.msg"
   "msg/Sgraph.msg"
   "srv/SubgraphMatch.srv"
-  DEPENDENCIES geometry_msgs # Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
+  DEPENDENCIES geometry_msgs
 )
 
 if(BUILD_TESTING)

@@ -78,12 +78,12 @@ gm.plotGraphByName("real", real_plot_options)
 
 
 ### Subgraph isomorphism matching
-gm.matchByType("bim", "real", draw = True)
+gm.matchByNodeType("bim", "real", draw = True)
 
 
 ### Full process comparing BIM and REAL graphs
 
-# gm.findFirstPose()
+# gm.matchCustom("bim", "real")
 
 
 # ### Tests for geometrical operations of planes

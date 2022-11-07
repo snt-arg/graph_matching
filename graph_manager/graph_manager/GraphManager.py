@@ -31,11 +31,13 @@ class GraphManager():
 
         return matches ### TODO What should be returned
 
-    def matchByType(self, G1_name, G2_name, draw= False):
+    def matchByNodeType(self, G1_name, G2_name, draw= False):
         nm_with_pose = isomorphism.categorical_node_match(["type"], ["none"])
         matches = self.categoricalMatch(G1_name, G2_name, nm_with_pose, draw)
         return matches
 
+    def matchIsomorphism(self, G1_name, G2_name):
+        return isomorphism.GraphMatcher(self.graphs[G1_name], self.graphs[G2_name])
 
     def plotGraphByName(self, name, options = None, show = False):
         self.drawAnyGraph("Graph {}".format(name), self.graphs[name], options, True)
@@ -58,8 +60,8 @@ class GraphManager():
         options['node_color'] = colors.values()
         return options
 
-    def findFirstPose(self):
-        type_matches = self.matchByType("bim", "real")
+    def matchCustom(self, G1_name, G2_name):
+        type_matches = self.matchByType(G1_name, G2_name)
         good_matches = []
         for type_match in type_matches:
             subgraph = self.graphs["bim"].subgraph(list(type_match.keys()))

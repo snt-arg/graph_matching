@@ -1,2 +1,2 @@
-[node] node_list
-[edge] edge_lsit
+Node[] node_list
+Edge[] edge_lsit

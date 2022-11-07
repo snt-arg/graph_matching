@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'graph_manager = graph_manager.graph_manager:main',
+            'graph_manager = graph_manager.graph_manager_node:main',
         ],
     },
 )
