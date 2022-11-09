@@ -6,7 +6,7 @@ gm = GraphManager()
 
 ### Generate random plane
 def generateRandomPlane():
-    return(np.concatenate([np.random.uniform(-4,4,3),np.random.uniform(0,4,1)], axis=0))
+    return(np.around(np.concatenate([np.random.uniform(-4,4,3),np.random.uniform(0,4,1)], axis=0), decimals = 2))
 
 
 ### Definition of S_Graph from BIM information
@@ -36,7 +36,7 @@ bim_plot_options = {
     'width': 2,
     'with_labels' : True,
 }
-gm.plotGraphByName("bim", bim_plot_options)
+# gm.plotGraphByName("bim", bim_plot_options)
 
 
 ### Definition of S_Graph from real robot information
@@ -74,17 +74,16 @@ real_plot_options = {
     'width': 2,
     'with_labels' : True,
 }
-gm.plotGraphByName("real", real_plot_options)
+# gm.plotGraphByName("real", real_plot_options)
 
 
 ### Subgraph isomorphism matching
-gm.matchByNodeType("bim", "real", draw = True)
+# gm.matchByNodeType("bim", "real", draw = True)
 
 
 ### Full process comparing BIM and REAL graphs
 
-# gm.matchCustom("bim", "real")
-
+gm.matchCustom("bim", "real")
 
 # ### Tests for geometrical operations of planes
 # plane_1 = np.array([1,0,0,1])
