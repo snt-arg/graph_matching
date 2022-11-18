@@ -20,7 +20,7 @@ from graph_manager_interface.msg import Sgraph as SgraphMsg
 from graph_manager_interface.msg import Edge as EdgeMsg
 from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 
-from GraphManager import GraphManager
+from .GraphManager import GraphManager
 
 class GraphManagerNode(Node):
 

@@ -102,68 +102,40 @@ class GraphManager():
     def checkWallsGeometry(self, graph_1, graph_2, match):
         start_time = time.time()
         match_keys = list(match.keys())
-        room_1 = {"raw":np.array([graph_1.nodes(data=True)[key]["pos"] for key in match_keys])}
-        room_2 = {"raw":np.array([graph_2.nodes(data=True)[match[key]]["pos"] for key in match_keys])}
-        room_1["raw"][:,2] = np.array(np.zeros(room_1["raw"].shape[0]))   ### TODO 2D simplification
-        room_2["raw"][:,2] = np.array(np.zeros(room_2["raw"].shape[0]))   ### TODO 2D simplification
-        room_1["normalized"] = room_1["raw"] / np.sqrt(np.power(room_1["raw"][:,:-1],2).sum(axis=1))[:, np.newaxis]
-        room_2["normalized"] = room_2["raw"] / np.sqrt(np.power(room_2["raw"][:,:-1],2).sum(axis=1))[:, np.newaxis]
-        # print("Elapsed time in first ops: {}".format(time.time() - start_time))
-
-        ### Norm condition
-        room_1["relative_norm"] = room_1["normalized"][1:,:] - room_1["normalized"][0,:]
-        room_2["relative_norm"] = room_2["normalized"][1:,:] - room_2["normalized"][0,:]
-        difference_norms = room_1["relative_norm"] - room_2["relative_norm"]
-        if not(abs(difference_norms).sum() < 0.001): #TODO assert
-            return False
-        # print("Elapsed time in norm ops: {}".format(time.time() - start_time))
-
-        ### Distance condition in a 2D case, using 3D manifold
-        room_1["intersection_point"] = self.planeIntersection(room_1["normalized"][0,:], room_1["normalized"][1,:], np.array([0,0,1,0]))
-        room_2["intersection_point"] = self.planeIntersection(room_2["normalized"][0,:], room_2["normalized"][1,:], np.array([0,0,1,0]))
-        # print("Elapsed time after intersection: {}".format(time.time() - start_time))
-        
-        #### Library mode
-        # room_1["transformed_distances"] = [self.distancePlanePoint(room_1["normalized"][i,:], room_1["intersection_point"]) for i in np.arange(room_1["raw"].shape[0])[2:]]
-        # room_2["transformed_distances"] = [self.distancePlanePoint(room_2["normalized"][i,:], room_2["intersection_point"]) for i in np.arange(room_2["raw"].shape[0])[2:]]
-        #### Equations mode
-        room_1["transformed_distances"] = self.transformedPlaneDistance(room_1["normalized"], room_1["intersection_point"])
-        room_2["transformed_distances"] = self.transformedPlaneDistance(room_2["normalized"], room_2["intersection_point"])
-        difference_cp_distances = np.array(room_1["transformed_distances"]) - np.array(room_2["transformed_distances"])
-        if not(abs(difference_cp_distances).sum() < 0.1): #TODO assert
-            return False
-
-        # print("Elapsed time in successful geometry matching: {}".format(time.time() - start_time))
+        room_1 = np.array([graph_1.nodes(data=True)[key]["pos"] for key in match_keys])
+        room_2 = np.array([graph_2.nodes(data=True)[match[key]]["pos"] for key in match_keys])
+        room_1_transformed = self.computeRoomTransformedData(room_1)
+        room_2_transformed = self.computeRoomTransformedData(room_2)
+        dsfg
         return True
 
 
-    def planeIntersection(self, plane_1, plane_2, plane_3):
-        ### Library mode
-        # pl1 = sp.Plane(-plane_1[3]*plane_1[:3], normal_vector=plane_1[:3])
-        # pl2 = sp.Plane(-plane_2[3]*plane_2[:3], normal_vector=plane_2[:3])
-        # pl3 = sp.Plane(-plane_3[3]*plane_3[:3], normal_vector=plane_3[:3])
-        # r = pl1.intersection(pl2)
-        # # print(r)
-        # p = r[0].intersection(pl3)
-        # return(np.array(p[0]))
+    def computeRoomTransformedData(self, original):
+        # start_time = time.time()
+        original[:,2] = np.array(np.zeros(original.shape[0]))   ### 2D simplification
+        normalized = original / np.sqrt(np.power(original[:,:-1],2).sum(axis=1))[:, np.newaxis]
+        intersection_point = self.planeIntersection(normalized[0,:], normalized[1,:], np.array([0,0,1,0]))
 
-        ### Equations mode
+        #### Compute rotation for new origin
+        z_normal = np.array([0,0,1]) ### 2D simplification
+        x_axis_new_origin = np.cross(normalized[0,:3], z_normal)
+        rotation = np.array((x_axis_new_origin,normalized[0,:3], z_normal))
+
+        #### Build transform matrix
+        rotation_0 = np.concatenate((rotation, np.expand_dims(np.zeros(3), axis=1)), axis=1)
+        translation_1 = np.array([np.concatenate((intersection_point, np.array([1.0])), axis=0)])
+        full_transformation_matrix = np.concatenate((rotation_0, -translation_1), axis=0)
+
+        #### Matrix multiplication
+        transformed = np.transpose(np.matmul(full_transformation_matrix,np.matrix(np.transpose(original))))
+        transformed_normalized = transformed / np.sqrt(np.power(transformed[:,:-1],2).sum(axis=1))
+        # print("Elapsed time in geometry computes: {}".format(time.time() - start_time))
+        return transformed_normalized
+
+
+    def planeIntersection(self, plane_1, plane_2, plane_3):
         normals = np.array([plane_1[:3],plane_2[:3],plane_3[:3]])
         # normals = np.array([[1,0,0],[0,1,0],[0,0,1]])
         distances = -np.array([plane_1[3],plane_2[3],plane_3[3]])
         # distances = -np.array([5,7,9])
         return(np.linalg.inv(normals).dot(distances.transpose()))
-
-    def distancePlanePoint(self, plane, point):
-        pl = sp.Plane(-plane[3]*plane[:3], normal_vector=plane[:3])
-        p = sp.Point(point)
-        return(pl.distance(p))
-
-    
-    def transformedPlaneDistance(self, planes, new_point):
-        normals = planes[2:,:3]
-        prior_distances = planes[2:,3]
-        # new_points = np.tile(new_point, (1, planes.shape[0]-2))
-        # print(new_points)
-        transformed_distances = prior_distances + normals.dot(new_point)
-        return transformed_distances
