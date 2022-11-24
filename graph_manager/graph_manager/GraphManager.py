@@ -1,8 +1,9 @@
+#!/usr/bin/python3
+# EASY-INSTALL-ENTRY-SCRIPT: 'venv==0.0.0','console_scripts','venv'
 import numpy as np
 import networkx as nx
 from networkx.algorithms import isomorphism
 import matplotlib.pyplot as plt
-import sympy as sp
 import time
 import copy
 import collections
@@ -11,16 +12,17 @@ class GraphManager():
     def __init__(self) -> None:
         self.graphs = {}
 
-    def setGraph(self, name, node_attrs, edge_attrs):
+    def setGraph(self, graph_def):
         graph = nx.Graph()
-        graph.add_nodes_from(node_attrs)
-        graph.add_edges_from(edge_attrs)
-        self.graphs[name] = graph
+        graph.add_nodes_from(graph_def['nodes'])
+        graph.add_edges_from(graph_def['edges'])
+        self.graphs[graph_def['name']] = graph
 
     def categoricalMatch(self, G1_name, G2_name, categorical_condition, draw = False):
         GM = isomorphism.GraphMatcher(self.graphs[G1_name], self.graphs[G2_name], node_match=categorical_condition)
         matches = []
         if GM.subgraph_is_isomorphic():
+            print("graph")
             for subgraph in GM.subgraph_isomorphisms_iter():
                 matches.append(subgraph)
                 if draw:
@@ -31,11 +33,12 @@ class GraphManager():
                     plot_options = self.defineColorPlotOptionFromMatch(self.graphs[G1_name], plot_options, subgraph, "blue", "red")
                     self.plotGraphByName(G1_name, plot_options)
 
-        return matches ### TODO What should be returned
+        return matches ### TODO What should be returned?
 
     def matchByNodeType(self, G1_name, G2_name, draw= False):
-        nm_with_pose = isomorphism.categorical_node_match(["type"], ["none"])
-        matches = self.categoricalMatch(G1_name, G2_name, nm_with_pose, draw)
+        categorical_condition = isomorphism.categorical_node_match(["type"], ["none"])
+        matches = self.categoricalMatch(G1_name, G2_name, categorical_condition, draw)
+        print("categorical", len(matches))
         return matches
 
     def matchIsomorphism(self, G1_name, G2_name):
@@ -68,6 +71,7 @@ class GraphManager():
         print("Found {} candidates after isomorphism and cathegorical in type matching".format(len(type_matches)))
         good_matches = []
         type_match_candidates = copy.deepcopy(type_matches)
+        condition = False
         while len(type_match_candidates) != 0:
             j = np.random.randint(0, len(type_match_candidates))
             type_match = type_match_candidates[j]
@@ -106,8 +110,7 @@ class GraphManager():
         room_2 = np.array([graph_2.nodes(data=True)[match[key]]["pos"] for key in match_keys])
         room_1_transformed = self.computeRoomTransformedData(room_1)
         room_2_transformed = self.computeRoomTransformedData(room_2)
-        dsfg
-        return True
+        return False
 
 
     def computeRoomTransformedData(self, original):

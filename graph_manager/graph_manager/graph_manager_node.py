@@ -13,11 +13,10 @@
 # limitations under the License.
 
 import rclpy
+import json
 from rclpy.node import Node
 
 from std_msgs.msg import String
-from graph_manager_interface.msg import Sgraph as SgraphMsg
-from graph_manager_interface.msg import Edge as EdgeMsg
 from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 
 from .GraphManager import GraphManager
@@ -31,29 +30,19 @@ class GraphManagerNode(Node):
         
 
     def set_interface(self):
-        self.bim_sgraph_subscription = self.create_subscription(SgraphMsg,'bim_sgraph_topic', self.bim_sgraph_callback, 10)
-        self.real_sgraph_subscription = self.create_subscription(SgraphMsg,'real_sgraph_topic', self.real_sgraph_callback, 10)
-
-        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match_srv', self.subgraph_match_callback)
+        self.graph_subscription = self.create_subscription(String,'graph_topic', self.graph_callback, 10)
+        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match_srv', self.subgraph_match_srv_callback)
 
 
-    def bim_sgraph_callback(self, msg):
-        nodes_attrs, edges_attrs = self.decode_graph_msg(msg)
-        self.gm.setGraph("bim", nodes_attrs, edges_attrs)
+    def graph_callback(self, msg):
+        graph_dict = json.loads(msg.data)
+        self.get_logger().info('Graph Manager: Incoming graph with name {}'.format(graph_dict["name"]))
+        self.gm.setGraph(graph_dict)
+        # self.gm.plotGraphByName(graph_dict["name"])
 
 
-    def real_sgraph_callback(self, msg):
-        nodes_attrs, edges_attrs = self.decode_graph_msg(msg)
-        self.gm.setGraph("real", nodes_attrs, edges_attrs)
-
-
-    def decode_graph_msg(self, msg):
-        nodes_attrs = [(node.id, {"type" : node.type, "pos" : node.attribues}) for node in msg.node_list()]
-        edges_attrs = [(edge.origin_node, edge.target_node) for edge in msg.edge_list()]
-        return nodes_attrs, edges_attrs
-
-
-    def subgraph_match_callback(self, request, response):
+    def subgraph_match_srv_callback(self, request, response):
+        self.get_logger().info('Graph Manager: Received match request from {} to {} and match type {}'.format(request.base_graph, request.target_graph, request.match_type))
         if request.match_type == 1: ### TODO implement this?
             match = self.gm.matchIsomorphism(request.base_graph, request.target_graph)
         elif request.match_type == 2:
@@ -65,22 +54,11 @@ class GraphManagerNode(Node):
                 response.success = False
         elif request.match_type == 3:
             response.success, matches = self.gm.matchCustom(request.base_graph, request.target_graph)
-            response.match = self.encode_edge_list(matches[0])
+            if matches:
+                response.match = json.dumps(matches[0])
         else:
-            self.get_logger().warn('Match type not correct')
+            self.get_logger().warn('Graph Manager: match type not correct!')
         return response
-
-    
-    def encode_edge_list(self, edges):
-        # edges_msg = []
-        # for edge in edges:
-        #     edge_msg = EdgeMsg()
-        #     edge_msg.origin_node = edge[0]
-        #     edge_msg.target_node = edge[1]
-        #     edges_msg.append()
-        # return edges_msg
-
-        return [EdgeMsg(edge[0], edge[1]) for edge in edges]
 
 
 def main(args=None):
@@ -89,9 +67,6 @@ def main(args=None):
 
     rclpy.spin(graph_manager_node)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     graph_manager_node.destroy_node()
     rclpy.shutdown()
 

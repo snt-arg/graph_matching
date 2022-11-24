@@ -15,9 +15,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Edge.msg"
-  "msg/Node.msg"
-  "msg/Sgraph.msg"
   "srv/SubgraphMatch.srv"
   DEPENDENCIES geometry_msgs
 )

@@ -1,7 +1,7 @@
 import numpy as np
-# import matplotlib.pyplot as plt
-# from sklearn.cluster import KMeans
-# import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+import pandas as pd
 
 
 dataset = []
@@ -62,13 +62,6 @@ def computeKMeans(data):
     plotSurfaces(labeled_data)
     return kmeans.labels_
 
-# surfaces = generateGridBuildingWalls()
-# # plotSurfaces(surfaces)
-# computeKMeans(surfaces[:,:-1])
-
-x = np.array([[1,1,1], [2,2,2], [3,3,3]])
-y = np.array([[4,4,4], [5,5,5], [6,6,6]])
-
-c = np.array([[[4,4,4],[4,4,4]], [[4,4,4],[5,5,5]], [[4,4,4],[6,6,6]]])
-
-print(np.stack((x, y), axis=1))
+surfaces = generateGridBuildingWalls()
+# plotSurfaces(surfaces)
+computeKMeans(surfaces[:,:-1])

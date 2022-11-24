@@ -24,6 +24,7 @@ setup(
     entry_points={
         'console_scripts': [
             'graph_manager = graph_manager.graph_manager_node:main',
+            'graph_manager_tester = graph_manager.graph_manager_tester_node:main',
         ],
     },
 )

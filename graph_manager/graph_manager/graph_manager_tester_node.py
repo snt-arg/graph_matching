@@ -1,12 +1,18 @@
 import numpy as np
-from GraphManager import GraphManager
+from .GraphManager import GraphManager
+import rclpy
+import json
+import time
+from rclpy.node import Node
+from std_msgs.msg import String
+from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 
 
-gm = GraphManager()
+# gm = GraphManager()
 
 ### Generate random plane
 def generateRandomPlane():
-    return(np.around(np.concatenate([np.random.uniform(-4,4,3),np.random.uniform(0,4,1)], axis=0), decimals = 2))
+    return(list(np.around(np.concatenate([np.random.uniform(-4,4,3),np.random.uniform(0,4,1)], axis=0), decimals = 2)))
 
 
 ### Definition of S_Graph from BIM information
@@ -28,7 +34,9 @@ bim_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall
 bim_edges_attrs = bim_edges_floors_attrs
 bim_edges_attrs += bim_edges_rooms_attrs
 
-gm.setGraph("bim", bim_nodes_attrs, bim_edges_attrs)
+bim_graph = {'name' : 'bim', 'nodes' : bim_nodes_attrs, 'edges' : bim_edges_attrs}
+
+# gm.setGraph(bim_graph)
 
 bim_plot_options = {
     'node_color': 'blue',
@@ -66,7 +74,9 @@ real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wal
 real_edges_attrs = real_edges_floors_attrs
 real_edges_attrs += real_edges_rooms_attrs
 
-gm.setGraph("real", real_nodes_attrs, real_edges_attrs)
+real_graph = {'name' : 'real','nodes' : real_nodes_attrs, 'edges' : real_edges_attrs}
+
+# gm.setGraph("real", real_graph)
 
 real_plot_options = {
     'node_color': 'red',
@@ -83,7 +93,7 @@ real_plot_options = {
 
 ### Full process comparing BIM and REAL graphs
 
-gm.matchCustom("bim", "real")
+# gm.matchCustom("bim", "real")
 
 # ### Tests for geometrical operations of planes
 # plane_1 = np.array([1,0,0,1])
@@ -92,3 +102,57 @@ gm.matchCustom("bim", "real")
 # point = np.array([-5,0,0])
 # gm.planeIntersection(plane_1,plane_2, plane_3)
 # gm.distancePlanePoint(plane_1, point)
+
+class GraphManagerTesterNode(Node):
+
+    def __init__(self):
+        super().__init__('graph_manager_tester')
+        self.set_interface()
+        self.send_graphs()
+        time.sleep(2)
+        self.send_match_request()
+        return
+
+    
+    def set_interface(self):
+        self.graph_publisher = self.create_publisher(String,'graph_topic', 10)
+        self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
+
+    
+    def send_graphs(self):
+        encoded_bim_graph = self.endecode_graph_msg(bim_graph)
+        self.graph_publisher.publish(encoded_bim_graph)
+
+        encoded_real_graph = self.endecode_graph_msg(real_graph)
+        self.graph_publisher.publish(encoded_real_graph)
+
+
+    def send_match_request(self):
+        request = SubgraphMatchSrv.Request()
+        request.base_graph = "bim"
+        request.target_graph = "real"
+        request.match_type = 3
+        future = self.match_srv_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        return future.result()
+
+
+    def endecode_graph_msg(self, graph_dict):
+        msg = String()
+        msg.data = json.dumps(graph_dict)
+        return msg
+
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    graph_manager_node = GraphManagerTesterNode()
+
+    rclpy.spin(graph_manager_node)
+
+    graph_manager_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
