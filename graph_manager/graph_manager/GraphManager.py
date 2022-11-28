@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# EASY-INSTALL-ENTRY-SCRIPT: 'venv==0.0.0','console_scripts','venv'
 import numpy as np
 import networkx as nx
 from networkx.algorithms import isomorphism
@@ -108,21 +107,22 @@ class GraphManager():
         match_keys = list(match.keys())
         room_1 = np.array([graph_1.nodes(data=True)[key]["pos"] for key in match_keys])
         room_2 = np.array([graph_2.nodes(data=True)[match[key]]["pos"] for key in match_keys])
-        room_1_transformed = self.computeRoomTransformedData(room_1)
-        room_2_transformed = self.computeRoomTransformedData(room_2)
+        room_1_translated = self.changeWallsOrigin(room_1,0,1)
+        room_2_translated = self.changeWallsOrigin(room_2,0,1)
+        scores = self.computePlanesSimilarity(room_1_translated,room_2_translated)
         return False
 
 
-    def computeRoomTransformedData(self, original):
+    def changeWallsOrigin(self, original, main1_wall_i, main2_wall_i):
         # start_time = time.time()
         original[:,2] = np.array(np.zeros(original.shape[0]))   ### 2D simplification
         normalized = original / np.sqrt(np.power(original[:,:-1],2).sum(axis=1))[:, np.newaxis]
-        intersection_point = self.planeIntersection(normalized[0,:], normalized[1,:], np.array([0,0,1,0]))
+        intersection_point = self.planeIntersection(normalized[main1_wall_i,:], normalized[main2_wall_i,:], np.array([0,0,1,0]))
 
         #### Compute rotation for new origin
         z_normal = np.array([0,0,1]) ### 2D simplification
-        x_axis_new_origin = np.cross(normalized[0,:3], z_normal)
-        rotation = np.array((x_axis_new_origin,normalized[0,:3], z_normal))
+        x_axis_new_origin = np.cross(normalized[main1_wall_i,:3], z_normal)
+        rotation = np.array((x_axis_new_origin,normalized[main1_wall_i,:3], z_normal))
 
         #### Build transform matrix
         rotation_0 = np.concatenate((rotation, np.expand_dims(np.zeros(3), axis=1)), axis=1)
@@ -134,6 +134,18 @@ class GraphManager():
         transformed_normalized = transformed / np.sqrt(np.power(transformed[:,:-1],2).sum(axis=1))
         # print("Elapsed time in geometry computes: {}".format(time.time() - start_time))
         return transformed_normalized
+
+
+    def computePlanesSimilarity(self, walls_1_translated, walls_2_translated, thresholds = [0.001,0.001,0.001,0.001]):
+        differences = walls_1_translated - walls_2_translated
+        conditions = differences < thresholds
+        asdf
+
+    
+    def computePoseSimilarity(self, rooms_1_translated, rooms_2_translated, thresholds = [0.001,0.001,0.001,0.001,0.001,0.001]):
+        differences = rooms_1_translated - rooms_2_translated
+        conditions = differences < thresholds
+        asdf
 
 
     def planeIntersection(self, plane_1, plane_2, plane_3):
