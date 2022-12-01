@@ -1,5 +1,5 @@
 import numpy as np
-from .GraphManager import GraphManager
+from GraphManager import GraphManager
 import rclpy
 import json
 import time
@@ -14,11 +14,13 @@ gm = GraphManager()
 def generateRandomPlane():
     return(list(np.around(np.concatenate([np.random.uniform(-4,4,3),np.random.uniform(0,4,1)], axis=0), decimals = 2)))
 
+def generateRandomPose():
+    return(list(np.around(np.random.uniform(-4,4,3), decimals = 2)))
 
 ### Definition of S_Graph from BIM information
 
 bim_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0]})]
-bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [0,0]}), ("room_2", {"type": "room", "pos": [5,0]}), ("room_3", {"type": "room", "pos": [10,0]})]
+bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": generateRandomPose()}), ("room_2", {"type": "room", "pos": generateRandomPose()}), ("room_3", {"type": "room", "pos": generateRandomPose()})]
 bim_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": generateRandomPlane()}), ("wall_2", {"type": "wall", "pos": generateRandomPlane()}),("wall_3", {"type": "wall", "pos": generateRandomPlane()}),\
                         ("wall_4", {"type": "wall", "pos": generateRandomPlane()}),("wall_5", {"type": "wall", "pos": generateRandomPlane()}), ("wall_6", {"type": "wall", "pos": generateRandomPlane()}),\
                         ("wall_7", {"type": "wall", "pos": generateRandomPlane()}), ("wall_8", {"type": "wall", "pos": generateRandomPlane()}),("wall_9", {"type": "wall", "pos": generateRandomPlane()}),\
@@ -62,14 +64,14 @@ bim_plot_options = {
 
 #### Option 2 rooms
 real_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0]})]
-real_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [5,0]}), ("room_2", {"type": "room", "pos": [10,0]})]
+real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1]), ("room_2", bim_nodes_rooms_attrs[1][1]), ("room_3", bim_nodes_rooms_attrs[2][1])]
 real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),\
-                        ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
+                          ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
 real_nodes_attrs = real_nodes_floors_attrs
 real_nodes_attrs += real_nodes_rooms_attrs
 real_nodes_attrs += real_nodes_walls_attrs
 
-real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2")]
+real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2"),("floor_1", "room_3")]
 real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_2","wall_4"),("room_2","wall_5"),("room_2","wall_6")]
 real_edges_attrs = real_edges_floors_attrs
 real_edges_attrs += real_edges_rooms_attrs
