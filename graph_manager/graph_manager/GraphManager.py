@@ -6,69 +6,56 @@ import time
 import copy
 import collections
 import open3d as o3d
-import  clipperpy
+from Clipper import Clipper
 
 
 class GraphManager():
     def __init__(self) -> None:
         self.graphs = {}
 
-    # def matchLegacyCustom(self, G1_name, G2_name):
-    #     start_time = time.time()
-    #     type_matches = self.matchByNodeType(G1_name, G2_name)
-    #     print("Found {} candidates after isomorphism and cathegorical in type matching".format(len(type_matches)))
-    #     good_matches = []
-    #     type_match_candidates = copy.deepcopy(type_matches)
-    #     condition = False
-    #     while len(type_match_candidates) != 0:
-    #         j = np.random.randint(0, len(type_match_candidates))
-    #         type_match = type_match_candidates[j]
-    #         type_match_candidates.pop(j)
-
-    #         subgraph = self.graphs[G1_name].subgraph(list(type_match.keys()))
-    #         # plot_options = {'node_size': 50, 'width': 2, 'with_labels' : True}
-    #         # self.drawAnyGraph("trial", subgraph, plot_options, True)
-    #         room_nodes = [node for node,attrs in subgraph.nodes(data=True) if attrs['type']=='room']
-    #         condition = True
-    #         for room_node in room_nodes:
-    #             # print("flag")
-    #             wall_nodes = [node for node in subgraph.neighbors(room_node) if subgraph.nodes(data=True)[node]['type']=='wall']
-    #             submatch = {key: type_match[key] for key in wall_nodes}
-    #             if not self.checkWallsGeometry(subgraph, self.graphs[G2_name], submatch):
-    #                 condition = False
-    #                 wrong_room_match = dict((k, type_match[k]) for k in wall_nodes)
-    #                 for i, candidate in enumerate(type_match_candidates):
-    #                     if len({k: wrong_room_match[k] for k in wrong_room_match if k in candidate and wrong_room_match[k] == candidate[k]}) == len(wrong_room_match):
-    #                         type_match_candidates.pop(i)
-    #                 break
-
-    #         if condition:
-    #             print("Geometric match found!")
-    #             good_matches += [type_match]
-
-    #     print(good_matches)
-    #     print("Elapsed time in custom matching: {}".format(time.time() - start_time))
-    #     return(condition, good_matches)
-
 
     def matchCustom(self, G1_name, G2_name):
         start_time = time.time()
-        sweeped_levels = ["floor", "room", "room"]
+        sweeped_levels = ["floor", "room", "wall"]
 
         ## Room level
-        lvl = 2
-        G1_up_down = self.filter_graph_by_node_types(self.graphs[G1_name], sweeped_levels[:lvl])
-        G2_up_down = self.filter_graph_by_node_types(self.graphs[G2_name], sweeped_levels[:lvl])
-        type_matches = self.matchByNodeType(G1_up_down, G2_up_down)
-        print("Found {} candidates after isomorphism and cathegorical in type matching".format(len(type_matches)))
-        A_categorical, C = self.matches_to_level_association_matrix(G1_up_down, type_matches, sweeped_levels[lvl])
-        data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_up_down, G2_up_down, A_categorical, "pos")
-        clipper_match_numerical = self.compute_clipper(data1, data2, A_numerical)
-        clipper_match_categorical = self.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
-
+        lvl = 1
+        G1_to_rooms = self.filter_graph_by_node_types(self.graphs[G1_name], sweeped_levels[:lvl+1])
+        G2_to_rooms = self.filter_graph_by_node_types(self.graphs[G2_name], sweeped_levels[:lvl+1])
+        room_matches = self.matchByNodeType(G1_to_rooms, G2_to_rooms)
+        # A_categorical = self.filter_match_by_node_type(G1_to_rooms, room_matches, sweeped_levels[lvl])
+        A_categorical, C = self.matches_to_level_association_matrix(G1_to_rooms, room_matches, [sweeped_levels[lvl]])
+        data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_to_rooms, G2_to_rooms, A_categorical, "pos")
+        clipper = Clipper("points")
+        clipper.score_pairwise_consistency(data1, data2, A_numerical)
+        clipper_match_numerical = clipper.solve_clipper()
+        clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
+        print("Found candidates for room matching: \n {}".format(clipper_match_categorical))
+        
         ## Wall level
-        for lowerlevel_match in clipper_match_categorical:
+        G1_rooms_point_normal = self.generate_rooms_point_normal(G1_to_rooms, clipper_match_categorical)
+        G2_rooms_point_normal = self.generate_rooms_point_normal(G2_to_rooms, clipper_match_categorical)
+        lvl += 1
+        G1_to_walls = self.filter_graph_by_node_types(self.graphs[G1_name], sweeped_levels[:lvl+1])
+        G2_to_walls = self.filter_graph_by_node_types(self.graphs[G2_name], sweeped_levels[:lvl+1])
+        for i, lowerlevel_match in enumerate(clipper_match_categorical):
+            print("Checking room {}".format(lowerlevel_match))
+            G1_room_neighborhood = self.get_neighbourhood_graph_by_type(G1_to_walls, lowerlevel_match[0])
+            G2_room_neighborhood = self.get_neighbourhood_graph_by_type(G2_to_walls, lowerlevel_match[1])
+            room_and_wall_matches = self.matchByNodeType(G1_room_neighborhood, G2_room_neighborhood)
+            A_categorical, graph_C = self.matches_to_level_association_matrix(G1_room_neighborhood, room_and_wall_matches, sweeped_levels[lvl-1:lvl+1])
+            G1_room_neighborhood.nodes(data=True)[lowerlevel_match[0]]["pos"] = G1_rooms_point_normal[i]
+            G2_room_neighborhood.nodes(data=True)[lowerlevel_match[1]]["pos"] = G2_rooms_point_normal[i]
+            data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_room_neighborhood, G2_room_neighborhood, A_categorical, "pos")
+            clipper = Clipper("points&normal")
+            clipper.score_pairwise_consistency(data1, data2, A_numerical)
+            clipper.mix_C_matrices(graph_C)
+            clipper.exagerate_constraint_matrix_value(np.where(A_categorical == lowerlevel_match)[0])
+            clipper_match_numerical = clipper.solve_clipper()
+            clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
 
+            print("Found candidates for room {} matching: \n {}".format(i, clipper_match_categorical))
+            
 
     ## Graph-wise functions
 
@@ -80,10 +67,10 @@ class GraphManager():
 
 
     def categoricalMatch(self, G1, G2, categorical_condition, draw = False):
-        GM = isomorphism.GraphMatcher(G1, G2, node_match=categorical_condition)
+        graph_matcher = isomorphism.GraphMatcher(G1, G2, node_match=categorical_condition, edge_match = lambda *_: True)
         matches = []
-        if GM.subgraph_is_isomorphic():
-            for subgraph in GM.subgraph_isomorphisms_iter():
+        if graph_matcher.subgraph_is_isomorphic():
+            for subgraph in graph_matcher.subgraph_isomorphisms_iter():
                 matches.append(subgraph)
                 if draw:
                     plot_options = {
@@ -99,7 +86,10 @@ class GraphManager():
     def matchByNodeType(self, G1, G2, draw= False):
         categorical_condition = isomorphism.categorical_node_match(["type"], ["none"])
         matches = self.categoricalMatch(G1, G2, categorical_condition, draw)
-        return matches
+        matches_as_tuple = [list(zip(match.keys(), match.values())) for match in matches]
+        print("GM: Found {} candidates after isomorphism and cathegorical in type matching".format(len(matches_as_tuple),))
+        # print(matches_as_tuple)
+        return matches_as_tuple
 
 
     def matchIsomorphism(self, G1_name, G2_name):
@@ -136,18 +126,18 @@ class GraphManager():
         return graph_filtered
 
     
-    def matches_to_level_association_matrix(self, origin_graph, matches, level):
-        matches_as_tuple = [list(zip(match.keys(), match.values())) for match in matches]
+    def matches_to_level_association_matrix(self, origin_graph, matches, levels):
         A = set()
-        [A.update(match) for match in matches_as_tuple]
-        A = [x for x in A if origin_graph.nodes(data=True)[x[0]]["type"] == level]
+        [A.update(match) for match in matches]
+        A = [x for x in A if origin_graph.nodes(data=True)[x[0]]["type"] in levels]
         C = np.eye((len(A)))
         for i in range(len(A)):
             for j in range(len(A)):
-                if any(all(x in sublist for x in [A[i], A[j]]) for sublist in matches_as_tuple):
+                if any(all(x in sublist for x in [A[i], A[j]]) for sublist in matches):
                     C[i,j] = C[j,i] = 1
         A_matrix = np.array(A)
         return A_matrix, C
+
 
     def generate_clipper_input(self, G1, G2, A_categorical, feature_name):
         nodes1, nodes2 = list(set(A_categorical[:,0])), list(set(A_categorical[:,1]))
@@ -156,8 +146,24 @@ class GraphManager():
         A_numerical = np.array([[nodes1.index(pair[0]),nodes2.index(pair[1])] for pair in A_categorical]).astype(np.int32)
         return(data1, data2, A_numerical, nodes1, nodes2)
 
+
     def stack_nodes_feature(self, graph, node_list, feature):
         return np.array([graph.nodes(data=True)[key][feature] for key in node_list])
+
+
+    def get_neighbourhood_graph_by_type(self, graph, node_name):
+        all_nodes = graph.nodes(data=True)
+        neighbours = graph.neighbors(node_name)
+        filtered_neighbours_names = list([n for n in neighbours]) + [node_name]
+        subgraph = graph.subgraph(filtered_neighbours_names)
+        return(subgraph)
+
+    
+    # def filter_match_by_node_type(self, origin_graph, matches, node_type):
+    #     A = set()
+    #     [A.update(match) for match in matches]
+    #     A = [x for x in A if origin_graph.nodes(data=True)[x[0]]["type"] == node_type]
+    #     return np.array(A)
         
 
     ## Geometry functions
@@ -220,34 +226,9 @@ class GraphManager():
         return False
 
 
-    ## Clipper functions
-
-    def compute_clipper(self, D1, D2, A):
-        iparams = clipperpy.invariants.EuclideanDistanceParams()
-        iparams.sigma = 0.015
-        iparams.epsilon = 0.02
-        invariant = clipperpy.invariants.EuclideanDistance(iparams)
-        params = clipperpy.Params()
-        clipper = clipperpy.CLIPPER(invariant, params)
-
-        t0 = time.perf_counter()
-        clipper.score_pairwise_consistency(D1.T, D2.T, A)
-        C = clipper.get_constraint_matrix()
-        # print("A - Association matrix\n", A)
-        # print("C - Constraint matrix\n", C)
-        M = clipper.get_affinity_matrix()
-        # print("M - Affinity matrix\n",M)
-        t1 = time.perf_counter()
-        print(f"Affinity matrix creation took {t1-t0:.3f} seconds")
-
-        t0 = time.perf_counter()
-        clipper.solve()
-        t1 = time.perf_counter()
-
-        # A = clipper.get_initial_associations()
-        Ain = clipper.get_selected_associations()
-        print("Ain - Affinity matrix\n",Ain)
-        return Ain
-
-    def categorize_clipper_output(self, Ain_numerical, nodes1, nodes2):
-        Ain_categorical = np.array([[nodes1[pair[0]],nodes2[pair[1]]] for pair in Ain_numerical])
+    def generate_rooms_point_normal(self, graph, match):
+        points = self.stack_nodes_feature(graph, match[:,0], "pos")
+        diffs = points - np.concatenate((points[1:], [points[0]]),axis=0)
+        normal = diffs / np.sqrt((diffs**2).sum())
+        complete = np.concatenate((points, normal),axis=1)
+        return complete
