@@ -4,3 +4,4 @@ int8 match_type # 1 : isomorphism, 2 : isomorphism + node type, 3 : isomorphism 
 ---
 bool success
 string match
+float32 score

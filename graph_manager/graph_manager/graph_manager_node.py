@@ -53,7 +53,7 @@ class GraphManagerNode(Node):
             else:
                 response.success = False
         elif request.match_type == 3:
-            response.success, matches = self.gm.matchCustom(request.base_graph, request.target_graph)
+            matches, response.success = self.gm.matchCustom(request.base_graph, request.target_graph)
             if matches:
                 response.match = json.dumps(matches[0])
         else:

@@ -15,7 +15,7 @@ class GraphManager():
 
 
     def matchCustom(self, G1_name, G2_name):
-        start_time = time.time()
+        final_match = []
         sweeped_levels = ["floor", "room", "wall"]
 
         ## Room level
@@ -28,8 +28,9 @@ class GraphManager():
         data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_to_rooms, G2_to_rooms, A_categorical, "pos")
         clipper = Clipper("points")
         clipper.score_pairwise_consistency(data1, data2, A_numerical)
-        clipper_match_numerical = clipper.solve_clipper()
+        clipper_match_numerical, score = clipper.solve_clipper()
         clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
+        final_match.append(clipper_match_categorical)
         print("Found candidates for room matching: \n {}".format(clipper_match_categorical))
         
         ## Wall level
@@ -49,12 +50,14 @@ class GraphManager():
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_room_neighborhood, G2_room_neighborhood, A_categorical, "pos")
             clipper = Clipper("points&normal")
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
-            clipper.mix_C_matrices(graph_C)
+            clipper.filter_C_and_M_matrices(graph_C)
             clipper.exagerate_constraint_matrix_value(np.where(A_categorical == lowerlevel_match)[0])
-            clipper_match_numerical = clipper.solve_clipper()
+            clipper_match_numerical, score = clipper.solve_clipper()
             clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
-
+            final_match.append(clipper_match_categorical)
             print("Found candidates for room {} matching: \n {}".format(i, clipper_match_categorical))
+
+        return final_match        
             
 
     ## Graph-wise functions
