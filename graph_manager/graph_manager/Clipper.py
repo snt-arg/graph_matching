@@ -39,19 +39,34 @@ class Clipper():
         print(f"Affinity matrix creation took {t1-t0:.3f} seconds")
 
 
-    def filter_C_and_M_matrices(self, external_C):
+    def filter_C_M_matrices(self, external_C):
         original_C = self.clipper.get_constraint_matrix()
+        original_C += np.eye(original_C.shape[0])
         C = np.multiply(original_C, external_C)
-        original_M = self.clipper.get_affinity_matrix() 
+        original_M = self.clipper.get_affinity_matrix()
+        original_M += np.eye(original_M.shape[0])
         M = np.multiply(original_M, external_C)
+        print("original_C", original_C)
+        print("external_C", external_C)
+        print("C", C)
+        print(original_C == external_C)
         self.clipper.set_matrix_data(M, C)
 
 
-    def exagerate_constraint_matrix_value(self, position):
+    def remove_last_assoc_M_C_matrices(self):
         C = self.clipper.get_constraint_matrix()
         M = self.clipper.get_affinity_matrix()
-        M[position[0],position[1]] = np.sum(M) + 1
-        # M = M / M[position[0],position[1]]
+        M = M[:-1, :-1]
+        C = C[:-1, :-1]
+        self.clipper.set_matrix_data(M, C)
+
+
+    def set_M_diagonal_values(self, diagonal_values):
+        C = self.clipper.get_constraint_matrix()
+        # C += np.eye(C.shape[0])
+        M = self.clipper.get_affinity_matrix()
+        # np.fill_diagonal(M, diagonal_values)
+        # M += np.eye(M.shape[0])
         self.clipper.set_matrix_data(M, C)
 
 
@@ -61,12 +76,6 @@ class Clipper():
         t1 = time.perf_counter()
         Ain = self.clipper.get_selected_associations()
         avg_score = self.clipper.get_solution().score / len(self.clipper.get_solution().nodes)
-        # print("solution t",self.clipper.get_solution().t)
-        # print("solution ifinal",self.clipper.get_solution().ifinal)
-        # print("solution nodes",self.clipper.get_solution().nodes)
-        # print("solution u",self.clipper.get_solution().u)
-        # print("solution score",self.clipper.get_solution().score)
-        print(avg_score)
         return(Ain, avg_score)
 
 
@@ -75,4 +84,7 @@ class Clipper():
         return Ain_categorical
 
 
-
+    def get_M_C_matrices(self):
+        C = self.clipper.get_constraint_matrix()
+        M = self.clipper.get_affinity_matrix()
+        return(M,C)

@@ -17,6 +17,8 @@ class GraphManager():
     def matchCustom(self, G1_name, G2_name):
         final_match = []
         sweeped_levels = ["floor", "room", "wall"]
+        sweeped_levels_dt = ["points", "points", "points&normal"]
+        full_graph_matches = self.matchByNodeType(self.graphs[G1_name], self.graphs[G2_name])
 
         ## Room level
         lvl = 1
@@ -24,9 +26,9 @@ class GraphManager():
         G2_to_rooms = self.filter_graph_by_node_types(self.graphs[G2_name], sweeped_levels[:lvl+1])
         room_matches = self.matchByNodeType(G1_to_rooms, G2_to_rooms)
         # A_categorical = self.filter_match_by_node_type(G1_to_rooms, room_matches, sweeped_levels[lvl])
-        A_categorical, C = self.matches_to_level_association_matrix(G1_to_rooms, room_matches, [sweeped_levels[lvl]])
+        A_categorical, _ = self.matches_to_level_association_matrix(G1_to_rooms, room_matches, [sweeped_levels[lvl]])
         data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_to_rooms, G2_to_rooms, A_categorical, "pos")
-        clipper = Clipper("points")
+        clipper = Clipper(sweeped_levels_dt[lvl])
         clipper.score_pairwise_consistency(data1, data2, A_numerical)
         clipper_match_numerical, score = clipper.solve_clipper()
         clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
@@ -34,8 +36,8 @@ class GraphManager():
         print("Found candidates for room matching: \n {}".format(clipper_match_categorical))
         
         ## Wall level
-        G1_rooms_point_normal = self.generate_rooms_point_normal(G1_to_rooms, clipper_match_categorical)
-        G2_rooms_point_normal = self.generate_rooms_point_normal(G2_to_rooms, clipper_match_categorical)
+        rooms1_point_normal = self.change_pos_dt(G1_to_rooms, clipper_match_categorical[:,0], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
+        rooms2_point_normal = self.change_pos_dt(G2_to_rooms, clipper_match_categorical[:,1], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
         lvl += 1
         G1_to_walls = self.filter_graph_by_node_types(self.graphs[G1_name], sweeped_levels[:lvl+1])
         G2_to_walls = self.filter_graph_by_node_types(self.graphs[G2_name], sweeped_levels[:lvl+1])
@@ -44,20 +46,23 @@ class GraphManager():
             G1_room_neighborhood = self.get_neighbourhood_graph_by_type(G1_to_walls, lowerlevel_match[0])
             G2_room_neighborhood = self.get_neighbourhood_graph_by_type(G2_to_walls, lowerlevel_match[1])
             room_and_wall_matches = self.matchByNodeType(G1_room_neighborhood, G2_room_neighborhood)
-            A_categorical, graph_C = self.matches_to_level_association_matrix(G1_room_neighborhood, room_and_wall_matches, sweeped_levels[lvl-1:lvl+1])
-            G1_room_neighborhood.nodes(data=True)[lowerlevel_match[0]]["pos"] = G1_rooms_point_normal[i]
-            G2_room_neighborhood.nodes(data=True)[lowerlevel_match[1]]["pos"] = G2_rooms_point_normal[i]
-            data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_room_neighborhood, G2_room_neighborhood, A_categorical, "pos")
-            clipper = Clipper("points&normal")
-            clipper.score_pairwise_consistency(data1, data2, A_numerical)
-            clipper.filter_C_and_M_matrices(graph_C)
-            clipper.exagerate_constraint_matrix_value(np.where(A_categorical == lowerlevel_match)[0])
+            A_categorical, C_graph = self.matches_to_level_association_matrix(G1_room_neighborhood, room_and_wall_matches, sweeped_levels[lvl:lvl+1])
+            A_categorical_and_parent_association = np.append(A_categorical, [lowerlevel_match], axis=0)
+            G1_room_neighborhood.nodes(data=True)[lowerlevel_match[0]]["pos"] = rooms1_point_normal[i]
+            G2_room_neighborhood.nodes(data=True)[lowerlevel_match[1]]["pos"] = rooms2_point_normal[i]
+            data1, data2, A_numerical_and_parent_association, nodes1, nodes2 = self.generate_clipper_input(G1_room_neighborhood, G2_room_neighborhood, A_categorical_and_parent_association, "pos")
+            clipper = Clipper(sweeped_levels_dt[lvl])
+            clipper.score_pairwise_consistency(data1, data2, A_numerical_and_parent_association)
+            M_aux, _ = clipper.get_M_C_matrices()
+            clipper.remove_last_assoc_M_C_matrices()
+            # clipper.filter_C_M_matrices(C_graph) # TODO: waiting for an answer in the issue
+            # clipper.set_M_diagonal_values(M_aux[-1,:][:-1]) # TODO: waiting for an answer in the issue
             clipper_match_numerical, score = clipper.solve_clipper()
             clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
             final_match.append(clipper_match_categorical)
             print("Found candidates for room {} matching: \n {}".format(i, clipper_match_categorical))
 
-        return final_match        
+        return final_match
             
 
     ## Graph-wise functions
@@ -151,7 +156,7 @@ class GraphManager():
 
 
     def stack_nodes_feature(self, graph, node_list, feature):
-        return np.array([graph.nodes(data=True)[key][feature] for key in node_list])
+        return np.array([graph.nodes(data=True)[key][feature] for key in node_list]).astype(np.float64)
 
 
     def get_neighbourhood_graph_by_type(self, graph, node_name):
@@ -229,9 +234,14 @@ class GraphManager():
         return False
 
 
-    def generate_rooms_point_normal(self, graph, match):
-        points = self.stack_nodes_feature(graph, match[:,0], "pos")
-        diffs = points - np.concatenate((points[1:], [points[0]]),axis=0)
-        normal = diffs / np.sqrt((diffs**2).sum())
-        complete = np.concatenate((points, normal),axis=1)
-        return complete
+    def change_pos_dt(self, graph, match, in_dt, out_dt):
+        original = self.stack_nodes_feature(graph, match, "pos")
+
+        if in_dt == out_dt:
+            processed = original
+        elif in_dt == "points" and out_dt == "points&normal":
+            diffs = original - np.concatenate((original[1:], [original[0]]),axis=0)
+            normal = diffs / np.sqrt((diffs**2).sum())
+            processed = np.concatenate((original, normal),axis=1)
+
+        return(processed)

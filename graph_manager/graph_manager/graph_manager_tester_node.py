@@ -56,7 +56,7 @@ def add_noise_plane_by_point_and_normal(original):
     return(np.around(new, decimals = 2))
     
 def genRandPoint():
-    return(list(np.around(np.concatenate([np.random.uniform(-4,4,2), [0]]), decimals = 2)))
+    return(list(np.around(np.concatenate([np.random.uniform(-1,1,2), [0]]), decimals = 2)))
 
 
 def add_noise_point(original):
@@ -68,12 +68,23 @@ def add_noise_point(original):
 
 ### Definition of S_Graph from BIM information
 
-bim_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0]})]
+bim_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0,0]})]
+
+#### RANDOM
 bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": genRandPoint()}), ("room_2", {"type": "room", "pos": genRandPoint()}), ("room_3", {"type": "room", "pos": genRandPoint()})]
 bim_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}), ("wall_2", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),("wall_3", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),\
                         ("wall_4", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),("wall_5", {"type": "wall", "pos": genRandPointNorm()}), ("wall_6", {"type": "wall", "pos": genRandPointNorm()}),\
                         ("wall_7", {"type": "wall", "pos": genRandPointNorm()}), ("wall_8", {"type": "wall", "pos": genRandPointNorm()}),("wall_9", {"type": "wall", "pos": genRandPointNorm()}),\
                         ("wall_10",{"type": "wall", "pos": genRandPointNorm()}),("wall_11", {"type": "wall", "pos": genRandPointNorm()}), ("wall_12", {"type": "wall", "pos": genRandPointNorm()})]
+
+#### MANUAL
+# bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [0.1,0,0]}),("room_2", {"type": "room", "pos": [5,5,0]}),("room_3", {"type": "room", "pos": [10,0,0]})]
+# bim_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": [0,2,0,0,-1,0]}), ("wall_2", {"type": "wall", "pos": [0,-2,0,0,1,0]}), ("wall_3", {"type": "wall", "pos": [-2,0,0,1,0,0]}),("wall_4", {"type": "wall", "pos": [2,0,0,-1,0,0]}),\
+#                          ("wall_5", {"type": "wall", "pos": [5,7,0,0,-1,0]}), ("wall_6", {"type": "wall", "pos": [5,3,0,0,1,0]}), ("wall_7", {"type": "wall", "pos": [3,5,0,1,0,0]}), ("wall_8", {"type": "wall", "pos": [7,5,0,-1,0,0]}),\
+#                          ("wall_9", {"type": "wall", "pos": [10,2,0,0,-1,0]}),("wall_10",{"type": "wall", "pos": [10,-2,0,0,1,0]}),("wall_11",{"type": "wall", "pos": [8,0,0,1,0,0]}),("wall_12", {"type": "wall", "pos": [12,0,0,-1,0,0]})]
+
+####
+
 bim_nodes_attrs = bim_nodes_floors_attrs
 bim_nodes_attrs += bim_nodes_rooms_attrs
 bim_nodes_attrs += bim_nodes_walls_attrs
@@ -115,7 +126,7 @@ bim_plot_options = {
 # real_edges_attrs = real_edges_rooms_attrs
 
 #### Option 2 rooms
-real_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0]})]
+real_nodes_floors_attrs = [("floor_1", bim_nodes_floors_attrs[0][1])]
 real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1]), ("room_2", bim_nodes_rooms_attrs[1][1]), ("room_3", bim_nodes_rooms_attrs[2][1])]
 real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),\
                           ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
