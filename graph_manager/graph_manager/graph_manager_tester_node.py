@@ -89,7 +89,7 @@ bim_nodes_attrs = bim_nodes_floors_attrs
 bim_nodes_attrs += bim_nodes_rooms_attrs
 bim_nodes_attrs += bim_nodes_walls_attrs
 
-bim_edges_floors_attrs = [("room_1","floor_1"),("room_2","floor_1"),("room_3","floor_1")]
+bim_edges_floors_attrs = [("room_1","floor_1"),("room_2","floor_1")]#,("floor_1", "room_3")]
 bim_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"), ("room_1","wall_4"),("room_2","wall_5"),\
     ("room_2","wall_6"),("room_2","wall_7"), ("room_2","wall_8"),("room_3","wall_9"),("room_3","wall_10"),("room_3","wall_11"),\
     ("room_3","wall_12")]
@@ -141,7 +141,7 @@ real_nodes_attrs = real_nodes_floors_attrs
 real_nodes_attrs += real_nodes_rooms_attrs
 real_nodes_attrs += real_nodes_walls_attrs
 
-real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2"),("floor_1", "room_3")]
+real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2")]#,("floor_1", "room_3")]
 real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_2","wall_4"),("room_2","wall_5"),("room_2","wall_6")]
 real_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
 real_edges_attrs = real_edges_floors_attrs
@@ -167,7 +167,8 @@ real_plot_options = {
 
 ### Full process comparing BIM and REAL graphs
 
-gm.matchCustom("bim", "real")
+# gm.matchCustom("bim", "real")
+gm.new_match_custom("bim", "real")
 
 # ### Tests for geometrical operations of planes
 # plane_1 = np.array([1,0,0,1])
