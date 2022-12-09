@@ -1,5 +1,5 @@
 import numpy as np
-from GraphManager import GraphManager
+from GraphMatcher import GraphMatcher
 import rclpy
 import copy
 import json
@@ -23,7 +23,7 @@ REAL_TRASLATION = np.around(np.random.uniform(REAL_TRANSLATION_NOISE_LIMITS[0][0
 REAL_ROTATION = np.around(np.random.uniform(REAL_TRANSLATION_NOISE_LIMITS[1][0],REAL_TRANSLATION_NOISE_LIMITS[1][1],2), decimals = 2)
 REAL_TRANSF = [REAL_TRASLATION, REAL_ROTATION]
 
-gm = GraphManager()
+gm = GraphMatcher()
 
 ### Geometric functions to create the data
 def translate(original, transformation): #TODO: add rotation
