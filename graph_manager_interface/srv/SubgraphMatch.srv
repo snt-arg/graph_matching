@@ -1,7 +1,6 @@
 string base_graph
 string target_graph
-int8 match_type # 1 : isomorphism, 2 : isomorphism + node type, 3 : isomorphism + node type + custom
 ---
 bool success
-string match
+Edge[] match
 float32 score

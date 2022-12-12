@@ -1,4 +1,4 @@
-import  clipperpy
+import clipperpy
 import time
 import numpy as np
 
@@ -46,10 +46,10 @@ class Clipper():
         original_M = self.clipper.get_affinity_matrix()
         original_M += np.eye(original_M.shape[0])
         M = np.multiply(original_M, external_C)
-        print("original_C", original_C)
-        print("external_C", external_C)
-        print("C", C)
-        print(original_C == external_C)
+        # print("original_C", original_C)
+        # print("external_C", external_C)
+        # print("C", C)
+        # print(original_C == external_C)
         self.clipper.set_matrix_data(M, C)
 
 

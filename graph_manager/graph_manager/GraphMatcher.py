@@ -2,7 +2,7 @@ import numpy as np
 from GraphManager import GraphManager
 from Clipper import Clipper
 
-SCORE_THR = 0.9
+SCORE_THR = 0.99
 
 
 class GraphMatcher():
@@ -46,14 +46,15 @@ class GraphMatcher():
                     # clipper.set_M_diagonal_values(M_aux[-1,:][:-1]) # TODO: waiting for an answer in the issue
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
-                scores.append(score)
-                submatches.append(clipper_match_categorical)
+                if self.check_match_not_in_list(clipper_match_categorical, submatches):
+                    print("faagdfg")
+                    scores.append(score)
+                    submatches.append(clipper_match_categorical)
                 
                 print("Found candidates with score {} for matching: \n {}".format(score, clipper_match_categorical))
                 if score > SCORE_THR:
                     node_id = self.graphs["match"].get_total_number_nodes() + 1
                     nodes_id.append(node_id)
-                    print(node_id)
                     node_attr = [(node_id, {"type": sweeped_levels[lvl], "match": A_categorical})]
                     if parents_data:
                         edges_attr = [(node_id, parents_data["id"])]
@@ -67,23 +68,22 @@ class GraphMatcher():
             best_scores = [scores[i] for i in best_matches_indeces]
             best_submatches = [submatches[i] for i in best_matches_indeces]
             print(best_scores)
-            print(best_submatches)
 
 
             ## Next level
             if lvl < len(sweeped_levels) - 1:
                 print("best_submatches", best_submatches)
-                for good_submatch in best_submatches:
-                    print("good_submatch", good_submatch)
-                    parent1_data = self.change_pos_dt(G1, good_submatch[:,0], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
-                    parent2_data = self.change_pos_dt(G2, good_submatch[:,1], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
+                for good_submatch_i in best_matches_indeces:
+                    print("good_submatch", submatches[good_submatch_i])
+                    parent1_data = self.change_pos_dt(G1, submatches[good_submatch_i][:,0], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
+                    parent2_data = self.change_pos_dt(G2, submatches[good_submatch_i][:,1], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
                     scores = []
                     subsubmatches = []
-                    for i, lowerlevel_match in enumerate(good_submatch):
+                    for i, lowerlevel_match in enumerate(submatches[good_submatch_i]):
                         print("Checking lowerlevel matches for {}\n".format(lowerlevel_match))
                         G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match[0])
                         G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match[1])
-                        parents_data = {"match" : lowerlevel_match, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : nodes_id[i]}
+                        parents_data = {"match" : lowerlevel_match, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : nodes_id[good_submatch_i]}
                         subsubmatch, score = match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, parents_data)
                         scores.append(score)
                         subsubmatches.append(subsubmatch)
@@ -96,12 +96,21 @@ class GraphMatcher():
         self.graphs["match"].draw("match", options = None, show = True)
 
 
-
-
     def filter_local_match_with_global(self, local_matches, global_matches):
         filtered = [local_match for local_match in local_matches if any(all(elem in global_match for elem in local_match) for global_match in global_matches)]
         filtered_as_arrays = [np.array(x, dtype = np.str) for x in filtered]
         return filtered_as_arrays
+
+
+    def check_match_not_in_list(self, new_match, other_matches):
+        if not other_matches:
+            return True
+        else:
+            print("flag01", new_match)
+            print("flag02", other_matches)
+            # print("flag00", [np.isin(pair, match) for pair in new_match])
+            print("flag03", any([all([np.isin(pair, match) for pair in new_match]) for match in other_matches]))
+            return any([all([np.isin(pair, match) for pair in new_match]) for match in other_matches])
         
 
     def generate_clipper_input(self, G1, G2, A_categorical, feature_name):

@@ -84,7 +84,6 @@ class GraphManager():
 
 
     def stack_nodes_feature(self, node_list, feature):
-        print("node_list", np.array([self.graph.nodes(data=True)[key] for key in node_list]))
         return np.array([self.graph.nodes(data=True)[key][feature] for key in node_list]).astype(np.float64)
 
 
