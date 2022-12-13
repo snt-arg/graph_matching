@@ -2,5 +2,5 @@ string base_graph
 string target_graph
 ---
 bool success
-Edge[] match
-float32 score
+Graph[] matches
+float32[] score

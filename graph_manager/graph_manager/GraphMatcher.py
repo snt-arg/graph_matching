@@ -31,6 +31,7 @@ class GraphMatcher():
             submatches = []
             nodes_id = []
             for A_categorical in matches:
+                print("Checking candidate \n{}".format(A_categorical))
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, A_categorical, "pos")
                 if parents_data:
                     # print("flag")
@@ -46,13 +47,12 @@ class GraphMatcher():
                     # clipper.set_M_diagonal_values(M_aux[-1,:][:-1]) # TODO: waiting for an answer in the issue
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
-                if self.check_match_not_in_list(clipper_match_categorical, submatches):
-                    print("faagdfg")
+
+                print("Found candidates with score {} for matching: \n {}".format(score, clipper_match_categorical))
+
+                if score > SCORE_THR and self.check_match_not_in_list(clipper_match_categorical, submatches):
                     scores.append(score)
                     submatches.append(clipper_match_categorical)
-                
-                print("Found candidates with score {} for matching: \n {}".format(score, clipper_match_categorical))
-                if score > SCORE_THR:
                     node_id = self.graphs["match"].get_total_number_nodes() + 1
                     nodes_id.append(node_id)
                     node_attr = [(node_id, {"type": sweeped_levels[lvl], "match": A_categorical})]
@@ -88,7 +88,6 @@ class GraphMatcher():
                         scores.append(score)
                         subsubmatches.append(subsubmatch)
 
-                
             return(best_submatches, best_scores)
 
 
@@ -106,18 +105,19 @@ class GraphMatcher():
         if not other_matches:
             return True
         else:
-            print("flag01", new_match)
-            print("flag02", other_matches)
-            # print("flag00", [np.isin(pair, match) for pair in new_match])
-            print("flag03", any([all([np.isin(pair, match) for pair in new_match]) for match in other_matches]))
-            return any([all([np.isin(pair, match) for pair in new_match]) for match in other_matches])
+            return( not any(set([tuple(pair) for pair in new_match]) == set([tuple(pair) for pair in match]) for match in other_matches))
         
 
     def generate_clipper_input(self, G1, G2, A_categorical, feature_name):
         nodes1, nodes2 = list(set(A_categorical[:,0])), list(set(A_categorical[:,1]))
         data1 = G1.stack_nodes_feature(nodes1, feature_name)
         data2 = G2.stack_nodes_feature(nodes2, feature_name)
+        print("nodes1", nodes1)
+        print("nodes2", nodes2)
+        print("data1", data1)
+        print("data2", data2)
         A_numerical = np.array([[nodes1.index(pair[0]),nodes2.index(pair[1])] for pair in A_categorical]).astype(np.int32)
+        print("A_numerical", A_numerical)
         return(data1, data2, A_numerical, nodes1, nodes2)
 
 
