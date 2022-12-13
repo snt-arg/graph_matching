@@ -1,13 +1,22 @@
 import numpy as np
-from GraphMatcher import GraphMatcher
+from .GraphMatcher import GraphMatcher
 import rclpy
 import copy
-import json
 import time
 from rclpy.node import Node
 from std_msgs.msg import String
-from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 
+
+testing_mode = "node" # node / library
+
+if testing_mode == "library":
+    from .. import srv as SubgraphMatchSrv
+elif testing_mode == "node":
+    from graph_manager_interface_ros2.srv import SubgraphMatch as SubgraphMatchSrv
+    from graph_manager_interface_ros2.msg import Graph as GraphMsg
+    from graph_manager_interface_ros2.msg import Node as NodeMsg
+    from graph_manager_interface_ros2.msg import Edge as EdgeMsg
+    from graph_manager_interface_ros2.msg import Attribute as AttributeMsg
 
 
 ROOM_POINT_NOISE_LIMITS = [-0.01,0.01]
@@ -23,7 +32,7 @@ REAL_TRASLATION = np.around(np.random.uniform(REAL_TRANSLATION_NOISE_LIMITS[0][0
 REAL_ROTATION = np.around(np.random.uniform(REAL_TRANSLATION_NOISE_LIMITS[1][0],REAL_TRANSLATION_NOISE_LIMITS[1][1],2), decimals = 2)
 REAL_TRANSF = [REAL_TRASLATION, REAL_ROTATION]
 
-gm = GraphMatcher()
+
 
 ### Geometric functions to create the data
 def translate(original, transformation): #TODO: add rotation
@@ -89,7 +98,7 @@ bim_nodes_attrs = bim_nodes_floors_attrs
 bim_nodes_attrs += bim_nodes_rooms_attrs
 bim_nodes_attrs += bim_nodes_walls_attrs
 
-bim_edges_floors_attrs = [("room_1","floor_1"),("room_2","floor_1")]#,("floor_1", "room_3")]
+bim_edges_floors_attrs = [("room_1","floor_1")]#,("room_2","floor_1")]#,("floor_1", "room_3")]
 bim_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"), ("room_1","wall_4"),("room_2","wall_5"),\
     ("room_2","wall_6"),("room_2","wall_7"), ("room_2","wall_8"),("room_3","wall_9"),("room_3","wall_10"),("room_3","wall_11"),\
     ("room_3","wall_12")]
@@ -101,7 +110,7 @@ bim_edges_attrs += bim_edges_rooms_attrs
 
 bim_graph = {'name' : 'bim', 'nodes' : bim_nodes_attrs, 'edges' : bim_edges_attrs}
 
-gm.setGraph(bim_graph)
+# gm.setGraph(bim_graph)
 
 bim_plot_options = {
     'node_color': 'blue',
@@ -109,27 +118,24 @@ bim_plot_options = {
     'width': 2,
     'with_labels' : True,
 }
-# gm.plotGraphByName("bim", bim_plot_options)
+# gm.graphs["bim"].draw("bim", options = bim_plot_options, show = True)
 
 
 ### Definition of S_Graph from real robot information
 
-# #### Option 1 room
-# real_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [5,0]})]
-# # real_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [10,0]})]
-# real_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": [3,2]}), ("wall_2", {"type": "wall", "pos": [7,2]}),("wall_3", {"type": "wall", "pos": [3,-2]})]
-# # real_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": [8,2]}), ("wall_2", {"type": "wall", "pos": [12,2]}),("wall_3", {"type": "wall", "pos": [8,-2]})]
-# real_nodes_attrs = real_nodes_rooms_attrs
-# real_nodes_attrs += real_nodes_walls_attrs
-
-# real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3")]
-# real_edges_attrs = real_edges_rooms_attrs
-
-#### Option 2 rooms
+#### Option 1 room copied
 real_nodes_floors_attrs = [("floor_1", bim_nodes_floors_attrs[0][1])]
-real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1]), ("room_2", bim_nodes_rooms_attrs[1][1]), ("room_3", bim_nodes_rooms_attrs[2][1])]
-real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),\
-                          ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
+real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1])]
+real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),("wall_4", bim_nodes_walls_attrs[3][1])]
+
+real_edges_floors_attrs = [("floor_1","room_1")]
+real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_1","wall_4")]
+
+# #### Option 2 rooms copied
+# real_nodes_floors_attrs = [("floor_1", bim_nodes_floors_attrs[0][1])]
+# real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1]), ("room_2", bim_nodes_rooms_attrs[1][1]), ("room_3", bim_nodes_rooms_attrs[2][1])]
+# real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),\
+#                           ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
 
 # for node in real_nodes_rooms_attrs:
 #     node[1]["pos"] = add_noise_point(node[1]["pos"])
@@ -137,20 +143,23 @@ real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bi
 # for node in real_nodes_walls_attrs:
 #     node[1]["pos"] = add_noise_plane_by_point_and_normal(node[1]["pos"])
 
+
+
+# real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2")]#,("floor_1", "room_3")]
+# real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_2","wall_4"),("room_2","wall_5"),("room_2","wall_6")]
+# # real_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
+
+
 real_nodes_attrs = real_nodes_floors_attrs
 real_nodes_attrs += real_nodes_rooms_attrs
 real_nodes_attrs += real_nodes_walls_attrs
-
-real_edges_floors_attrs = [("floor_1", "room_1"),("floor_1", "room_2")]#,("floor_1", "room_3")]
-real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_2","wall_4"),("room_2","wall_5"),("room_2","wall_6")]
-real_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
 real_edges_attrs = real_edges_floors_attrs
 real_edges_attrs += real_edges_rooms_attrs
 # real_edges_attrs += real_edges_interwalls_attrs
 
 real_graph = {'name' : 'real','nodes' : real_nodes_attrs, 'edges' : real_edges_attrs}
 
-gm.setGraph(real_graph)
+# gm.setGraph(real_graph)
 
 real_plot_options = {
     'node_color': 'red',
@@ -158,7 +167,7 @@ real_plot_options = {
     'width': 2,
     'with_labels' : True,
 }
-# gm.plotGraphByName("real", real_plot_options)
+# gm.graphs["real"].draw("bim", options = real_plot_options, show = True)
 
 
 ### Subgraph isomorphism matching
@@ -168,66 +177,95 @@ real_plot_options = {
 ### Full process comparing BIM and REAL graphs
 
 # gm.matchCustom("bim", "real")
-gm.new_match_custom("bim", "real")
+# gm.new_match_custom("bim", "real")
 
-# ### Tests for geometrical operations of planes
-# plane_1 = np.array([1,0,0,1])
-# plane_2 = np.array([0,1,0,1])
-# plane_3 = np.array([0,0,1,1])
-# point = np.array([-5,0,0])
-# gm.planeIntersection(plane_1,plane_2, plane_3)
-# gm.distancePlanePoint(plane_1, point)
+if testing_mode == "library":
+    gm = GraphMatcher()
+    gm.setGraph(bim_graph)
+    gm.graphs["bim"].draw("bim", options = bim_plot_options, show = True)
+    gm.setGraph(real_graph)
+    gm.graphs["real"].draw("bim", options = real_plot_options, show = True)
+    gm.new_match_custom("bim", "real")
 
-# class GraphManagerTesterNode(Node):
+class GraphManagerTesterNode(Node):
 
-#     def __init__(self):
-#         super().__init__('graph_manager_tester')
-#         self.set_interface()
-#         self.send_graphs()
-#         time.sleep(2)
-#         self.send_match_request()
-#         return
-
-    
-#     def set_interface(self):
-#         self.graph_publisher = self.create_publisher(String,'graph_topic', 10)
-#         self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
+    def __init__(self):
+        super().__init__('graph_manager_tester')
+        self.set_interface()
+        self.send_graphs()
+        time.sleep(2)
+        self.send_match_request()
+        return
 
     
-#     def send_graphs(self):
-#         encoded_bim_graph = self.endecode_graph_msg(bim_graph)
-#         self.graph_publisher.publish(encoded_bim_graph)
+    def set_interface(self):
+        self.graph_publisher = self.create_publisher(String,'graph_topic', 10)
+        self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
 
-#         encoded_real_graph = self.endecode_graph_msg(real_graph)
-#         self.graph_publisher.publish(encoded_real_graph)
+    
+    def send_graphs(self):
+        encoded_bim_graph = self.endecode_graph_msg(bim_graph)
+        self.graph_publisher.publish(encoded_bim_graph)
 
-
-#     def send_match_request(self):
-#         request = SubgraphMatchSrv.Request()
-#         request.base_graph = "bim"
-#         request.target_graph = "real"
-#         request.match_type = 3
-#         future = self.match_srv_client.call_async(request)
-#         rclpy.spin_until_future_complete(self, future)
-#         return future.result()
+        encoded_real_graph = self.endecode_graph_msg(real_graph)
+        self.graph_publisher.publish(encoded_real_graph)
 
 
-#     def endecode_graph_msg(self, graph_dict):
-#         msg = String()
-#         msg.data = json.dumps(graph_dict)
-#         return msg
+    def send_match_request(self):
+        request = SubgraphMatchSrv.Request()
+        request.base_graph = "bim"
+        request.target_graph = "real"
+        future = self.match_srv_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        return future.result()
 
 
+    def endecode_graph_msg(self, graph_dict):
+        graph_msg = GraphMsg()
+        graph_msg.name = graph_dict["name"]
 
-# def main(args=None):
-#     rclpy.init(args=args)
-#     graph_manager_node = GraphManagerTesterNode()
+        nodes = []
+        for node in graph_dict["nodes"]:
+            node_msg = NodeMsg()
+            node_msg.id = node[0]
+            attrib_msgs = []
+            for key in node[1].keys():
+                attrib_msg = AttributeMsg()
+                attrib_msg.name = key
+                attrib_msg.type = attrib_msg.str_value = node[1]["type"]
+                if type(node[1][key]) == str:
+                    attrib_msg.str_value = node[1][key]
+                    attrib_msgs.append(attrib_msg)
+                elif type(node[1][key]) == list:
+                    attrib_msg.fl_value = node[1][key]
+                    attrib_msgs.append(attrib_msg)
+                else:
+                    print("Bad definition of attribute {}".format(key))
+                
+            node_msg.attributes = attrib_msg
+            nodes.append(node_msg)
+        graph_msg.nodes = nodes
 
-#     rclpy.spin(graph_manager_node)
+        edges = []
+        for edge in graph_dict["edges"]:
+            edge_msg = EdgeMsg()
+            edge_msg.base_node = edge[0]
+            edge_msg.target_node = edge[1]
+            edges.append(edge_msg)
+        graph_msg.edges = edges
+    
+        return(graph_msg)
 
-#     graph_manager_node.destroy_node()
-#     rclpy.shutdown()
+def main(args=None):
+    rclpy.init(args=args)
+    graph_manager_node = GraphManagerTesterNode()
+
+    rclpy.spin(graph_manager_node)
+
+    graph_manager_node.destroy_node()
+    rclpy.shutdown()
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    if testing_mode == "node":
+        main()
