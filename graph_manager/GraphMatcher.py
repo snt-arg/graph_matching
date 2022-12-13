@@ -1,5 +1,5 @@
 import numpy as np
-from GraphManager import GraphManager
+from .GraphManager import GraphManager
 from Clipper import Clipper
 
 SCORE_THR = 0.99
@@ -33,18 +33,18 @@ class GraphMatcher():
             for A_categorical in matches:
                 print("Checking candidate \n{}".format(A_categorical))
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, A_categorical, "pos")
-                if parents_data:
-                    # print("flag")
-                    # print(data1, data2, A_numerical)
-                    self.add_parents_data(data1, data2, A_numerical, parents_data)
-                    # print(data1, data2, A_numerical)
+                # if parents_data:
+                #     # print("flag")
+                #     # print(data1, data2, A_numerical)
+                #     self.add_parents_data(data1, data2, A_numerical, parents_data)
+                #     # print(data1, data2, A_numerical)
                 clipper = Clipper(sweeped_levels_dt[lvl])
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
-                if parents_data:
-                    M_aux, _ = clipper.get_M_C_matrices()
-                    clipper.remove_last_assoc_M_C_matrices()
-                    # clipper.filter_C_M_matrices(C_graph) # TODO: waiting for an answer in the issue
-                    # clipper.set_M_diagonal_values(M_aux[-1,:][:-1]) # TODO: waiting for an answer in the issue
+                # if parents_data:
+                #     M_aux, _ = clipper.get_M_C_matrices()
+                #     clipper.remove_last_assoc_M_C_matrices()
+                #     # clipper.filter_C_M_matrices(C_graph) # TODO: waiting for an answer in the issue
+                #     # clipper.set_M_diagonal_values(M_aux[-1,:][:-1]) # TODO: waiting for an answer in the issue
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
 
@@ -62,22 +62,23 @@ class GraphMatcher():
                         edges_attr = []
                     self.graphs["match"].add_subgraph(node_attr, edges_attr)
 
-            # sorted_matches_indexes = np.argsort(scores)[::-1]
+            sorted_matches_indexes = np.argsort(scores)[::-1]
             # sorted_scores = np.sort(scores)[::-1]
-            best_matches_indeces = np.where(np.array(scores) > SCORE_THR)[0]
-            best_scores = [scores[i] for i in best_matches_indeces]
-            best_submatches = [submatches[i] for i in best_matches_indeces]
-            print(best_scores)
+            # best_matches_indeces = np.where(np.array(scores) > SCORE_THR)[0]
+            # best_scores = [scores[i] for i in best_matches_indeces]
+            # best_submatches = [submatches[i] for i in best_matches_indeces]
+            # print(best_scores)
+            # print("best_submatches", best_submatches)
 
 
             ## Next level
             if lvl < len(sweeped_levels) - 1:
-                print("best_submatches", best_submatches)
-                for good_submatch_i in best_matches_indeces:
+                
+                for good_submatch_i in sorted_matches_indexes:
                     print("good_submatch", submatches[good_submatch_i])
                     parent1_data = self.change_pos_dt(G1, submatches[good_submatch_i][:,0], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
                     parent2_data = self.change_pos_dt(G2, submatches[good_submatch_i][:,1], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
-                    scores = []
+                    subscores = []
                     subsubmatches = []
                     for i, lowerlevel_match in enumerate(submatches[good_submatch_i]):
                         print("Checking lowerlevel matches for {}\n".format(lowerlevel_match))
@@ -85,10 +86,10 @@ class GraphMatcher():
                         G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match[1])
                         parents_data = {"match" : lowerlevel_match, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : nodes_id[good_submatch_i]}
                         subsubmatch, score = match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, parents_data)
-                        scores.append(score)
+                        subscores.append(score)
                         subsubmatches.append(subsubmatch)
 
-            return(best_submatches, best_scores)
+            return(submatches, scores)
 
 
         match_iteration(self.graphs[G1_name], self.graphs[G2_name], lvl)

@@ -19,13 +19,13 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 
-from .GraphManager import GraphManager
+from .GraphMatcher import GraphMatcher
 
 class GraphManagerNode(Node):
 
     def __init__(self):
         super().__init__('graph_manager')
-        self.gm = GraphManager()
+        self.gm = GraphMatcher()
         self.set_interface()
         
 
@@ -42,20 +42,10 @@ class GraphManagerNode(Node):
 
 
     def subgraph_match_srv_callback(self, request, response):
-        self.get_logger().info('Graph Manager: Received match request from {} to {} and match type {}'.format(request.base_graph, request.target_graph, request.match_type))
-        if request.match_type == 1: ### TODO implement this?
-            match = self.gm.matchIsomorphism(request.base_graph, request.target_graph)
-        elif request.match_type == 2:
-            matches = self.gm.matchByNodeType(request.base_graph, request.target_graph, draw = False)
-            if matches:
-                response.success = True
-                response.match = self.encode_edge_list(matches[0])
-            else:
-                response.success = False
-        elif request.match_type == 3:
-            matches, response.success = self.gm.matchCustom(request.base_graph, request.target_graph)
-            if matches:
-                response.match = json.dumps(matches[0])
+        self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
+        matches, response.success = self.gm.matchCustom(request.base_graph, request.target_graph)
+        if matches:
+            response.match = json.dumps(matches[0])
         else:
             self.get_logger().warn('Graph Manager: match type not correct!')
         return response
