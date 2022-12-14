@@ -31,7 +31,7 @@ def generate_launch_description():
     graph_manager_tester_node = Node(
         package='graph_manager',
         executable='graph_manager_tester',
-        namespace='graph_manager_tester',
+        namespace='graph_manager',
     )
 
     launch_tester_node_with_timer = TimerAction(

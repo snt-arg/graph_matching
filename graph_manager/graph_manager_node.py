@@ -17,7 +17,11 @@ import json
 from rclpy.node import Node
 
 from std_msgs.msg import String
-from graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
+from ros2_graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
+from ros2_graph_manager_interface.msg import Graph as GraphMsg
+# from ros2_graph_manager_interface.msg import Node as NodeMsg
+# from ros2_graph_manager_interface.msg import Edge as EdgeMsg
+# from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 
@@ -30,20 +34,44 @@ class GraphManagerNode(Node):
         
 
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(String,'graph_topic', self.graph_callback, 10)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graph_topic', self.graph_callback, 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match_srv', self.subgraph_match_srv_callback)
 
 
     def graph_callback(self, msg):
-        graph_dict = json.loads(msg.data)
-        self.get_logger().info('Graph Manager: Incoming graph with name {}'.format(graph_dict["name"]))
-        self.gm.setGraph(graph_dict)
-        # self.gm.plotGraphByName(graph_dict["name"])
+        self.get_logger().info('Graph Manager: Incoming graph with name {}'.format(msg.name))
+        graph = {"name" : msg.name}
+
+        nodes = []
+        for node_msg in msg.nodes:
+            node = [str(node_msg.id), {}]
+            attributes = {}
+            for attrib_msg in node_msg.attributes:
+                if attrib_msg.str_value:
+                    attributes[attrib_msg.name] = attrib_msg.str_value
+                elif attrib_msg.fl_value:
+                    attributes[attrib_msg.name] = attrib_msg.fl_value
+                else:
+                    print("Bad definition of attribute {}".format(attrib_msg.name))
+            
+            node[1] = attributes
+            node[1]["type"] = node_msg.type
+            nodes.append(node)
+        graph["nodes"] = nodes
+
+        edges = []
+        for edge_msg in msg.edges:
+            edge = (str(edge_msg.origin_node), str(edge_msg.target_node))
+            edges.append(edge)
+        graph["edges"] = edges
+        
+        self.gm.setGraph(graph)
+        self.gm.graphs[graph["name"]].draw(graph["name"], None, True)
 
 
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
-        matches, response.success = self.gm.matchCustom(request.base_graph, request.target_graph)
+        matches, response.success = self.gm.new_match_custom(request.base_graph, request.target_graph)
         if matches:
             response.match = json.dumps(matches[0])
         else:

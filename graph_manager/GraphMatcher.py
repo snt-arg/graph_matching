@@ -1,6 +1,6 @@
 import numpy as np
 from .GraphManager import GraphManager
-from Clipper import Clipper
+from .Clipper import Clipper
 
 SCORE_THR = 0.99
 

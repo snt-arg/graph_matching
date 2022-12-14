@@ -12,11 +12,11 @@ testing_mode = "node" # node / library
 if testing_mode == "library":
     from .. import srv as SubgraphMatchSrv
 elif testing_mode == "node":
-    from graph_manager_interface_ros2.srv import SubgraphMatch as SubgraphMatchSrv
-    from graph_manager_interface_ros2.msg import Graph as GraphMsg
-    from graph_manager_interface_ros2.msg import Node as NodeMsg
-    from graph_manager_interface_ros2.msg import Edge as EdgeMsg
-    from graph_manager_interface_ros2.msg import Attribute as AttributeMsg
+    from ros2_graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
+    from ros2_graph_manager_interface.msg import Graph as GraphMsg
+    from ros2_graph_manager_interface.msg import Node as NodeMsg
+    from ros2_graph_manager_interface.msg import Edge as EdgeMsg
+    from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
 
 
 ROOM_POINT_NOISE_LIMITS = [-0.01,0.01]
@@ -77,7 +77,7 @@ def add_noise_point(original):
 
 ### Definition of S_Graph from BIM information
 
-bim_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0,0]})]
+bim_nodes_floors_attrs = [(1, {"type": "floor", "pos": [0,0,0]})]
 
 #### RANDOM
 # bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": genRandPoint()}), ("room_2", {"type": "room", "pos": genRandPoint()}), ("room_3", {"type": "room", "pos": genRandPoint()})]
@@ -87,10 +87,10 @@ bim_nodes_floors_attrs = [("floor_1", {"type": "floor", "pos": [0,0,0]})]
 #                         ("wall_10",{"type": "wall", "pos": genRandPointNorm()}),("wall_11", {"type": "wall", "pos": genRandPointNorm()}), ("wall_12", {"type": "wall", "pos": genRandPointNorm()})]
 
 #### MANUAL
-bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": [0.1,0,0]}),("room_2", {"type": "room", "pos": [5,5,0]}),("room_3", {"type": "room", "pos": [10,0,0]})]
-bim_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": [0,2,0,0,-1,0]}), ("wall_2", {"type": "wall", "pos": [0,-2,0,0,1,0]}), ("wall_3", {"type": "wall", "pos": [-2,0,0,1,0,0]}),("wall_4", {"type": "wall", "pos": [2,0,0,-1,0,0]}),\
-                         ("wall_5", {"type": "wall", "pos": [5,7,0,0,-1,0]}), ("wall_6", {"type": "wall", "pos": [5,3,0,0,1,0]}), ("wall_7", {"type": "wall", "pos": [3,5,0,1,0,0]}), ("wall_8", {"type": "wall", "pos": [7,5,0,-1,0,0]}),\
-                         ("wall_9", {"type": "wall", "pos": [10,2,0,0,-1,0]}),("wall_10",{"type": "wall", "pos": [10,-2,0,0,1,0]}),("wall_11",{"type": "wall", "pos": [8,0,0,1,0,0]}),("wall_12", {"type": "wall", "pos": [12,0,0,-1,0,0]})]
+bim_nodes_rooms_attrs = [(101, {"type": "room", "pos": [0.1,0,0]}),(102, {"type": "room", "pos": [5,5,0]}),(103, {"type": "room", "pos": [10,0,0]})]
+bim_nodes_walls_attrs = [(201, {"type": "wall", "pos": [0,2,0,0,-1,0]}), (202, {"type": "wall", "pos": [0,-2,0,0,1,0]}), (203, {"type": "wall", "pos": [-2,0,0,1,0,0]}),(204, {"type": "wall", "pos": [2,0,0,-1,0,0]}),\
+                         (205, {"type": "wall", "pos": [5,7,0,0,-1,0]}), (206, {"type": "wall", "pos": [5,3,0,0,1,0]}), (207, {"type": "wall", "pos": [3,5,0,1,0,0]}), (208, {"type": "wall", "pos": [7,5,0,-1,0,0]}),\
+                         (209, {"type": "wall", "pos": [10,2,0,0,-1,0]}),(210,{"type": "wall", "pos": [10,-2,0,0,1,0]}),(211,{"type": "wall", "pos": [8,0,0,1,0,0]}),(212, {"type": "wall", "pos": [12,0,0,-1,0,0]})]
 
 ####
 
@@ -98,11 +98,9 @@ bim_nodes_attrs = bim_nodes_floors_attrs
 bim_nodes_attrs += bim_nodes_rooms_attrs
 bim_nodes_attrs += bim_nodes_walls_attrs
 
-bim_edges_floors_attrs = [("room_1","floor_1")]#,("room_2","floor_1")]#,("floor_1", "room_3")]
-bim_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"), ("room_1","wall_4"),("room_2","wall_5"),\
-    ("room_2","wall_6"),("room_2","wall_7"), ("room_2","wall_8"),("room_3","wall_9"),("room_3","wall_10"),("room_3","wall_11"),\
-    ("room_3","wall_12")]
-bim_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
+bim_edges_floors_attrs = [(1,101)]#,("room_2","floor_1")]#,("floor_1", "room_3")]
+bim_edges_rooms_attrs = [(101,201),(101,202),(101,203),(101,204),(102,205),(102,206),(102,207),(102,208),(103,209),(103,210),(103,211),(103,212)]
+# bim_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
 
 bim_edges_attrs = bim_edges_floors_attrs
 bim_edges_attrs += bim_edges_rooms_attrs
@@ -124,12 +122,12 @@ bim_plot_options = {
 ### Definition of S_Graph from real robot information
 
 #### Option 1 room copied
-real_nodes_floors_attrs = [("floor_1", bim_nodes_floors_attrs[0][1])]
-real_nodes_rooms_attrs = [("room_1", bim_nodes_rooms_attrs[0][1])]
-real_nodes_walls_attrs = [("wall_1", bim_nodes_walls_attrs[0][1]), ("wall_2", bim_nodes_walls_attrs[1][1]),("wall_3", bim_nodes_walls_attrs[2][1]),("wall_4", bim_nodes_walls_attrs[3][1])]
+real_nodes_floors_attrs = [(1, bim_nodes_floors_attrs[0][1])]
+real_nodes_rooms_attrs = [(101, bim_nodes_rooms_attrs[0][1])]
+real_nodes_walls_attrs = [(201, bim_nodes_walls_attrs[0][1]), (202, bim_nodes_walls_attrs[1][1]),(203, bim_nodes_walls_attrs[2][1]),(204, bim_nodes_walls_attrs[3][1])]
 
-real_edges_floors_attrs = [("floor_1","room_1")]
-real_edges_rooms_attrs = [("room_1","wall_1"),("room_1","wall_2"),("room_1","wall_3"),("room_1","wall_4")]
+real_edges_floors_attrs = [(1,101)]
+real_edges_rooms_attrs = [(101,201),(101,202),(101,203),(101,204)]
 
 # #### Option 2 rooms copied
 # real_nodes_floors_attrs = [("floor_1", bim_nodes_floors_attrs[0][1])]
@@ -199,11 +197,12 @@ class GraphManagerTesterNode(Node):
 
     
     def set_interface(self):
-        self.graph_publisher = self.create_publisher(String,'graph_topic', 10)
+        self.graph_publisher = self.create_publisher(GraphMsg,'graph_topic', 10)
         self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
 
     
     def send_graphs(self):
+        self.get_logger().info('Sending graphs')
         encoded_bim_graph = self.endecode_graph_msg(bim_graph)
         self.graph_publisher.publish(encoded_bim_graph)
 
@@ -228,28 +227,29 @@ class GraphManagerTesterNode(Node):
         for node in graph_dict["nodes"]:
             node_msg = NodeMsg()
             node_msg.id = node[0]
+            node_msg.type = node[1]["type"]
+            
             attrib_msgs = []
             for key in node[1].keys():
                 attrib_msg = AttributeMsg()
                 attrib_msg.name = key
-                attrib_msg.type = attrib_msg.str_value = node[1]["type"]
                 if type(node[1][key]) == str:
                     attrib_msg.str_value = node[1][key]
                     attrib_msgs.append(attrib_msg)
                 elif type(node[1][key]) == list:
-                    attrib_msg.fl_value = node[1][key]
+                    attrib_msg.fl_value =  list(map(float, node[1][key]))
                     attrib_msgs.append(attrib_msg)
                 else:
                     print("Bad definition of attribute {}".format(key))
                 
-            node_msg.attributes = attrib_msg
+            node_msg.attributes = attrib_msgs
             nodes.append(node_msg)
         graph_msg.nodes = nodes
 
         edges = []
         for edge in graph_dict["edges"]:
             edge_msg = EdgeMsg()
-            edge_msg.base_node = edge[0]
+            edge_msg.origin_node = edge[0]
             edge_msg.target_node = edge[1]
             edges.append(edge_msg)
         graph_msg.edges = edges
