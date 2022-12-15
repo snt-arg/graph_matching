@@ -197,7 +197,7 @@ class GraphManagerTesterNode(Node):
 
     
     def set_interface(self):
-        self.graph_publisher = self.create_publisher(GraphMsg,'graph_topic', 10)
+        self.graph_publisher = self.create_publisher(GraphMsg,'graphs', 10)
         self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
 
     
@@ -216,6 +216,8 @@ class GraphManagerTesterNode(Node):
         request.target_graph = "real"
         future = self.match_srv_client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
+        self.get_logger().warn('Response from Graph Matcher node received!')
+        # self.get_logger().info('Received Match service response: {}'.format(future.result()))
         return future.result()
 
 

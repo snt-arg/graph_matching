@@ -20,8 +20,8 @@ from std_msgs.msg import String
 from ros2_graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
 from ros2_graph_manager_interface.msg import Graph as GraphMsg
 # from ros2_graph_manager_interface.msg import Node as NodeMsg
-# from ros2_graph_manager_interface.msg import Edge as EdgeMsg
-# from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
+from ros2_graph_manager_interface.msg import Edge as EdgeMsg
+from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 
@@ -29,12 +29,12 @@ class GraphManagerNode(Node):
 
     def __init__(self):
         super().__init__('graph_manager')
-        self.gm = GraphMatcher()
+        self.gm = GraphMatcher(self.get_logger())
         self.set_interface()
         
 
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(GraphMsg,'graph_topic', self.graph_callback, 10)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match_srv', self.subgraph_match_srv_callback)
 
 
@@ -66,16 +66,30 @@ class GraphManagerNode(Node):
         graph["edges"] = edges
         
         self.gm.setGraph(graph)
-        self.gm.graphs[graph["name"]].draw(graph["name"], None, True)
+        # self.gm.graphs[graph["name"]].draw(graph["name"], None, True)
 
 
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
-        matches, response.success = self.gm.new_match_custom(request.base_graph, request.target_graph)
-        if matches:
-            response.match = json.dumps(matches[0])
+        response.success, matches, response.score = self.gm.only_walls_match_custom(request.base_graph, request.target_graph)
+        
+        if response.success:
+            for match in matches:
+                graph_msg = GraphMsg()
+                for edge in match:
+                    edge_msg = EdgeMsg()
+                    edge_msg.origin_node = edge["origin_node"]
+                    edge_msg.origin_node = edge["target_node"]
+                    attrib_msg = AttributeMsg()
+                    attrib_msg.name = "score"
+                    attrib_msg.fl_value = [edge["score"]]
+                    edge_msg.attributes = [attrib_msg]
+                    graph_msg.edges.append(edge_msg)
+                response.matches.append(graph_msg)
+            self.get_logger().warn('At least one successful match found!')
+
         else:
-            self.get_logger().warn('Graph Manager: match type not correct!')
+            self.get_logger().warn('Graph Manager: no good matches found!')
         return response
 
 
