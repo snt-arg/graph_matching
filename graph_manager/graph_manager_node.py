@@ -16,12 +16,11 @@ import rclpy
 import json
 from rclpy.node import Node
 
-from std_msgs.msg import String
-from ros2_graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
-from ros2_graph_manager_interface.msg import Graph as GraphMsg
-# from ros2_graph_manager_interface.msg import Node as NodeMsg
-from ros2_graph_manager_interface.msg import Edge as EdgeMsg
-from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
+from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+from graph_manager_msgs.msg import Graph as GraphMsg
+# from graph_manager_msgs.msg import Node as NodeMsg
+from graph_manager_msgs.msg import Edge as EdgeMsg
+from graph_manager_msgs.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 
@@ -35,7 +34,7 @@ class GraphManagerNode(Node):
 
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 10)
-        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match_srv', self.subgraph_match_srv_callback)
+        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match', self.subgraph_match_srv_callback)
 
 
     def graph_callback(self, msg):
@@ -66,7 +65,7 @@ class GraphManagerNode(Node):
         graph["edges"] = edges
         
         self.gm.setGraph(graph)
-        # self.gm.graphs[graph["name"]].draw(graph["name"], None, True)
+        self.gm.graphs[graph["name"]].draw(graph["name"], None, True)
 
 
     def subgraph_match_srv_callback(self, request, response):

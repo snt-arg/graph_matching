@@ -12,11 +12,11 @@ testing_mode = "node" # node / library
 if testing_mode == "library":
     from .. import srv as SubgraphMatchSrv
 elif testing_mode == "node":
-    from ros2_graph_manager_interface.srv import SubgraphMatch as SubgraphMatchSrv
-    from ros2_graph_manager_interface.msg import Graph as GraphMsg
-    from ros2_graph_manager_interface.msg import Node as NodeMsg
-    from ros2_graph_manager_interface.msg import Edge as EdgeMsg
-    from ros2_graph_manager_interface.msg import Attribute as AttributeMsg
+    from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+    from graph_manager_msgs.msg import Graph as GraphMsg
+    from graph_manager_msgs.msg import Node as NodeMsg
+    from graph_manager_msgs.msg import Edge as EdgeMsg
+    from graph_manager_msgs.msg import Attribute as AttributeMsg
 
 
 ROOM_POINT_NOISE_LIMITS = [-0.01,0.01]
@@ -198,7 +198,7 @@ class GraphManagerTesterNode(Node):
     
     def set_interface(self):
         self.graph_publisher = self.create_publisher(GraphMsg,'graphs', 10)
-        self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match_srv')
+        self.match_srv_client = self.create_client(SubgraphMatchSrv, 'subgraph_match')
 
     
     def send_graphs(self):
