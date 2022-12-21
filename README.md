@@ -33,7 +33,7 @@ To build from source, clone the latest version from this repository into your ca
 	cd catkin_workspace/src
 	git clone https://github.com/snt-arg/graph_manager.git
 	cd ../
-	colcon
+	colcon build
 
 
 ### Unit Tests (TODO)
@@ -46,7 +46,11 @@ Run the unit tests with
 
 Run the main node with
 
-	ros2 launch graph_manager graph_manager.launch.py 
+	ros2 launch graph_manager graph_manager.launch.py
+
+Run the main and tester node with
+
+	ros2 launch graph_manager graph_manager_tester.launch.py 
 
 ## Config files (TODO)
 
@@ -60,7 +64,9 @@ Config file folder/set 2
 
 ## Launch files
 
-* **graph_manager.launch.py :** Launch of graph manager node and, a second later, the tester node
+* **graph_manager.launch.py :** Launch of graph manager node
+
+* **graph_manager_tester.launch.py :** Launch of graph manager node and, a second later, the tester node
 
 
 ## Nodes
@@ -72,34 +78,8 @@ Stores and performs graph operations related to S-Graphs.
 
 #### Subscribed Topics
 
-* **`/graph_topic`** ([String])
+* **`/graphs`** ([graph_manager_msgs/Graph])
 
-	Store a new graph. The String must be convertible to a dictionary containing the next structure:
-	{
-		- name : "node_name"
-		- nodes: [
-			- (
-				- "node_1_name"
-				- {
-					- type : "node_type"
-					- "other_attributes_name" : "other_attributes_value"
-				}
-			)
-			- (
-				- "node_2_name"
-				- {
-					- type : "node_type"
-					- "other_attributes_name" : "other_attributes_value"
-				}
-			)
-			- ...
-		]
-		- edges: [
-			- ("1_origin_node_name", "1_target_node_name")
-			- ("2_origin_node_name", "2_target_node_name")
-			- ...
-		]
-	}
 
 #### Published Topics (TODO)
 
@@ -108,7 +88,7 @@ Stores and performs graph operations related to S-Graphs.
 
 #### Services
 
-* **`subgraph_match_srv`** ([graph_manager_interface/SubgraphMatchSrv])
+* **`subgraph_match_srv`** ([graph_manager_msgs/SubgraphMatchSrv])
 
 	Returns the subgraph match (list of pairs of nodes) most probable, subject to matching type
 
@@ -124,3 +104,7 @@ Stores and performs graph operations related to S-Graphs.
 * **`cache_size`** (int, default: 200, min: 0, max: 1000)
 
 	The size of the cache.
+
+
+
+
