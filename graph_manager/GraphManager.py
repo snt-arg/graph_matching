@@ -39,7 +39,7 @@ class GraphManager():
                         'node_size': 50,
                         'width': 2,
                         'with_labels' : True}
-                    plot_options = self.defineColorPlotOptionFromMatch(self.graph, plot_options, subgraph, "blue", "red")
+                    plot_options = self.define_draw_color_from_node_list(plot_options, subgraph, "blue", "red")
                     self.draw("Graph {}".format(self.name), None, True)
 
         return matches ### TODO What should be returned?
@@ -71,10 +71,14 @@ class GraphManager():
             plt.pause(1)
 
     
-    def defineColorPlotOptionFromMatch(self, graph, options, subgraph, old_color, new_color):
-        colors = dict(zip(graph.nodes(), [old_color] * len(graph.nodes())))
-        for origin_node in subgraph:
-            colors[origin_node] = new_color
+    def define_draw_color_from_node_list(self, options, node_list, unmatched_color = "red", matched_color = "blue"):
+        if "node_color" not in options.keys():
+            colors = dict(zip(self.graph.nodes(), [unmatched_color] * len(self.graph.nodes())))
+        else:
+            colors = dict(zip(self.graph.nodes(), options['node_color'])) 
+            
+        for origin_node in node_list:
+            colors[str(origin_node)] = matched_color
         options['node_color'] = colors.values()
         return options
 
@@ -107,16 +111,11 @@ class GraphManager():
         [self.graph.add_edge(edge_def[0], edge_def[1]) for edge_def in edges_def]
 
 
-    def set_draw_color_option_by_node_type(self, ):
-        color_pallette = ["blue", "red", "orange", "cyan", "yellow"]
+    def define_draw_color_option_by_node_type(self, ):
+        color_palette = {"Infinite Room" : "cyan", "Finite Room" : "blue", "Plane" : "red"}
         type_list = [node[1]["type"] for node in self.graph.nodes(data=True)]
-        type_set = list(set(type_list))
-        colors = [color_pallette[type_set.index(node_type)] for node_type in type_list]
+        colors = [color_palette[node_type] for node_type in type_list]
 
-        # colors = dict(zip(graph.nodes(), [old_color] * len(graph.nodes())))
-        # for origin_node in subgraph:
-        #     colors[origin_node] = new_color
-        # options['node_color'] = colors.values()
         return colors
 
 

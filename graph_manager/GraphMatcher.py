@@ -103,19 +103,14 @@ class GraphMatcher():
     def only_walls_match_custom(self, G1_name, G2_name):
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         self.logger.info("Graph Manager only_walls_match_custom: full_graph_matches - {}".format(len(full_graph_matches)))
-        # self.logger.info("flag full_graph_matches: {}".format(len(full_graph_matches)))
         G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
         G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
         matches = G1_walls.matchByNodeType(G2_walls)
         self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
-        # self.logger.info("flag matches1: {}".format(len(matches)))
         matches = self.filter_local_match_with_global(matches, matches)
-        # self.logger.info("flag matches2: {}".format(matches))
-        self.logger.info("Graph Manager only_walls_match_custom: flag1")
         scores = []
         good_matches = []
         for A_categorical in matches:
-            self.logger.info("Graph Manager only_walls_match_custom: flag2")
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(self.graphs[G1_name], self.graphs[G2_name], A_categorical, "Geometric_info")
             clipper = Clipper("points&normal")
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
@@ -124,13 +119,12 @@ class GraphMatcher():
             if score >= SCORE_THR:
                 scores.append(score)
                 good_matches.append(clipper_match_categorical)
-        self.logger.info("Graph Manager only_walls_match_custom: flag3")
+        self.logger.info("Graph Manager only_walls_match_custom: good_matches - {}".format(len(good_matches)))
         matches_list = []
         sorted_matches_indexes = np.argsort(scores)[::-1]
         scores_sorted = []
         success = False
         for i in sorted_matches_indexes:
-            self.logger.info("Graph Manager only_walls_match_custom: flag4")
             success = True
             scores_sorted.append(scores[i])
             match_list = []
@@ -140,8 +134,9 @@ class GraphMatcher():
             matches_list.append(match_list)
 
         self.logger.info("Graph Manager only_walls_match_custom: success - {}".format(success))
-        self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(matches_list))
-        self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
+        self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(len(matches_list)))
+        self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list[0]))
+        self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(len(scores_sorted)))
         return(success, matches_list, scores_sorted)
 
 

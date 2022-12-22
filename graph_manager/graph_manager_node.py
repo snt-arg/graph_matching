@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import rclpy
+import time
 import json
 from rclpy.node import Node
 
@@ -65,14 +66,24 @@ class GraphManagerNode(Node):
         graph["edges"] = edges
         
         self.gm.setGraph(graph)
-        options = {'node_color': self.gm.graphs[graph["name"]].set_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
-        # if len(self.gm.graphs[graph["name"]].graph.nodes())>1:
-        options = {'node_color': self.gm.graphs[graph["name"]].set_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
-        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-            self.gm.only_walls_match_custom("Prior", "ONLINE")
+        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>10:
+            success, matches, score = self.gm.only_walls_match_custom("Prior", "ONLINE")
+            nodes = [pair["target_node"] for pair in matches[0]]
+            options = self.gm.graphs[graph["name"]].define_draw_color_from_node_list(options, nodes, unmatched_color = None, matched_color = "black")
+            self.gm.graphs[graph["name"]].draw("{}_match".format(graph["name"]), options, True)
+
+
+            options = {'node_color': self.gm.graphs["Prior"].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+            nodes = [pair["origin_node"] for pair in matches[0]]
+            options = self.gm.graphs["Prior"].define_draw_color_from_node_list(options, nodes, unmatched_color = None, matched_color = "black")
+            self.gm.graphs["Prior"].draw("Prior_match", options, True)
+            time.sleep(999)
+            
 
 
     def subgraph_match_srv_callback(self, request, response):
