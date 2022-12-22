@@ -77,20 +77,20 @@ def add_noise_point(original):
 
 ### Definition of S_Graph from BIM information
 
-bim_nodes_floors_attrs = [(1, {"type": "floor", "pos": [0,0,0]})]
+bim_nodes_floors_attrs = [(1, {"type": "floor", "Geometric_info": [0,0,0]})]
 
 #### RANDOM
-# bim_nodes_rooms_attrs = [("room_1", {"type": "room", "pos": genRandPoint()}), ("room_2", {"type": "room", "pos": genRandPoint()}), ("room_3", {"type": "room", "pos": genRandPoint()})]
-# bim_nodes_walls_attrs = [("wall_1", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}), ("wall_2", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),("wall_3", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),\
-#                         ("wall_4", {"type": "wall", "pos": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["pos"][0:3])}),("wall_5", {"type": "wall", "pos": genRandPointNorm()}), ("wall_6", {"type": "wall", "pos": genRandPointNorm()}),\
-#                         ("wall_7", {"type": "wall", "pos": genRandPointNorm()}), ("wall_8", {"type": "wall", "pos": genRandPointNorm()}),("wall_9", {"type": "wall", "pos": genRandPointNorm()}),\
-#                         ("wall_10",{"type": "wall", "pos": genRandPointNorm()}),("wall_11", {"type": "wall", "pos": genRandPointNorm()}), ("wall_12", {"type": "wall", "pos": genRandPointNorm()})]
+# bim_nodes_rooms_attrs = [("room_1", {"type": "Finite Room", "Geometric_info": genRandPoint()}), ("room_2", {"type": "Finite Room", "Geometric_info": genRandPoint()}), ("room_3", {"type": "Finite Room", "Geometric_info": genRandPoint()})]
+# bim_nodes_walls_attrs = [("wall_1", {"type": "Plane", "Geometric_info": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["Geometric_info"][0:3])}), ("wall_2", {"type": "Plane", "Geometric_info": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["Geometric_info"][0:3])}),("wall_3", {"type": "Plane", "Geometric_info": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["Geometric_info"][0:3])}),\
+#                         ("wall_4", {"type": "Plane", "Geometric_info": translate(genRandPointNorm(), bim_nodes_rooms_attrs[0][1]["Geometric_info"][0:3])}),("wall_5", {"type": "Plane", "Geometric_info": genRandPointNorm()}), ("wall_6", {"type": "Plane", "Geometric_info": genRandPointNorm()}),\
+#                         ("wall_7", {"type": "Plane", "Geometric_info": genRandPointNorm()}), ("wall_8", {"type": "Plane", "Geometric_info": genRandPointNorm()}),("wall_9", {"type": "Plane", "Geometric_info": genRandPointNorm()}),\
+#                         ("wall_10",{"type": "Plane", "Geometric_info": genRandPointNorm()}),("wall_11", {"type": "Plane", "Geometric_info": genRandPointNorm()}), ("wall_12", {"type": "Plane", "Geometric_info": genRandPointNorm()})]
 
 #### MANUAL
-bim_nodes_rooms_attrs = [(101, {"type": "room", "pos": [0.1,0,0]}),(102, {"type": "room", "pos": [5,5,0]}),(103, {"type": "room", "pos": [10,0,0]})]
-bim_nodes_walls_attrs = [(201, {"type": "wall", "pos": [0,2,0,0,-1,0]}), (202, {"type": "wall", "pos": [0,-2,0,0,1,0]}), (203, {"type": "wall", "pos": [-2,0,0,1,0,0]}),(204, {"type": "wall", "pos": [2,0,0,-1,0,0]}),\
-                         (205, {"type": "wall", "pos": [5,7,0,0,-1,0]}), (206, {"type": "wall", "pos": [5,3,0,0,1,0]}), (207, {"type": "wall", "pos": [3,5,0,1,0,0]}), (208, {"type": "wall", "pos": [7,5,0,-1,0,0]}),\
-                         (209, {"type": "wall", "pos": [10,2,0,0,-1,0]}),(210,{"type": "wall", "pos": [10,-2,0,0,1,0]}),(211,{"type": "wall", "pos": [8,0,0,1,0,0]}),(212, {"type": "wall", "pos": [12,0,0,-1,0,0]})]
+bim_nodes_rooms_attrs = [(101, {"type": "Finite Room", "Geometric_info": [0.1,0,0]}),(102, {"type": "Finite Room", "Geometric_info": [5,5,0]}),(103, {"type": "Finite Room", "Geometric_info": [10,0,0]})]
+bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0,2,0,0,-1,0]}), (202, {"type": "Plane", "Geometric_info": [0,-2,0,0,1,0]}), (203, {"type": "Plane", "Geometric_info": [-2,0,0,1,0,0]}),(204, {"type": "Plane", "Geometric_info": [2,0,0,-1,0,0]}),\
+                         (205, {"type": "Plane", "Geometric_info": [5,7,0,0,-1,0]}), (206, {"type": "Plane", "Geometric_info": [5,3,0,0,1,0]}), (207, {"type": "Plane", "Geometric_info": [3,5,0,1,0,0]}), (208, {"type": "Plane", "Geometric_info": [7,5,0,-1,0,0]}),\
+                         (209, {"type": "Plane", "Geometric_info": [10,2,0,0,-1,0]}),(210,{"type": "Plane", "Geometric_info": [10,-2,0,0,1,0]}),(211,{"type": "Plane", "Geometric_info": [8,0,0,1,0,0]}),(212, {"type": "Plane", "Geometric_info": [12,0,0,-1,0,0]})]
 
 ####
 
@@ -136,10 +136,10 @@ real_edges_rooms_attrs = [(101,201),(101,202),(101,203),(101,204)]
 #                           ("wall_4", bim_nodes_walls_attrs[4][1]), ("wall_5", bim_nodes_walls_attrs[5][1]), ("wall_6", bim_nodes_walls_attrs[6][1])]
 
 # for node in real_nodes_rooms_attrs:
-#     node[1]["pos"] = add_noise_point(node[1]["pos"])
+#     node[1]["Geometric_info"] = add_noise_point(node[1]["Geometric_info"])
 
 # for node in real_nodes_walls_attrs:
-#     node[1]["pos"] = add_noise_plane_by_point_and_normal(node[1]["pos"])
+#     node[1]["Geometric_info"] = add_noise_plane_by_point_and_normal(node[1]["Geometric_info"])
 
 
 

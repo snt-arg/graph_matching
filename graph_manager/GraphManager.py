@@ -62,9 +62,12 @@ class GraphManager():
             options = {'node_color': 'red', 'node_size': 50, 'width': 2, 'with_labels' : True}
 
         fig = plt.figure(fig_name)
+        ax = plt.gca()
+        ax.clear()
         nx.draw(self.graph, **options)
         if show:
-            plt.show()
+            plt.show(block=False)
+            plt.pause(0.001)
 
     
     def defineColorPlotOptionFromMatch(self, graph, options, subgraph, old_color, new_color):

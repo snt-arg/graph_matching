@@ -17,7 +17,7 @@ class GraphMatcher():
 
 
     def match_custom(self, G1_name, G2_name):
-        sweeped_levels = ["floor", "room", "wall"]
+        sweeped_levels = ["floor", "Finite Room", "Plane"]
         sweeped_levels_dt = ["points", "points", "points&normal"]
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         lvl = 0
@@ -33,7 +33,7 @@ class GraphMatcher():
             nodes_id = []
             for A_categorical in matches:
                 print("Checking candidate \n{}".format(A_categorical))
-                data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, A_categorical, "pos")
+                data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, A_categorical, "Geometric_info")
                 # if parents_data:
                 #     # print("flag")
                 #     # print(data1, data2, A_numerical)
@@ -102,18 +102,21 @@ class GraphMatcher():
 
     def only_walls_match_custom(self, G1_name, G2_name):
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
+        self.logger.info("Graph Manager only_walls_match_custom: full_graph_matches - {}".format(len(full_graph_matches)))
         # self.logger.info("flag full_graph_matches: {}".format(len(full_graph_matches)))
-        G1_walls = self.graphs[G1_name].filter_graph_by_node_types("wall")
-        G2_walls = self.graphs[G2_name].filter_graph_by_node_types("wall")
+        G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
+        G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
         matches = G1_walls.matchByNodeType(G2_walls)
+        self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
         # self.logger.info("flag matches1: {}".format(len(matches)))
-        matches = self.filter_local_match_with_global(matches, full_graph_matches)
+        matches = self.filter_local_match_with_global(matches, matches)
         # self.logger.info("flag matches2: {}".format(matches))
-
+        self.logger.info("Graph Manager only_walls_match_custom: flag1")
         scores = []
         good_matches = []
         for A_categorical in matches:
-            data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(self.graphs[G1_name], self.graphs[G2_name], A_categorical, "pos")
+            self.logger.info("Graph Manager only_walls_match_custom: flag2")
+            data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(self.graphs[G1_name], self.graphs[G2_name], A_categorical, "Geometric_info")
             clipper = Clipper("points&normal")
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             clipper_match_numerical, score = clipper.solve_clipper()
@@ -121,12 +124,13 @@ class GraphMatcher():
             if score >= SCORE_THR:
                 scores.append(score)
                 good_matches.append(clipper_match_categorical)
-
+        self.logger.info("Graph Manager only_walls_match_custom: flag3")
         matches_list = []
         sorted_matches_indexes = np.argsort(scores)[::-1]
         scores_sorted = []
         success = False
         for i in sorted_matches_indexes:
+            self.logger.info("Graph Manager only_walls_match_custom: flag4")
             success = True
             scores_sorted.append(scores[i])
             match_list = []
@@ -135,6 +139,9 @@ class GraphMatcher():
                 match_list.append(edge_dict)
             matches_list.append(match_list)
 
+        self.logger.info("Graph Manager only_walls_match_custom: success - {}".format(success))
+        self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(matches_list))
+        self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
         return(success, matches_list, scores_sorted)
 
 
@@ -165,7 +172,7 @@ class GraphMatcher():
 
 
     def change_pos_dt(self, graph, match, in_dt, out_dt):
-        original = graph.stack_nodes_feature(match, "pos")
+        original = graph.stack_nodes_feature(match, "Geometric_info")
 
         if in_dt == out_dt:
             processed = original
