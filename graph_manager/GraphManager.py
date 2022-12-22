@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+import copy
 from networkx.algorithms import isomorphism
 import matplotlib.pyplot as plt
 
@@ -67,7 +68,7 @@ class GraphManager():
         nx.draw(self.graph, **options)
         if show:
             plt.show(block=False)
-            plt.pause(0.001)
+            plt.pause(1)
 
     
     def defineColorPlotOptionFromMatch(self, graph, options, subgraph, old_color, new_color):
@@ -117,6 +118,12 @@ class GraphManager():
         #     colors[origin_node] = new_color
         # options['node_color'] = colors.values()
         return colors
+
+
+    def filterout_unparented_nodes(self):
+        new_graph = copy.deepcopy(self.graph)
+        [new_graph.remove_node(node) for node in self.graph.nodes() if len(list([n for n in self.graph.neighbors(node)])) == 0]
+        self.graph = new_graph
 
 
     # ## Geometry functions

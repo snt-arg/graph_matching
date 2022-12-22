@@ -67,7 +67,11 @@ class GraphManagerNode(Node):
         self.gm.setGraph(graph)
         options = {'node_color': self.gm.graphs[graph["name"]].set_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
-        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>100:
+        self.gm.graphs[graph["name"]].filterout_unparented_nodes()
+        # if len(self.gm.graphs[graph["name"]].graph.nodes())>1:
+        options = {'node_color': self.gm.graphs[graph["name"]].set_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
             self.gm.only_walls_match_custom("Prior", "ONLINE")
 
 
