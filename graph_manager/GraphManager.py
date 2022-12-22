@@ -53,8 +53,8 @@ class GraphManager():
         return matches_as_tuple
 
 
-    def matchIsomorphism(self, G1_name, G2_name):
-        return isomorphism.GraphMatcher(self.graphs[G1_name], self.graphs[G2_name])
+    # def matchIsomorphism(self, G1_name, G2_name):
+    #     return isomorphism.GraphMatcher(self.graphs[G1_name], self.graphs[G2_name])
 
 
     def draw(self, fig_name, options = None, show = False):
@@ -101,6 +101,19 @@ class GraphManager():
     def add_subgraph(self, nodes_def, edges_def):
         [self.graph.add_node(node_def[0], **node_def[1]) for node_def in nodes_def]
         [self.graph.add_edge(edge_def[0], edge_def[1]) for edge_def in edges_def]
+
+
+    def set_draw_color_option_by_node_type(self, ):
+        color_pallette = ["blue", "red", "orange", "cyan", "yellow"]
+        type_list = [node[1]["type"] for node in self.graph.nodes(data=True)]
+        type_set = list(set(type_list))
+        colors = [color_pallette[type_set.index(node_type)] for node_type in type_list]
+
+        # colors = dict(zip(graph.nodes(), [old_color] * len(graph.nodes())))
+        # for origin_node in subgraph:
+        #     colors[origin_node] = new_color
+        # options['node_color'] = colors.values()
+        return colors
 
 
     # ## Geometry functions
