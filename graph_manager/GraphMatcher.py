@@ -105,9 +105,11 @@ class GraphMatcher():
         self.logger.info("Graph Manager only_walls_match_custom: full_graph_matches - {}".format(len(full_graph_matches)))
         G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
         G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
+        # self.logger.info("Graph Manager only_walls_match_custom: G2_walls - {}".format(G2_walls.graph.nodes()))
         matches = G1_walls.matchByNodeType(G2_walls)
         self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
-        matches = self.filter_local_match_with_global(matches, matches)
+        matches = self.filter_local_match_with_global(matches, full_graph_matches)
+        self.logger.info("Graph Manager only_walls_match_custom: matches in full_graph_matches - {}".format(len(matches)))
         scores = []
         good_matches = []
         for A_categorical in matches:
@@ -135,8 +137,8 @@ class GraphMatcher():
 
         self.logger.info("Graph Manager only_walls_match_custom: success - {}".format(success))
         self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(len(matches_list)))
-        self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list[0]))
-        self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(len(scores_sorted)))
+        self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list))
+        self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
         return(success, matches_list, scores_sorted)
 
 

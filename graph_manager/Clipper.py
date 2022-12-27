@@ -16,10 +16,10 @@ class Clipper():
             invariant = clipperpy.invariants.EuclideanDistance(iparams)
         elif data_type == "points&normal":
             iparams = clipperpy.invariants.PointNormalDistanceParams()
-            iparams.sigp = 0.5
-            iparams.epsp = 0.5
-            iparams.sign = 0.10
-            iparams.epsn = 0.35
+            iparams.sigp = 0.5 # 0.5
+            iparams.epsp = 0.5 # 0.5
+            iparams.sign = 0.10 # 0.10
+            iparams.epsn = 0.35 # 0.35
             invariant = clipperpy.invariants.PointNormalDistance(iparams)
 
         return invariant

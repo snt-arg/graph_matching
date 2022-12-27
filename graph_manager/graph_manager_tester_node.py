@@ -106,7 +106,7 @@ bim_edges_attrs = bim_edges_floors_attrs
 bim_edges_attrs += bim_edges_rooms_attrs
 # bim_edges_attrs += bim_edges_interwalls_attrs
 
-bim_graph = {'name' : 'bim', 'nodes' : bim_nodes_attrs, 'edges' : bim_edges_attrs}
+bim_graph = {'name' : 'Prior', 'nodes' : bim_nodes_attrs, 'edges' : bim_edges_attrs}
 
 # gm.setGraph(bim_graph)
 
@@ -155,7 +155,7 @@ real_edges_attrs = real_edges_floors_attrs
 real_edges_attrs += real_edges_rooms_attrs
 # real_edges_attrs += real_edges_interwalls_attrs
 
-real_graph = {'name' : 'real','nodes' : real_nodes_attrs, 'edges' : real_edges_attrs}
+real_graph = {'name' : 'ONLINE','nodes' : real_nodes_attrs, 'edges' : real_edges_attrs}
 
 # gm.setGraph(real_graph)
 
@@ -192,7 +192,7 @@ class GraphManagerTesterNode(Node):
         self.set_interface()
         self.send_graphs()
         time.sleep(2)
-        self.send_match_request()
+        # self.send_match_request()
         return
 
     
@@ -212,8 +212,8 @@ class GraphManagerTesterNode(Node):
 
     def send_match_request(self):
         request = SubgraphMatchSrv.Request()
-        request.base_graph = "bim"
-        request.target_graph = "real"
+        request.base_graph = "Prior"
+        request.target_graph = "Online"
         future = self.match_srv_client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
         self.get_logger().warn('Response from Graph Matcher node received!')
