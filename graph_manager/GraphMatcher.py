@@ -194,26 +194,31 @@ class GraphMatcher():
     
     def subplots_match(self, g1_name, g2_name, match):
 
-        # fig, axs = plt.subplots(2,2)
+        fig, axs = plt.subplots(2,2)
+        # axs.set_title('Match between {} and {} graphs'.format(g1_name, g2_name))
 
         ### Plot base graph
-        # plt.axes(axs[0])
+        plt.axes(axs[0,0])
+        axs[0, 0].set_title('Base graph - {}'.format(g1_name))
         options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.graphs[g1_name].draw(g1_name, options_base, True)
+        self.graphs[g1_name].draw(None, options_base, True)
 
         ### Plot target graph
-        # plt.axes(axs[1])
+        plt.axes(axs[0, 1])
+        axs[0, 1].set_title('Target graph - {}'.format(g2_name))
         options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.graphs[g2_name].draw(g2_name, options_target, True)
+        self.graphs[g2_name].draw(None, options_target, True)
 
         ### Plot base graph with match
-        # plt.axes(axs[2])
+        plt.axes(axs[1,0])
+        axs[1,0].set_title('Base graph match - {}'.format(g1_name))
         nodes_base = [pair["origin_node"] for pair in match]
         options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "black")
-        self.graphs[g1_name].draw("{}_match".format(g1_name), options_base_matched, True)
+        self.graphs[g1_name].draw(None, options_base_matched, True)
 
         ### Plot target graph with match
-        # plt.axes(axs[3])
+        plt.axes(axs[1,1])
+        axs[1,1].set_title('Target graph match - {}'.format(g2_name))
         nodes_target = [pair["target_node"] for pair in match]
         options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "black")
-        self.graphs[g2_name].draw("{}_match".format(g2_name), options_target_matched, True)
+        self.graphs[g2_name].draw(None, options_target_matched, True)
