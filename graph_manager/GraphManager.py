@@ -58,13 +58,16 @@ class GraphManager():
     #     return isomorphism.GraphMatcher(self.graphs[G1_name], self.graphs[G2_name])
 
 
-    def draw(self, fig_name, options = None, show = False):
+    def draw(self, fig_name = None, options = None, show = False):
         if not options:
             options = {'node_color': 'red', 'node_size': 50, 'width': 2, 'with_labels' : True}
 
-        fig = plt.figure(fig_name)
-        ax = plt.gca()
-        ax.clear()
+        options = self.define_draw_position_option_by_attr(options)
+
+        if fig_name:
+            fig = plt.figure(fig_name)
+            ax = plt.gca()
+            ax.clear()
         nx.draw(self.graph, **options)
         if show:
             plt.show(block=False)
@@ -119,10 +122,21 @@ class GraphManager():
         return colors
 
 
+    def define_draw_position_option_by_attr(self, options):
+        pos = {}
+        for node in self.graph.nodes(data=True):
+            pos[node[0]] = node[1]["draw_pos"]
+        options["pos"] = pos
+        return options
+
+
     def filterout_unparented_nodes(self):
         new_graph = copy.deepcopy(self.graph)
         [new_graph.remove_node(node) for node in self.graph.nodes() if len(list([n for n in self.graph.neighbors(node)])) == 0]
         self.graph = new_graph
+
+
+
 
 
     # ## Geometry functions

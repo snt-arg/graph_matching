@@ -1,6 +1,7 @@
 import numpy as np
 from .GraphManager import GraphManager
 from .Clipper import Clipper
+import matplotlib.pyplot as plt
 
 SCORE_THR = 0.99
 
@@ -139,6 +140,9 @@ class GraphMatcher():
         self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(len(matches_list)))
         self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list))
         self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
+
+        self.subplots_match(G1_name, G2_name, matches_list[0])
+
         return(success, matches_list, scores_sorted)
 
 
@@ -186,3 +190,30 @@ class GraphMatcher():
         data1 = np.concatenate((data1, [parents_data["parent1"]]), axis= 0)
         data2 = np.concatenate((data2, [parents_data["parent2"]]), axis= 0)
         return(data1, data2, A_numerical)
+
+    
+    def subplots_match(self, g1_name, g2_name, match):
+
+        # fig, axs = plt.subplots(2,2)
+
+        ### Plot base graph
+        # plt.axes(axs[0])
+        options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        self.graphs[g1_name].draw(g1_name, options_base, True)
+
+        ### Plot target graph
+        # plt.axes(axs[1])
+        options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        self.graphs[g2_name].draw(g2_name, options_target, True)
+
+        ### Plot base graph with match
+        # plt.axes(axs[2])
+        nodes_base = [pair["origin_node"] for pair in match]
+        options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "black")
+        self.graphs[g1_name].draw("{}_match".format(g1_name), options_base_matched, True)
+
+        ### Plot target graph with match
+        # plt.axes(axs[3])
+        nodes_target = [pair["target_node"] for pair in match]
+        options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "black")
+        self.graphs[g2_name].draw("{}_match".format(g2_name), options_target_matched, True)

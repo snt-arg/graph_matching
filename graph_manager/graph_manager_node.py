@@ -54,10 +54,15 @@ class GraphManagerNode(Node):
                 else:
                     print("Bad definition of attribute {}".format(attrib_msg.name))
 
-            if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
-                self.get_logger().info('Graph Manager: plane info 4 - {}'.format(attributes[attrib_msg.name]))
-                attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
-                self.get_logger().info('Graph Manager: plane info 6 - {}'.format(attributes[attrib_msg.name]))
+                if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
+                    attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
+
+            if node_msg.type == "Plane":
+                attributes["draw_pos"] = attributes["Geometric_info"][:2]
+            elif node_msg.type == "Finite Room":
+                attributes["draw_pos"] = attributes["Geometric_info"][:2]
+            elif node_msg.type == "floor":
+                attributes["draw_pos"] = attributes["Geometric_info"][:2]
             
             node[1] = attributes
             node[1]["type"] = node_msg.type
@@ -76,16 +81,8 @@ class GraphManagerNode(Node):
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
-        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-            success, matches, score = self.gm.only_walls_match_custom("Prior", "ONLINE")
-            nodes = [pair["target_node"] for pair in matches[0]]
-            options = self.gm.graphs[graph["name"]].define_draw_color_from_node_list(options, nodes, unmatched_color = None, matched_color = "black")
-            self.gm.graphs[graph["name"]].draw("{}_match".format(graph["name"]), options, True)
-
-            options = {'node_color': self.gm.graphs["Prior"].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-            nodes = [pair["origin_node"] for pair in matches[0]]
-            options = self.gm.graphs["Prior"].define_draw_color_from_node_list(options, nodes, unmatched_color = None, matched_color = "black")
-            self.gm.graphs["Prior"].draw("Prior_match", options, True)
+        # if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
+        #     success, matches, score = self.gm.only_walls_match_custom("Prior", "ONLINE")
 
 
     def subgraph_match_srv_callback(self, request, response):
