@@ -104,12 +104,12 @@ class GraphMatcher():
     def only_walls_match_custom(self, G1_name, G2_name):
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         self.logger.info("Graph Manager only_walls_match_custom: full_graph_matches - {}".format(len(full_graph_matches)))
-        G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
-        G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
-        # self.logger.info("Graph Manager only_walls_match_custom: G2_walls - {}".format(G2_walls.graph.nodes()))
-        matches = G1_walls.matchByNodeType(G2_walls)
-        self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
-        matches = self.filter_local_match_with_global(matches, full_graph_matches)
+        # G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
+        # G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
+        # matches = G1_walls.matchByNodeType(G2_walls)
+        # self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
+        # matches = self.filter_local_match_with_global(matches, full_graph_matches)
+        matches = self.filter_matches_by_node_type(self.graphs[G1_name], full_graph_matches, "Plane")
         self.logger.info("Graph Manager only_walls_match_custom: matches in full_graph_matches - {}".format(len(matches)))
         scores = []
         good_matches = []
@@ -141,7 +141,8 @@ class GraphMatcher():
         self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list))
         self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
 
-        self.subplots_match(G1_name, G2_name, matches_list[0])
+        if success:
+            self.subplots_match(G1_name, G2_name, matches_list[0])
 
         return(success, matches_list, scores_sorted)
 
@@ -195,7 +196,7 @@ class GraphMatcher():
     def subplots_match(self, g1_name, g2_name, match):
 
         fig, axs = plt.subplots(2,2)
-        # axs.set_title('Match between {} and {} graphs'.format(g1_name, g2_name))
+        fig.suptitle('Match between {} and {} graphs'.format(g1_name, g2_name))
 
         ### Plot base graph
         plt.axes(axs[0,0])
@@ -222,3 +223,16 @@ class GraphMatcher():
         nodes_target = [pair["target_node"] for pair in match]
         options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "black")
         self.graphs[g2_name].draw(None, options_target_matched, True)
+
+
+    def filter_matches_by_node_type(self, g1, matches, node_type):
+        self.logger.info("Graph Manager filter_matches_by_node_type 0 - {}".format(matches))
+        new_matches = []
+        for match in matches:
+            new_match = []
+            for pair in match:
+                if g1.graph.nodes(data=True)[pair[0]]["type"] == node_type:
+                    new_match.append(pair)
+            new_matches.append(np.array(new_match))
+        self.logger.info("Graph Manager filter_matches_by_node_type 1 - {}".format(new_matches))
+        return new_matches
