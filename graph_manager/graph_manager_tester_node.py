@@ -77,7 +77,7 @@ def add_noise_point(original):
 
 ### Definition of S_Graph from BIM information
 
-bim_nodes_floors_attrs = [(1, {"type": "floor", "Geometric_info": [0,0,0]})]
+bim_nodes_floors_attrs = [(1, {"type": "floor", "Geometric_info": [0.,0.,0.]})]
 
 #### RANDOM
 # bim_nodes_rooms_attrs = [("room_1", {"type": "Finite Room", "Geometric_info": genRandPoint()}), ("room_2", {"type": "Finite Room", "Geometric_info": genRandPoint()}), ("room_3", {"type": "Finite Room", "Geometric_info": genRandPoint()})]
@@ -87,18 +87,22 @@ bim_nodes_floors_attrs = [(1, {"type": "floor", "Geometric_info": [0,0,0]})]
 #                         ("wall_10",{"type": "Plane", "Geometric_info": genRandPointNorm()}),("wall_11", {"type": "Plane", "Geometric_info": genRandPointNorm()}), ("wall_12", {"type": "Plane", "Geometric_info": genRandPointNorm()})]
 
 #### MANUAL
-bim_nodes_rooms_attrs = [(101, {"type": "Finite Room", "Geometric_info": [0.1,0,0]}),(102, {"type": "Finite Room", "Geometric_info": [5,5,0]}),(103, {"type": "Finite Room", "Geometric_info": [10,0,0]})]
-bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0,2,0,0,-1,0]}), (202, {"type": "Plane", "Geometric_info": [0,-2,0,0,1,0]}), (203, {"type": "Plane", "Geometric_info": [-2,0,0,1,0,0]}),(204, {"type": "Plane", "Geometric_info": [2,0,0,-1,0,0]}),\
-                         (205, {"type": "Plane", "Geometric_info": [5,7,0,0,-1,0]}), (206, {"type": "Plane", "Geometric_info": [5,3,0,0,1,0]}), (207, {"type": "Plane", "Geometric_info": [3,5,0,1,0,0]}), (208, {"type": "Plane", "Geometric_info": [7,5,0,-1,0,0]}),\
-                         (209, {"type": "Plane", "Geometric_info": [10,2,0,0,-1,0]}),(210,{"type": "Plane", "Geometric_info": [10,-2,0,0,1,0]}),(211,{"type": "Plane", "Geometric_info": [8,0,0,1,0,0]}),(212, {"type": "Plane", "Geometric_info": [12,0,0,-1,0,0]})]
+bim_nodes_rooms_attrs = [(101, {"type": "Finite Room", "Geometric_info": [0.1,0.,0.]}),(102, {"type": "Finite Room", "Geometric_info": [5.,5.,0.]}),(103, {"type": "Finite Room", "Geometric_info": [10.,0.,0.]})]
+# bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0.,2,0.,0.,-1.,0.]}), (202, {"type": "Plane", "Geometric_info": [0.,-2.,0.,0.,1.,0.]}), (203, {"type": "Plane", "Geometric_info": [-2.,0.,0.,1.,0.,0.]}),(204, {"type": "Plane", "Geometric_info": [2.,0.,0.,-1.,0.,0.]}),\
+#                          (205, {"type": "Plane", "Geometric_info": [5.,7.,0.,0.,-1.,0.]}), (206, {"type": "Plane", "Geometric_info": [5.,3.,0.,0.,1.,0.]}), (207, {"type": "Plane", "Geometric_info": [3.,5.,0.,1.,0.,0.]}), (208, {"type": "Plane", "Geometric_info": [7.,5.,0.,-1.,0.,0.]}),\
+#                          (209, {"type": "Plane", "Geometric_info": [10.,2.,0.,0.,-1.,0.]}),(210,{"type": "Plane", "Geometric_info": [10.,-2.,0.,0.,1.,0.]}),(211,{"type": "Plane", "Geometric_info": [8.,0.,0.,1.,0.,0.]}),(212, {"type": "Plane", "Geometric_info": [12.,0.,0.,-1.,0.,0.]})]
 
+
+bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0.,-1.,0.,2]}), (202, {"type": "Plane", "Geometric_info": [0.,1.,0.,2.]}), (203, {"type": "Plane", "Geometric_info": [1.,0.,0.,2.]}),(204, {"type": "Plane", "Geometric_info": [-1.,0.,0.,2.]}),\
+                         (205, {"type": "Plane", "Geometric_info": [0.,-1.,0.,7.]}), (206, {"type": "Plane", "Geometric_info": [0.,1.,0.,-3.]}), (207, {"type": "Plane", "Geometric_info": [1.,0.,0.,-3.]}), (208, {"type": "Plane", "Geometric_info": [-1.,0.,0.,7.]}),\
+                         (209, {"type": "Plane", "Geometric_info": [0.,-1.,0.,2.]}),(210,{"type": "Plane", "Geometric_info": [0.,1.,0.,2.]}),(211,{"type": "Plane", "Geometric_info": [1.,0.,0.,-8.]}),(212, {"type": "Plane", "Geometric_info": [-1.,0.,0.,12]})]
 ####
 
 bim_nodes_attrs = bim_nodes_floors_attrs
 bim_nodes_attrs += bim_nodes_rooms_attrs
 bim_nodes_attrs += bim_nodes_walls_attrs
 
-bim_edges_floors_attrs = [(1,101)]#,("room_2","floor_1")]#,("floor_1", "room_3")]
+bim_edges_floors_attrs = [(1,101),(1,102),(1, 103)]
 bim_edges_rooms_attrs = [(101,201),(101,202),(101,203),(101,204),(102,205),(102,206),(102,207),(102,208),(103,209),(103,210),(103,211),(103,212)]
 # bim_edges_interwalls_attrs = [("wall_1","wall_2"),("wall_2","wall_3")]
 

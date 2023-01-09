@@ -84,7 +84,7 @@ class Clipper():
 
 
     def categorize_clipper_output(self, Ain_numerical, nodes1, nodes2):
-        Ain_categorical = np.array([[nodes1[pair[0]],nodes2[pair[1]]] for pair in Ain_numerical])
+        Ain_categorical = set([(nodes1[pair[0]],nodes2[pair[1]]) for pair in Ain_numerical])
         return Ain_categorical
 
 

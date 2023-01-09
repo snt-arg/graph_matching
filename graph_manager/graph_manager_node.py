@@ -39,7 +39,7 @@ class GraphManagerNode(Node):
 
 
     def graph_callback(self, msg):
-        self.get_logger().info('Graph Manager: Incoming graph with name {}'.format(msg.name))
+        self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
 
         nodes = []
@@ -63,6 +63,8 @@ class GraphManagerNode(Node):
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "floor":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
+            else:
+                self.get_logger().info('Received unknown node type:'.format(node_msg.type))
             
             node[1] = attributes
             node[1]["type"] = node_msg.type
@@ -82,7 +84,7 @@ class GraphManagerNode(Node):
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-            success, matches, score = self.gm.only_walls_match_custom("Prior", "ONLINE")
+            success, matches, score = self.gm.match_custom("Prior", "ONLINE")
 
 
     def subgraph_match_srv_callback(self, request, response):

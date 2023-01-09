@@ -48,10 +48,10 @@ class GraphManager():
     def matchByNodeType(self, G2, draw= False):
         categorical_condition = isomorphism.categorical_node_match(["type"], ["none"])
         matches = self.categoricalMatch(G2, categorical_condition, draw)
-        matches_as_tuple = [list(zip(match.keys(), match.values())) for match in matches]
+        matches_as_set_of_tuples = [set(zip(match.keys(), match.values())) for match in matches]
         # matches_as_list = [[[key, match[key]] for key in match.keys()] for match in matches]
-        print("GM: Found {} candidates after isomorphism and cathegorical in type matching".format(len(matches_as_tuple),))
-        return matches_as_tuple
+        print("GM: Found {} candidates after isomorphism and cathegorical in type matching".format(len(matches_as_set_of_tuples),))
+        return matches_as_set_of_tuples
 
 
     # def matchIsomorphism(self, G1_name, G2_name):
