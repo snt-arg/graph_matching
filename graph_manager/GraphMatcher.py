@@ -75,7 +75,7 @@ class GraphMatcher():
                     filter1_matches.append(clipper_match_categorical)
                     node_id = self.graphs["match"].get_total_number_nodes() + 1
                     nodes_id.append(node_id)
-                    node_attr = [(node_id, {"type": sweeped_levels[lvl], "match": A_categorical})]
+                    node_attr = [(node_id, {"level": sweeped_levels[lvl], "match": A_categorical, "combination_type" : "group", "score" : score})]
                     if parents_data:
                         edges_attr = [(node_id, parents_data["id"])]
                     else:
@@ -89,9 +89,6 @@ class GraphMatcher():
             # best_matches_indeces = np.where(np.array(filter1_scores) > INTRALEVEL_CLIPPER_THR)[0]
             # best_scores = [filter1_scores[i] for i in best_matches_indeces]
             # best_submatches = [filter1_matches[i] for i in best_matches_indeces]
-            # print(best_scores)
-            # print("best_submatches", best_submatches)
-
 
             ## Next level
             if lvl < len(sweeped_levels) - 1:
@@ -103,12 +100,27 @@ class GraphMatcher():
                     filter1_subscores = []
                     filter1_submatches = []
                     filter1_submatches_n_assoc = []
-                    for i, lowerlevel_match in enumerate(filter1_matches[good_submatch_i]):
-                        # print("Checking lowerlevel matches for {}\n".format(lowerlevel_match))
-                        G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match[0])
-                        G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match[1])
-                        parents_data = {"match" : lowerlevel_match, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : nodes_id[good_submatch_i]}
-                        filter1_submatch, filter1_subscore = match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, parents_data)
+                    for i, lowerlevel_match_pair in enumerate(filter1_matches[good_submatch_i]):
+                        G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match_pair[0])
+                        G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match_pair[1])
+
+                        existing_nodes = self.graphs["match"].find_nodes_by_attrs({"match" : lowerlevel_match_pair})
+                        if not existing_nodes:
+
+                            node_id = self.graphs["match"].get_total_number_nodes() + 1
+                            node_attr = [(node_id, {"level": sweeped_levels[lvl], "match": lowerlevel_match_pair, "combination_type" : "pair"})]
+                            edges_attr = [(node_id, parents_data["id"]), (node_id, nodes_id[good_submatch_i])]
+
+                            self.graphs["match"].add_subgraph(node_attr, edges_attr)
+
+                            parents_data = {"match" : lowerlevel_match_pair, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : node_id, "score" : 0}
+                            filter1_submatch, filter1_subscore = match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, parents_data)
+
+                        else:
+                            edges_attr = [(existing_nodes[0], nodes_id[good_submatch_i])]
+                            self.graphs["match"].add_subgraph([], edges_attr)
+                            existing_node_attrs = self.graphs["match"].graph.nodes(data = True)
+                            filter1_submatch, filter1_subscore = [], existing_node_attrs["score"]
                         filter1_subscores.append(filter1_subscore)
                         filter1_submatches.append(filter1_submatch)
                         filter1_submatches_n_assoc.append(len(filter1_submatch))
@@ -162,11 +174,6 @@ class GraphMatcher():
                 match_list.append(edge_dict)
             matches_list.append(match_list)
 
-        # self.logger.info("Graph Manager only_walls_match_custom: success - {}".format(success))
-        # self.logger.info("Graph Manager only_walls_match_custom: matches_list - {}".format(len(matches_list)))
-        # self.logger.info("Graph Manager only_walls_match_custom: matches_list 2 - {}".format(matches_list))
-        # self.logger.info("Graph Manager only_walls_match_custom: scores_sorted - {}".format(scores_sorted))
-
         if success:
             self.subplots_match(G1_name, G2_name, matches_list[0])
 
@@ -202,7 +209,6 @@ class GraphMatcher():
         if in_dt == out_dt:
             processed = original
         elif in_dt == "points" and out_dt == "points&normal":
-            # diffs = original - np.concatenate((original[1:], [original[0]]),axis=0)
             distance = np.sqrt((original**2).sum())
             self.logger.info("distance - {}".format(distance))
             if distance:

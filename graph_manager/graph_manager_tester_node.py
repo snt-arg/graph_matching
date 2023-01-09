@@ -88,14 +88,10 @@ bim_nodes_floors_attrs = [(1, {"type": "floor", "Geometric_info": [0.,0.,0.]})]
 
 #### MANUAL
 bim_nodes_rooms_attrs = [(101, {"type": "Finite Room", "Geometric_info": [0.1,0.,0.]}),(102, {"type": "Finite Room", "Geometric_info": [5.,5.,0.]}),(103, {"type": "Finite Room", "Geometric_info": [10.,0.,0.]})]
-# bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0.,2,0.,0.,-1.,0.]}), (202, {"type": "Plane", "Geometric_info": [0.,-2.,0.,0.,1.,0.]}), (203, {"type": "Plane", "Geometric_info": [-2.,0.,0.,1.,0.,0.]}),(204, {"type": "Plane", "Geometric_info": [2.,0.,0.,-1.,0.,0.]}),\
-#                          (205, {"type": "Plane", "Geometric_info": [5.,7.,0.,0.,-1.,0.]}), (206, {"type": "Plane", "Geometric_info": [5.,3.,0.,0.,1.,0.]}), (207, {"type": "Plane", "Geometric_info": [3.,5.,0.,1.,0.,0.]}), (208, {"type": "Plane", "Geometric_info": [7.,5.,0.,-1.,0.,0.]}),\
-#                          (209, {"type": "Plane", "Geometric_info": [10.,2.,0.,0.,-1.,0.]}),(210,{"type": "Plane", "Geometric_info": [10.,-2.,0.,0.,1.,0.]}),(211,{"type": "Plane", "Geometric_info": [8.,0.,0.,1.,0.,0.]}),(212, {"type": "Plane", "Geometric_info": [12.,0.,0.,-1.,0.,0.]})]
-
 
 bim_nodes_walls_attrs = [(201, {"type": "Plane", "Geometric_info": [0.,-1.,0.,2]}), (202, {"type": "Plane", "Geometric_info": [0.,1.,0.,2.]}), (203, {"type": "Plane", "Geometric_info": [1.,0.,0.,2.]}),(204, {"type": "Plane", "Geometric_info": [-1.,0.,0.,2.]}),\
                          (205, {"type": "Plane", "Geometric_info": [0.,-1.,0.,7.]}), (206, {"type": "Plane", "Geometric_info": [0.,1.,0.,-3.]}), (207, {"type": "Plane", "Geometric_info": [1.,0.,0.,-3.]}), (208, {"type": "Plane", "Geometric_info": [-1.,0.,0.,7.]}),\
-                         (209, {"type": "Plane", "Geometric_info": [0.,-1.,0.,2.]}),(210,{"type": "Plane", "Geometric_info": [0.,1.,0.,2.]}),(211,{"type": "Plane", "Geometric_info": [1.,0.,0.,-8.]}),(212, {"type": "Plane", "Geometric_info": [-1.,0.,0.,12]})]
+                         (209, {"type": "Plane", "Geometric_info": [0.,-1.,0.,2.]}), (210,{"type": "Plane", "Geometric_info": [0.,1.,0.,2.]}),(211,{"type": "Plane", "Geometric_info": [1.,0.,0.,-8.]}),(212, {"type": "Plane", "Geometric_info": [-1.,0.,0.,12]})]
 ####
 
 bim_nodes_attrs = bim_nodes_floors_attrs

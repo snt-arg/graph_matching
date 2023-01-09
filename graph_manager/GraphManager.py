@@ -136,7 +136,9 @@ class GraphManager():
         self.graph = new_graph
 
 
-
+    def find_nodes_by_attrs(self, attrs):
+        nodes = [x for x,y in self.graph.nodes(data=True) if all(y[attr] == attrs[attr] for attr in attrs.keys())]
+        return nodes
 
 
     # ## Geometry functions
