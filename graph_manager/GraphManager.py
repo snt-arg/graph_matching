@@ -62,6 +62,7 @@ class GraphManager():
         if not options:
             options = {'node_color': 'red', 'node_size': 50, 'width': 2, 'with_labels' : True}
 
+
         options = self.define_draw_position_option_by_attr(options)
 
         if fig_name:
@@ -123,10 +124,11 @@ class GraphManager():
 
 
     def define_draw_position_option_by_attr(self, options):
-        pos = {}
-        for node in self.graph.nodes(data=True):
-            pos[node[0]] = node[1]["draw_pos"]
-        options["pos"] = pos
+        if all(["draw_pos" in node[1].keys() for node in self.graph.nodes(data=True)]):
+            pos = {}
+            for node in self.graph.nodes(data=True):
+                pos[node[0]] = node[1]["draw_pos"]
+            options["pos"] = pos
         return options
 
 
@@ -139,6 +141,18 @@ class GraphManager():
     def find_nodes_by_attrs(self, attrs):
         nodes = [x for x,y in self.graph.nodes(data=True) if all(y[attr] == attrs[attr] for attr in attrs.keys())]
         return nodes
+
+    
+    def set_node_attributes(self, attr_name, values):
+        nx.set_node_attributes(self.graph, values, attr_name)
+
+
+    def get_attributes_of_node(self, node_id):
+        return self.graph.nodes(data=True)[node_id]
+
+
+    def get_attributes_of_edge(self, edge_id):
+        return self.graph.edges(data=True)[edge_id]  
 
 
     # ## Geometry functions

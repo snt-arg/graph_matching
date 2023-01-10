@@ -116,7 +116,7 @@ def main(args=None):
     graph_manager_node = GraphManagerNode()
 
     rclpy.spin(graph_manager_node)
-
+    rclpy.get_logger().warn('Destroying node!')
     graph_manager_node.destroy_node()
     rclpy.shutdown()
 
