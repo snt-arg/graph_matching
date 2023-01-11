@@ -79,12 +79,12 @@ class GraphManagerNode(Node):
         
         self.gm.setGraph(graph)
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-            success, matches, score = self.gm.match_custom("Prior", "ONLINE")
+            success, matches = self.gm.match_custom("Prior", "ONLINE")
 
 
     def subgraph_match_srv_callback(self, request, response):

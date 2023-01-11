@@ -74,13 +74,12 @@ class Clipper():
         t0 = time.perf_counter()
         self.clipper.solve()
         t1 = time.perf_counter()
-        Ain = self.clipper.get_selected_associations()
         if len(self.clipper.get_solution().nodes) > 0:
             avg_score = self.clipper.get_solution().score / len(self.clipper.get_solution().nodes)
         else:
             avg_score = 0
 
-        return(self.clipper.get_selected_associations(), self.clipper.get_solution().score)
+        return(self.clipper.get_selected_associations(), avg_score)
 
 
     def categorize_clipper_output(self, Ain_numerical, nodes1, nodes2):

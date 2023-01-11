@@ -132,6 +132,19 @@ class GraphManager():
         return options
 
 
+    def define_node_size_option_by_combination_type_attr(self):
+        if all(["combination_type" in node[1].keys() for node in self.graph.nodes(data=True)]):
+            size = []
+            for node in self.graph.nodes(data=True):
+                if node[1]["combination_type"] == "group":
+                    size.append(150)
+                elif node[1]["combination_type"] == "pair":
+                    size.append(50)
+        else:
+            size = None
+        return size
+
+
     def filterout_unparented_nodes(self):
         new_graph = copy.deepcopy(self.graph)
         [new_graph.remove_node(node) for node in self.graph.nodes() if len(list([n for n in self.graph.neighbors(node)])) == 0]
