@@ -116,7 +116,7 @@ class GraphManager():
 
 
     def define_draw_color_option_by_node_type(self, ):
-        color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "blue", "Plane" : "red"}
+        color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "red"}
         type_list = [node[1]["type"] for node in self.graph.nodes(data=True)]
         colors = [color_palette[node_type] for node_type in type_list]
 

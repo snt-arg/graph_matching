@@ -19,6 +19,7 @@ from rclpy.node import Node
 
 from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
 from graph_manager_msgs.msg import Graph as GraphMsg
+from graph_manager_msgs.msg import Graphs as GraphsMsg
 # from graph_manager_msgs.msg import Node as NodeMsg
 from graph_manager_msgs.msg import Edge as EdgeMsg
 from graph_manager_msgs.msg import Attribute as AttributeMsg
@@ -35,6 +36,7 @@ class GraphManagerNode(Node):
 
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 10)
+        self.match_publisher = self.create_publisher(GraphsMsg, 'matches', 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match', self.subgraph_match_srv_callback)
 
 
@@ -86,6 +88,9 @@ class GraphManagerNode(Node):
         if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
             success, matches = self.gm.match_custom("Prior", "ONLINE")
 
+            if success:
+                self.publish_matches(matches)
+
 
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
@@ -110,6 +115,23 @@ class GraphManagerNode(Node):
             self.get_logger().warn('Graph Manager: no good matches found!')
         return response
 
+
+    def publish_matches(self, matches):
+        graphs_msg = GraphsMsg()
+        for match in matches:
+            graph_msg = GraphMsg()
+            for edge in match:
+                edge_msg = EdgeMsg()
+                edge_msg.origin_node = edge["origin_node"]
+                edge_msg.target_node = edge["target_node"]
+                attrib_msg = AttributeMsg()
+                attrib_msg.name = "score"
+                attrib_msg.fl_value = [edge["score"]]
+                edge_msg.attributes = [attrib_msg]
+                graph_msg.edges.append(edge_msg)
+            graphs_msg.graphs.append(graph_msg)
+
+        self.match_publisher.publish(graphs_msg)
 
 def main(args=None):
     rclpy.init(args=args)
