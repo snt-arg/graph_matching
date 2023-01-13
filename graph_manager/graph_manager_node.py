@@ -118,7 +118,7 @@ class GraphManagerNode(Node):
 
     def publish_matches(self, matches):
         graphs_msg = GraphsMsg()
-        for match in matches:
+        for score, match in matches:
             graph_msg = GraphMsg()
             for edge in match:
                 edge_msg = EdgeMsg()
@@ -129,6 +129,7 @@ class GraphManagerNode(Node):
                 attrib_msg.fl_value = [edge["score"]]
                 edge_msg.attributes = [attrib_msg]
                 graph_msg.edges.append(edge_msg)
+                graph_msg.name = str(score)
             graphs_msg.graphs.append(graph_msg)
 
         self.match_publisher.publish(graphs_msg)

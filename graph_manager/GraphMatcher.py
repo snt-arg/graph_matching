@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+import time
 from .GraphManager import GraphManager
 from .Clipper import Clipper
 import matplotlib.pyplot as plt
@@ -19,10 +20,10 @@ class GraphMatcher():
 
 
     def match_custom(self, G1_name, G2_name):
+        start_time = time.time()
         sweeped_levels = ["floor", "Finite Room", "Plane"]
-        sweeped_levels_dt = ["points", "points", "points&normal"]
+        sweeped_levels_dt = {"floor" : "points", "Finite Room" : "points", "Plane": "points&normal"}
         sweeped_levels = ["Finite Room", "Plane"]
-        sweeped_levels_dt = ["points", "points&normal"]
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         lvl = 0
         match_graph = GraphManager(graph_def={'name': "match",'nodes' : [], 'edges' : []})
@@ -31,11 +32,11 @@ class GraphMatcher():
             G1_lvl = G1.filter_graph_by_node_types(sweeped_levels[lvl])
             G2_lvl = G2.filter_graph_by_node_types(sweeped_levels[lvl])
 
-            ### OPTION 1: 
             all_pairs_categorical = self.get_all_possible_match_pairs(G1_lvl.graph.nodes(), G2_lvl.graph.nodes())
+            all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches)
             if parents_data:
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, all_pairs_categorical, "Geometric_info")
-                clipper = Clipper(sweeped_levels_dt[lvl])
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]])
                 data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parents_data)
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
@@ -51,18 +52,13 @@ class GraphMatcher():
                 filtered_bad_pairs_categorical = []
             matches = self.delete_list_if_element_inside(G1_lvl.matchByNodeType(G2_lvl), filtered_bad_pairs_categorical)
 
-            # ### OPTION 2
-            # matches = G1_lvl.matchByNodeType(G2_lvl) ## TODO make matches by hand, more efficiently
-
-            # matches = self.filter_local_match_with_global(matches, full_graph_matches)
             filter1_scores = []
             filter1_matches = []
             filter1_lengths = []
             
             for A_categorical in matches:
-                # print("Checking candidate \n{}".format(A_categorical))
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, A_categorical, "Geometric_info")
-                clipper = Clipper(sweeped_levels_dt[lvl])
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]])
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
@@ -74,68 +70,65 @@ class GraphMatcher():
 
             if filter1_scores:
                 sorted_matches_indexes = list(np.squeeze(np.argwhere(filter1_lengths == np.amax(filter1_lengths)), axis= 1))
-                # sorted_scores = np.sort(filter1_scores)[::-1]
-                # best_matches_indeces = np.where(np.array(filter1_scores) > INTRALEVEL_CLIPPER_THR)[0]
-                # best_scores = [filter1_scores[i] for i in best_matches_indeces]
-                # best_submatches = [filter1_matches[i] for i in best_matches_indeces]
                 nodes_id = {}
                 for good_submatch_i in sorted_matches_indexes:
-                    node_id = match_graph.get_total_number_nodes() + 1
-                    nodes_id[good_submatch_i] =  node_id
-                    node_attr = [(node_id, {"type": sweeped_levels[lvl], "match": filter1_matches[good_submatch_i],\
+                    group_node_id = match_graph.get_total_number_nodes() + 1
+                    node_attr = [(group_node_id, {"type": sweeped_levels[lvl], "match": filter1_matches[good_submatch_i],\
                                     "combination_type" : "group", "score_intralevel" : filter1_scores[good_submatch_i]})]
                     if parents_data:
-                        edges_attr = [(parents_data["id"], node_id)]
+                        edges_attr = [(parents_data["id"], group_node_id)]
                     else:
                         edges_attr = []
                     match_graph.add_subgraph(node_attr, edges_attr)
 
 
-                ## Next level
-                if lvl < len(sweeped_levels) - 1:
-                    
-                    for good_submatch_i in sorted_matches_indexes:
-                        parent1_data = self.change_pos_dt(G1, np.array(list(filter1_matches[good_submatch_i]))[:,0], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
-                        parent2_data = self.change_pos_dt(G2, np.array(list(filter1_matches[good_submatch_i]))[:,1], sweeped_levels_dt[lvl], sweeped_levels_dt[lvl+1])
-                        for i, lowerlevel_match_pair in enumerate(filter1_matches[good_submatch_i]):
-                            G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match_pair[0])
-                            G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match_pair[1])
-                             
+                    ## Next level
+                    if lvl < len(sweeped_levels) - 1:
+                        parent1_data = self.change_pos_dt(G1, np.array(list(filter1_matches[good_submatch_i]))[:,0], sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_dt[sweeped_levels[lvl+1]])
+                        parent2_data = self.change_pos_dt(G2, np.array(list(filter1_matches[good_submatch_i]))[:,1], sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_dt[sweeped_levels[lvl+1]])
+                        for i, lowerlevel_match_pair in enumerate(filter1_matches[good_submatch_i]):                             
                             existing_nodes = match_graph.find_nodes_by_attrs({"type": sweeped_levels[lvl], \
                                                 "match" : lowerlevel_match_pair, "combination_type" : "pair"})
                             if not existing_nodes:
-                                node_id = match_graph.get_total_number_nodes() + 1
-                                node_attr = [(node_id, {"type": sweeped_levels[lvl], "match": lowerlevel_match_pair,\
+                                G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match_pair[0])
+                                G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match_pair[1])
+                                
+                                pair_node_id = match_graph.get_total_number_nodes() + 1
+                                node_attr = [(pair_node_id, {"type": sweeped_levels[lvl], "match": lowerlevel_match_pair,\
                                                 "combination_type" : "pair", "score_interlevel" : interlevel_scores_dict[lowerlevel_match_pair]})]
                                 
-                                edges_attr = [(node_id, nodes_id[good_submatch_i])] #(node_id, parents_data["id"]), 
+                                edges_attr = [(pair_node_id, group_node_id)]
 
                                 match_graph.add_subgraph(node_attr, edges_attr)
 
-                                parents_data = {"match" : lowerlevel_match_pair, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : node_id}
-                                match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, parents_data)
+                                next_parents_data = {"match" : lowerlevel_match_pair, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : pair_node_id}
+                                match_iteration(G1_neighborhood, G2_neighborhood, lvl + 1, next_parents_data)
 
                             else:
-                                edges_attr = [(existing_nodes[0], nodes_id[good_submatch_i])]
-                                match_graph.add_subgraph([], edges_attr)                            
+                                edges_attr = [(existing_nodes[0], group_node_id)]
+                                match_graph.add_subgraph([], edges_attr)
 
             return
 
 
         match_iteration(self.graphs[G1_name], self.graphs[G2_name], lvl)
+        self.logger.info("Elapsed time in custom match {}".format(time.time() - start_time))
         options = {'node_color': match_graph.define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : match_graph.define_node_size_option_by_combination_type_attr()}
         match_graph.draw("match graph", options = options, show = True)
-        matches_msg_list = self.build_matches_msg_from_match_graph(match_graph, sweeped_levels)
-        if matches_msg_list:
-            self.logger.info("At least one full match has been found!! - {}".format(len(matches_msg_list)))
+        matches_msg_list, matches_tuples_list = self.build_matches_msg_from_match_graph(match_graph, sweeped_levels)
+        final_matches_msg = self.full_graph_clipper_filter(self.graphs[G1_name], self.graphs[G2_name], sweeped_levels[-1],\
+                                                                    sweeped_levels_dt[sweeped_levels[-1]], matches_msg_list, matches_tuples_list)
+
+        if final_matches_msg:
             success = True
-            biggest_match_i = np.argmax([len(match) for match in matches_msg_list])
-            self.subplots_match(G1_name, G2_name, matches_msg_list[biggest_match_i])
+            best_match_i = np.argmax([match[0] for match in final_matches_msg])
+            self.logger.info("Found {} good matches!!!".format(len(final_matches_msg)))
+            self.subplots_match(G1_name, G2_name, final_matches_msg[best_match_i][1])
         else:
             success = False
 
-        return(success, matches_msg_list)
+        return(success, final_matches_msg)
 
 
     def only_walls_match_custom(self, G1_name, G2_name):
@@ -179,10 +172,9 @@ class GraphMatcher():
         return(success, matches_list, scores_sorted)
 
 
-    def filter_local_match_with_global(self, local_matches, global_matches):
-        filtered = [local_match for local_match in local_matches if any(all(elem in global_match for elem in local_match) for global_match in global_matches)]
-        filtered_as_arrays = [np.array(x, dtype = np.str) for x in filtered]
-        return filtered_as_arrays
+    def filter_local_match_with_global(self, local_match, global_matches):
+        filtered = set([ local_elem for local_elem in local_match if any(local_elem in global_match for global_match in global_matches)])
+        return filtered
 
 
     def check_match_not_in_list(self, new_match, other_matches):
@@ -197,7 +189,6 @@ class GraphMatcher():
         data1 = G1.stack_nodes_feature(nodes1, feature_name)
         data2 = G2.stack_nodes_feature(nodes2, feature_name)
         A_numerical = np.array([[nodes1.index(pair[0]),nodes2.index(pair[1])] for pair in A_categorical]).astype(np.int32)
-        # print("A_numerical", A_numerical)
         return(data1, data2, A_numerical, nodes1, nodes2)
 
 
@@ -283,41 +274,78 @@ class GraphMatcher():
     def build_matches_msg_from_match_graph(self, match_graph, sweeped_levels):
         matches_msgs = []
 
-        def build_matches_msg_from_match_graph_iteration(local_graph, lvl, matches):
+        def build_matches_msg_from_match_graph_iteration(local_graph, lvl, matches_msgs, matches_tuples):
             group_nodes = local_graph.find_nodes_by_attrs({"type": sweeped_levels[lvl], "combination_type" : "group"})
             group_lvl_upgoing_matches_msgs = []
+            group_lvl_upgoing_matches_tuples = []
             for group_node in group_nodes:
                 group_node_match = local_graph.get_attributes_of_node(group_node)["match"]
                 group_node_score = local_graph.get_attributes_of_node(group_node)["score_intralevel"]
-                downgoing_matches = []
-                edges_list = []
+                downgoing_matches_msgs = []
+                downgoing_matches_tuples = []
+                edges_list_msgs = []
                 for edge in group_node_match:
                     edge_dict = {"origin_node" : int(edge[0]), "target_node" : int(edge[1]), "score" : group_node_score}
-                    edges_list.append(edge_dict)
-                if matches:
-                    for match in matches:
-                        downgoing_matches.append(match + edges_list)
+                    edges_list_msgs.append(edge_dict)
+                if matches_msgs:
+                    for match_msg in matches_msgs:
+                        downgoing_matches_msgs.append(match_msg + edges_list_msgs)
+                    for match_tuple in matches_tuples:
+                        # self.logger.info("downgoing_matches_tuples 1 - {}".format(match_tuple))
+                        downgoing_matches_tuples.append(match_tuple + list(group_node_match))
+                        # self.logger.info("downgoing_matches_tuples 2 - {}".format(downgoing_matches_tuples))
                 else:
-                    downgoing_matches = [edges_list]
+                    downgoing_matches_msgs = [edges_list_msgs]
+                    downgoing_matches_tuples = [list(group_node_match)]
+                    # self.logger.info("downgoing_matches_tuples 3 - {}".format(downgoing_matches_tuples))
                 group_node_neighbourhood_graph = match_graph.get_neighbourhood_graph(group_node)
 
                 single_nodes = group_node_neighbourhood_graph.find_nodes_by_attrs({"type": sweeped_levels[lvl], "combination_type" : "pair"})
                 single_lvl_upgoing_matches_msgs = []
+                
                 if len(sweeped_levels) > lvl + 1:
                     for single_node in single_nodes:
                         single_node_neighbourhood_graph = match_graph.get_neighbourhood_graph(single_node)
-                        final_matches_msgs = build_matches_msg_from_match_graph_iteration(single_node_neighbourhood_graph, lvl+1, downgoing_matches)
+                        final_matches_msgs, final_matches_tuples = build_matches_msg_from_match_graph_iteration(single_node_neighbourhood_graph, lvl+1, downgoing_matches_msgs, downgoing_matches_tuples)
                         single_lvl_upgoing_matches_msgs += final_matches_msgs
+                        self.logger.info("single_lvl_upgoing_matches_tuples 1 - {}".format(single_lvl_upgoing_matches_tuples))
+                        single_lvl_upgoing_matches_tuples += final_matches_tuples
+                        self.logger.info("single_lvl_upgoing_matches_tuples 2 - {}".format(single_lvl_upgoing_matches_tuples))
+                        # single_lvl_upgoing_matches_tuples = [[]]
+                        # for final_match_tuples in final_matches_tuples:
+                        #     for single_lvl_upgoing_match_tuples in single_lvl_upgoing_matches_tuples:
+                        #         single_lvl_upgoing_matches_tuples.append(list(set(single_lvl_upgoing_match_tuples).union(set(final_match_tuples))))
+                        
+
                 else:
-                    single_lvl_upgoing_matches_msgs = downgoing_matches
+                    single_lvl_upgoing_matches_msgs = downgoing_matches_msgs
+                    single_lvl_upgoing_matches_tuples = downgoing_matches_tuples
+                    self.logger.info("single_lvl_upgoing_matches_tuples 3 - {}".format(len(single_lvl_upgoing_matches_tuples)))
 
                 group_lvl_upgoing_matches_msgs += single_lvl_upgoing_matches_msgs
-            
-            return group_lvl_upgoing_matches_msgs
+                self.logger.info("group_lvl_upgoing_matches_tuples 1 - {}".format(group_lvl_upgoing_matches_tuples))
+                group_lvl_upgoing_matches_tuples += single_lvl_upgoing_matches_tuples
+                self.logger.info("group_lvl_upgoing_matches_tuples 2 - {}".format(group_lvl_upgoing_matches_tuples))
+            return group_lvl_upgoing_matches_msgs, group_lvl_upgoing_matches_tuples
 
-                    
+        final_matches_msgs, final_matches_tuples = build_matches_msg_from_match_graph_iteration(match_graph, 0, [], [])
+        return final_matches_msgs, final_matches_tuples
 
-        final_matches_msgs = build_matches_msg_from_match_graph_iteration(match_graph, 0, [])
-        self.logger.info("final_matches_msgs {}".format(final_matches_msgs))
-        return final_matches_msgs
 
+    def full_graph_clipper_filter(self, G1, G2, basis_level, basis_level_dt, matches_msg_list, matches_tuples_list):
+        G1_nodes = G1.graph.nodes(data=True)
+        clipper_matches_msg = []
+        for i, match_tuples in enumerate(matches_tuples_list):
+            basis_level_match = [pair for pair in match_tuples if G1_nodes[pair[0]]["type"] == basis_level]
+            if basis_level_match:
+                data1, data2, basis_level_match_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, basis_level_match, "Geometric_info")
+                clipper = Clipper(basis_level_dt)
+                clipper.score_pairwise_consistency(data1, data2, basis_level_match_numerical)
+                clipper_match_numerical, score = clipper.solve_clipper()
+                clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
+
+                if score > INTERLEVEL_CLIPPER_THR and len(clipper_match_numerical) == len(basis_level_match) and\
+                                                            clipper_match_categorical not in clipper_match_categorical:
+                    clipper_matches_msg += [(score, matches_msg_list[i])]
+        clipper_matches_msg_sorted = [clipper_matches_msg[i] for i in np.argsort([match[0] for match in clipper_matches_msg])]
+        return clipper_matches_msg_sorted
