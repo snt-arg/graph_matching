@@ -19,8 +19,8 @@ from rclpy.node import Node
 
 from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
 from graph_manager_msgs.msg import Graph as GraphMsg
-from graph_manager_msgs.msg import Graphs as GraphsMsg
-# from graph_manager_msgs.msg import Node as NodeMsg
+from graph_manager_msgs.msg import Match as MatchMsg
+from graph_manager_msgs.msg import Node as NodeMsg
 from graph_manager_msgs.msg import Edge as EdgeMsg
 from graph_manager_msgs.msg import Attribute as AttributeMsg
 
@@ -35,8 +35,8 @@ class GraphManagerNode(Node):
         
 
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 10)
-        self.match_publisher = self.create_publisher(GraphsMsg, 'matches', 10)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 1)
+        self.match_publisher = self.create_publisher(MatchMsg, 'matches', 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match', self.subgraph_match_srv_callback)
 
 
@@ -58,6 +58,9 @@ class GraphManagerNode(Node):
 
                 if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
                     attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
+
+                    # self.get_logger().info('id {}, geometry {}:'.format(node_msg.id,attributes[attrib_msg.name]))
+
 
             if node_msg.type == "Plane":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
@@ -81,15 +84,15 @@ class GraphManagerNode(Node):
         
         self.gm.setGraph(graph)
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
         if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
             success, matches = self.gm.match_custom("Prior", "ONLINE")
 
-            if success:
-                self.publish_matches(matches)
+            if success and len(matches) > 0:
+                self.publish_matches(matches[0])
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -116,23 +119,54 @@ class GraphManagerNode(Node):
         return response
 
 
-    def publish_matches(self, matches):
-        graphs_msg = GraphsMsg()
-        for score, match in matches:
-            graph_msg = GraphMsg()
-            for edge in match:
-                edge_msg = EdgeMsg()
-                edge_msg.origin_node = edge["origin_node"]
-                edge_msg.target_node = edge["target_node"]
-                attrib_msg = AttributeMsg()
-                attrib_msg.name = "score"
-                attrib_msg.fl_value = [edge["score"]]
-                edge_msg.attributes = [attrib_msg]
-                graph_msg.edges.append(edge_msg)
-                graph_msg.name = str(score)
-            graphs_msg.graphs.append(graph_msg)
+    def publish_matches(self, match):
+        match_msg = MatchMsg()
+        self.get_logger().info('match - {}'.format(match))
+        for edge in match[1]:
+            ### Edge
+            edge_msg = EdgeMsg()
+            edge_msg.origin_node = edge["origin_node"]
+            edge_msg.target_node = edge["target_node"]
+            attrib_msg = AttributeMsg()
+            attrib_msg.name = "score"
+            attrib_msg.fl_value = [edge["score"]]
+            edge_msg.attributes = [attrib_msg]
+            match_msg.edges.append(edge_msg)
+            # graph_msg.name = str(score)
 
-        self.match_publisher.publish(graphs_msg)
+            ### Origin node
+            origin_node_msg = NodeMsg()
+            origin_node_msg.id = edge["origin_node"]
+            origin_node_msg.type = edge["origin_node_attrs"]["type"]
+            origin_node_msg.attributes = self.dict_to_attr_msg_list(edge["origin_node_attrs"])
+            match_msg.basis_nodes.append(origin_node_msg)
+
+
+            ### Target node
+            target_node_msg = NodeMsg()
+            target_node_msg.id = edge["target_node"]
+            target_node_msg.type = edge["target_node_attrs"]["type"]
+            target_node_msg.attributes = self.dict_to_attr_msg_list(edge["target_node_attrs"])
+            match_msg.target_nodes.append(target_node_msg)
+
+
+        self.match_publisher.publish(match_msg)
+
+
+    def dict_to_attr_msg_list(self, attr_dict):
+        attr_list = []
+        for attr_name in attr_dict.keys():
+            attr_msg = AttributeMsg()
+            attr_msg.name = attr_name
+            if type(attr_dict[attr_name]) == str:
+                attr_msg.str_value = attr_dict[attr_name]
+            elif type(attr_dict[attr_name]) == float:
+                attr_msg.fl_value = [attr_dict[attr_name]]
+            attr_list.append(attr_msg)
+
+        return attr_list
+
+        
 
 def main(args=None):
     rclpy.init(args=args)

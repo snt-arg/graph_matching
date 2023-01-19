@@ -4,25 +4,36 @@ import numpy as np
 
 
 class Clipper():
-    def __init__(self, data_type) -> None:
-        invariant = self.define_clipper_invariant(data_type)
+    def __init__(self, data_type, name) -> None:
+        invariant = self.stored_invriants(data_type, name)
         self.create_clipper_object(invariant)
 
-    def define_clipper_invariant(self, data_type):
+    def stored_invriants(self, data_type, name = None):
         if data_type == "points":
-            iparams = clipperpy.invariants.EuclideanDistanceParams()
-            iparams.sigma = 0.015
-            iparams.epsilon = 0.02
-            invariant = clipperpy.invariants.EuclideanDistance(iparams)
+            if name == 1:
+                iparams = clipperpy.invariants.EuclideanDistanceParams()
+                iparams.sigma = 0.5 # 0.015
+                iparams.epsilon = 1.0 # 0.02
+                invariant = clipperpy.invariants.EuclideanDistance(iparams)
         elif data_type == "points&normal":
-            iparams = clipperpy.invariants.PointNormalDistanceParams()
-            iparams.sigp = 0.5 # 0.5
-            iparams.epsp = 0.5 # 0.5
-            iparams.sign = 0.10 # 0.10
-            iparams.epsn = 0.35 # 0.35
-            invariant = clipperpy.invariants.PointNormalDistance(iparams)
+            if name == 1:
+                iparams = clipperpy.invariants.PointNormalDistanceParams()
+                iparams.sigp = 0.5 # 0.5
+                iparams.epsp = 0.5 # 0.5
+                iparams.sign = 0.1 # 0.10
+                iparams.epsn = 0.35 # 0.35
+                invariant = clipperpy.invariants.PointNormalDistance(iparams)
+            elif name == 2:
+                iparams = clipperpy.invariants.PointNormalDistanceParams()
+                iparams.sigp = 1. # 0.5
+                iparams.epsp = 5. # 0.5
+                iparams.sign = 1. # 0.10
+                iparams.epsn = 5. # 0.35
+                invariant = clipperpy.invariants.PointNormalDistance(iparams)
+
 
         return invariant
+
 
 
     def create_clipper_object(self, invariant):

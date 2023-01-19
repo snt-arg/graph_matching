@@ -152,7 +152,7 @@ class GraphManager():
 
 
     def find_nodes_by_attrs(self, attrs):
-        nodes = [x for x,y in self.graph.nodes(data=True) if all(y[attr] == attrs[attr] for attr in attrs.keys())]
+        nodes = [x for x,y in self.graph.nodes(data=True) if all(attrs[attr] in y[attr] for attr in attrs.keys())]
         return nodes
 
     
