@@ -25,6 +25,7 @@ The only tested ROS version for this package is ROS2 Humble
 #### Dependencies
 
 	- pip install networkx[default]
+	- pip install -U scikit-learn
 
 #### Building
 
