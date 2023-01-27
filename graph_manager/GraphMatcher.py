@@ -3,13 +3,17 @@ import itertools
 import time
 import copy
 import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
+
 from .GraphManager import GraphManager
 from .Clipper import Clipper
-from .utils import translate_plane_definition
+from .utils import transform_plane_definition
 
 
 INTRALEVEL_CLIPPER_THR = 0.7
 INTERLEVEL_CLIPPER_THR = 0.7
+FINAL_CHECK_QUALITY_THR = 0.8
 
 
 class GraphMatcher():
@@ -23,6 +27,8 @@ class GraphMatcher():
 
 
     def match_custom(self, G1_name, G2_name):
+        self.logger.info("beginning match_custom")
+
         start_time = time.time()
         sweeped_levels = ["floor", "Finite Room", "Plane"]
         sweeped_levels_dt = {"floor" : "points", "Finite Room" : "points", "Plane": "points&normal"}
@@ -40,7 +46,7 @@ class GraphMatcher():
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO Fix
             if parents_data:
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, all_pairs_categorical, "Geometric_info")
-                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]])
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.logger)
                 data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parents_data)
                 data1 = self.geometric_info_transformation(data1, sweeped_levels[lvl], parents_data["parent1"])
                 data2 = self.geometric_info_transformation(data2, sweeped_levels[lvl], parents_data["parent2"])
@@ -67,7 +73,7 @@ class GraphMatcher():
                 if parents_data:
                     data1 = self.geometric_info_transformation(data1, sweeped_levels[lvl], parents_data["parent1"])
                     data2 = self.geometric_info_transformation(data2, sweeped_levels[lvl], parents_data["parent2"])
-                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]])
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
@@ -78,7 +84,7 @@ class GraphMatcher():
                     filter1_lengths.append(len(clipper_match_categorical))
             if filter1_scores:
                 sorted_matches_indexes = [index for index, val in enumerate(filter1_lengths) if val == max(filter1_lengths)]
-                sorted_matches_indexes = range(len(filter1_lengths))
+                # sorted_matches_indexes = range(len(filter1_lengths))
                 for good_submatch_i in sorted_matches_indexes:
                     group_node_id = match_graph.get_total_number_nodes() + 1
                     node_attr = [(group_node_id, {"type": sweeped_levels[lvl], "match": filter1_matches[good_submatch_i],\
@@ -126,18 +132,29 @@ class GraphMatcher():
                     "node_size" : match_graph.define_node_size_option_by_combination_type_attr()}
         match_graph.draw("match graph", options = options, show = True)
         matches_tuples_list = self.build_matches_msg_from_match_graph(match_graph, sweeped_levels)
-        final_matches_msg = self.full_graph_clipper_filter(self.graphs[G1_name], self.graphs[G2_name], sweeped_levels,\
+        final_matches_msg = self.full_graph_affinity_filter(self.graphs[G1_name], self.graphs[G2_name], sweeped_levels,\
                                                                     sweeped_levels_dt, sweeped_levels_ci, matches_tuples_list)
 
         if final_matches_msg:
-            success = True
-            best_match_i = np.argmax([match[0] for match in final_matches_msg])
             self.logger.info("Found {} good matches!!!".format(len(final_matches_msg)))
-            self.subplots_match(G1_name, G2_name, final_matches_msg[best_match_i][1])
+            success = True
+            match_lengths = [len(match) for match in final_matches_msg]
+            biggest_maches_i = [index for index, val in enumerate(match_lengths) if val == max(match_lengths)]
+            # best_match_i = np.argmax([final_matches_msg[i][0] for i in biggest_maches_i])
+            # self.subplots_match(G1_name, G2_name, final_matches_msg[biggest_maches_i[best_match_i]][1])
+            biggest_consistent_matches = [final_matches_msg[i] for i in biggest_maches_i]
+            final_matches_msg_selection = self.symmetry_detection(biggest_consistent_matches)
+            if len(final_matches_msg_selection) == 1:
+                self.logger.info("Only one match succeded with score - {}".format(final_matches_msg_selection[0][0]))
+            elif len(final_matches_msg_selection) > 1:
+                self.logger.info("{} symmetries detected. Scores - {}".format(len(final_matches_msg_selection), [match[0] for match in final_matches_msg_selection]))
+            self.subplots_match(G1_name, G2_name, final_matches_msg_selection[0][1])
+
         else:
             success = False
+            final_matches_msg_selection = []
 
-        return(success, final_matches_msg)
+        return(success, final_matches_msg_selection)
 
 
     # def only_walls_match_custom(self, G1_name, G2_name):
@@ -207,14 +224,7 @@ class GraphMatcher():
         if in_dt == out_dt:
             processed = original
         elif in_dt == "points" and out_dt == "points&normal":
-            distance = np.sqrt((original**2).sum())
-            if distance:
-                normal = original / distance
-                # self.logger.info("original - {}".format(original))
-                # self.logger.info("normal - {}".format(normal))
-            else:
-                normal = np.array([[0.,0.,0.]])
-            # normal = np.array([[0.,0.,1.]])
+            normal = np.repeat(np.array([[0.,0.,1.]]), len(original), axis= 0)
             processed = np.concatenate((original, normal),axis=1)
 
         return(processed)
@@ -230,7 +240,7 @@ class GraphMatcher():
     def geometric_info_transformation(self, data, level, parent_data):
         if level == "Plane":
             rotation = np.array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])
-            transformed = translate_plane_definition(data, parent_data[:3], rotation, self.logger)
+            transformed = transform_plane_definition(data, -parent_data[:3], rotation, self.logger)
         else:
             transformed = data
 
@@ -293,6 +303,7 @@ class GraphMatcher():
         return [list1 for list1 in lists if not any([element in list1 for element in filter_elements_list])]
 
     def build_matches_msg_from_match_graph(self, match_graph, sweeped_levels):
+        self.logger.info("beginning build_matches_msg_from_match_graph")
 
         def build_matches_msg_from_match_graph_iteration(local_graph, lvl):
             group_nodes = local_graph.find_nodes_by_attrs({"type": sweeped_levels[lvl], "combination_type" : "group"})
@@ -332,43 +343,53 @@ class GraphMatcher():
         return final_matches_tuples
 
 
-    def full_graph_clipper_filter(self, G1, G2, sweeped_levels, sweeped_levels_dt, sweeped_levels_ci, matches_tuples_list):
-        self.logger.info("beginning full_graph_clipper_filter")
+    def full_graph_affinity_filter(self, G1, G2, sweeped_levels, sweeped_levels_dt, sweeped_levels_ci, matches_tuples_list):
+        self.logger.info("beginning full_graph_affinity_filter")
+        test_level = "Plane"
         G1_nodes = G1.graph.nodes(data=True)
         G2_nodes = G2.graph.nodes(data=True)
         clipper_matches_msg = []
+        quality_success_percentage_list = []
         for match_tuples in matches_tuples_list:
-            basis_level_match = [pair[0] for pair in match_tuples if G1_nodes[pair[0][0]]["type"] == sweeped_levels[-1]]
+            basis_level_match = [pair[0] for pair in match_tuples if G1_nodes[pair[0][0]]["type"] == test_level]
             top_level_match = [pair[0] for pair in match_tuples if G1_nodes[pair[0][0]]["type"] == sweeped_levels[0]][0]
             top_level_info = [np.array(G1_nodes[top_level_match[0]]["Geometric_info"]), np.array(G2_nodes[top_level_match[1]]["Geometric_info"])]
             if basis_level_match:
-
-                # self.logger.info("len basis_level_match- {}".format(len(basis_level_match)))
                 data1, data2, basis_level_match_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, basis_level_match, "Geometric_info")
                 data1 = self.geometric_info_transformation(data1, sweeped_levels[-1], top_level_info[0])
                 data2 = self.geometric_info_transformation(data2, sweeped_levels[-1], top_level_info[1])
-                clipper = Clipper(sweeped_levels_dt[sweeped_levels[-1]], 2)
+                clipper = Clipper(sweeped_levels_dt[test_level], 2, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, basis_level_match_numerical)
-                clipper_match_numerical, clipper_full_score = clipper.solve_clipper()
-                clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
+                consistency_avg = clipper.get_score_all_inital_u()
+                # self.logger.info("data1 {}".format(data1))
+                # self.logger.info("data2 {}".format(data2))
+                # self.logger.info("data1 - data2 {}".format(data1 - data2))
 
-                if clipper_full_score > INTERLEVEL_CLIPPER_THR and len(clipper_match_numerical) == len(basis_level_match) and\
-                                                            clipper_match_categorical not in clipper_match_categorical:
-                # if clipper_full_score > INTERLEVEL_CLIPPER_THR and clipper_match_categorical not in clipper_match_categorical:
+                if consistency_avg > FINAL_CHECK_QUALITY_THR:
                     edges_dict_list = []
                     for edge in match_tuples:
                         edge_dict = {"origin_node" : int(edge[0][0]), "target_node" : int(edge[0][1]), "score" : edge[1],\
                                 "origin_node_attrs" : G1_nodes[edge[0][0]], "target_node_attrs" : G2_nodes[edge[0][1]]}
                         edges_dict_list.append(edge_dict)
-                    clipper_matches_msg += [(clipper_full_score, edges_dict_list)]
-                    # self.logger.info("Full graph candidate successful. score {}, len(basis_level_match) {}, len(clipper_match_categorical) {}"\
-                    #     .format(clipper_full_score, len(basis_level_match), len(clipper_match_categorical)))
-                # else:
-                    # self.logger.info("Full graph candidate didn't pass the clipper filter. score {}, len(basis_level_match) {}, len(clipper_match_categorical) {}"\
-                    #     .format(clipper_full_score, len(basis_level_match), len(clipper_match_categorical)))
-        self.logger.info("Final match result: {} out of {} candidates passed the final check"\
+                    clipper_matches_msg += [(consistency_avg, edges_dict_list)]
+                    quality_success_percentage_list.append(consistency_avg)
+
+            else:
+                self.logger.info("There was no node of test_level in the graph")
+        self.logger.info("Affinity check: {} out of {} candidates passed the final check"\
                         .format(len(clipper_matches_msg), len(matches_tuples_list)))
-        if clipper_matches_msg:
-            self.logger.info("Best score {} best match {}".format(len(clipper_matches_msg), clipper_matches_msg))
-        clipper_matches_msg_sorted = [clipper_matches_msg[i] for i in np.argsort([match[0] for match in clipper_matches_msg])]
+            
+        clipper_matches_msg_sorted = [clipper_matches_msg[i] for i in np.argsort([match[0] for match in clipper_matches_msg])[::-1]]
         return clipper_matches_msg_sorted
+
+    def symmetry_detection(self, candidates):
+        X = np.array([match[0] for match in candidates])
+        X_fit = StandardScaler().fit_transform(X.reshape(-1, 1))
+        db = DBSCAN(eps=0.01, min_samples=1).fit(X_fit)
+        labels = db.labels_
+        # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+        # n_noise_ = list(labels).count(-1)
+
+        best_cluster_candidates = [candidates[i] for i,label in enumerate(labels) if label==0]
+
+        return best_cluster_candidates

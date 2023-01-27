@@ -39,7 +39,7 @@ class GraphManager():
                         'node_size': 50,
                         'width': 2,
                         'with_labels' : True}
-                    plot_options = self.define_draw_color_from_node_list(plot_options, subgraph, "blue", "red")
+                    plot_options = self.define_draw_color_from_node_list(plot_options, subgraph, "blue", "orange")
                     self.draw("Graph {}".format(self.name), None, True)
 
         return matches ### TODO What should be returned?
@@ -70,9 +70,11 @@ class GraphManager():
             ax = plt.gca()
             ax.clear()
         nx.draw(self.graph, **options)
+        # plt.axis('on')
+        # ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
         if show:
             plt.show(block=False)
-            plt.pause(1)
+            plt.pause(0.5)
 
     
     def define_draw_color_from_node_list(self, options, node_list, unmatched_color = "red", matched_color = "blue"):
@@ -90,6 +92,14 @@ class GraphManager():
     def filter_graph_by_node_types(self, types):
         def filter_node_fn(node):
             return True if self.graph.nodes(data=True)[node]["type"] in types else False 
+
+        graph_filtered = GraphManager(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
+        return graph_filtered
+
+
+    def filter_graph_by_node_list(self, id_list):
+        def filter_node_fn(node):
+            return True if node in id_list else False 
 
         graph_filtered = GraphManager(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
         return graph_filtered
@@ -116,7 +126,7 @@ class GraphManager():
 
 
     def define_draw_color_option_by_node_type(self, ):
-        color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "red"}
+        color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "orange"}
         type_list = [node[1]["type"] for node in self.graph.nodes(data=True)]
         colors = [color_palette[node_type] for node_type in type_list]
 
@@ -165,7 +175,13 @@ class GraphManager():
 
 
     def get_attributes_of_edge(self, edge_id):
-        return self.graph.edges(data=True)[edge_id]  
+        return self.graph.edges(data=True)[edge_id]
+
+    def get_nodes_ids(self):
+        return self.graph.nodes()
+
+    def set_name(self, name):
+        self.name = name
 
 
     # ## Geometry functions

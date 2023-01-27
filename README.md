@@ -81,16 +81,18 @@ Stores and performs graph operations related to S-Graphs.
 * **`/graphs`** ([graph_manager_msgs/Graph])
 
 
-#### Published Topics (TODO)
+#### Published Topics
 
-...
-
+* **`/best_match`** ([graph_manager_msgs/Match])
+* **`/unique_match`** ([graph_manager_msgs/Match])
+* **`/best_match_visualization`** ([visualization_msgs/MarkerArray)
+* **`/visualization_match_visualization`** ([visualization_msgs/MarkerArray)
 
 #### Services
 
 * **`subgraph_match_srv`** ([graph_manager_msgs/SubgraphMatchSrv])
 
-	Returns the subgraph match (list of pairs of nodes) most probable, subject to matching type
+	Returns the subgraph match (list of pairs of nodes) most probable, subject to matching type. NOT SUPPORTED AT THE MOMENT
 
 		ros2 service call /subgraph_match_srv
 
