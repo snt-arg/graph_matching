@@ -307,6 +307,13 @@ class GraphManagerNode(Node):
             elif edge["origin_node_attrs"]["type"] == "Plane":
                 origin_point[2] = 16.
                 target_point[2] = 16.
+
+            add_noise = True
+            if add_noise:
+                noise_scale = [.5,.5,1]
+                noise = (np.random.rand(3) - [.5, .5, .5]) * noise_scale
+                origin_point += noise
+                target_point += noise
             
             marker_msg = MarkerMsg()
             header_msg = HeaderMsg()
