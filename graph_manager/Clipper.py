@@ -1,50 +1,35 @@
 import clipperpy
 import time
 import numpy as np
+import json
+import os
+import pathlib
+
 
 
 class Clipper():
     def __init__(self, data_type, name, logger = None) -> None:
         self.logger = logger
+        with open(os.path.join(pathlib.Path(__file__).parent.resolve(),'params.json', 'r')) as fcc_file:
+            self.params = json.load(fcc_file)
         invariant = self.stored_invriants(data_type, name)
         self.create_clipper_object(invariant)
 
-    def stored_invriants(self, data_type, name = None):
+    def stored_invriants(self, data_type, index = None):
         if data_type == "points":
-            if name == 1:
-                iparams = clipperpy.invariants.EuclideanDistanceParams()
-                iparams.sigma = 0.1 # 0.015
-                iparams.epsilon = 0.6 # 0.02
-                iparams.mindist = 0 
-                invariant = clipperpy.invariants.EuclideanDistance(iparams)
-            else:
-                iparams = clipperpy.invariants.EuclideanDistanceParams()
-                iparams.sigma = 0.01     # spread / variance of exponential kernel
-                iparams.epsilon = 0.06   # bound on consistency score, determines if inlier/outlier
-                iparams.mindist = 0      # minimum allowable distance between inlier points in the same dataset
-                invariant = clipperpy.invariants.EuclideanDistance(iparams)
+            iparams = clipperpy.invariants.EuclideanDistanceParams()
+            iparams.sigma = self.params["clipper"][data_type][index]["sigma"]
+            iparams.epsilon = self.params["clipper"][data_type][index]["epsilon"]
+            iparams.mindist = self.params["clipper"][data_type][index]["epsilon"]
+            invariant = clipperpy.invariants.EuclideanDistance(iparams)
+
         elif data_type == "points&normal":
-            if name == 1:
-                iparams = clipperpy.invariants.PointNormalDistanceParams()
-                iparams.sigp = 0.5     # point - spread of exp kernel
-                iparams.epsp = 0.5     # point - bound on consistency score
-                iparams.sign = 0.10    # normal - spread of exp kernel
-                iparams.epsn = 0.35    # normal - bound on consistency score
-                invariant = clipperpy.invariants.PointNormalDistance(iparams)
-            elif name == 2:
-                iparams = clipperpy.invariants.PointNormalDistanceParams()
-                iparams.sigp = 0.4     # point - spread of exp kernel
-                iparams.epsp = 0.4     # point - bound on consistency score
-                iparams.sign = 0.08    # normal - spread of exp kernel
-                iparams.epsn = 0.25    # normal - bound on consistency score
-                invariant = clipperpy.invariants.PointNormalDistance(iparams)
-            else:
-                iparams = clipperpy.invariants.PointNormalDistanceParams()
-                iparams.sigp = 0.5     # point - spread of exp kernel
-                iparams.epsp = 0.5     # point - bound on consistency score
-                iparams.sign = 0.10    # normal - spread of exp kernel
-                iparams.epsn = 0.35    # normal - bound on consistency score
-                invariant = clipperpy.invariants.PointNormalDistance(iparams)
+            iparams = clipperpy.invariants.PointNormalDistanceParams()
+            iparams.sigp = self.params["clipper"][data_type][index]["sigp"]
+            iparams.epsp = self.params["clipper"][data_type][index]["epsp"]
+            iparams.sign = self.params["clipper"][data_type][index]["sign"]
+            iparams.epsn = self.params["clipper"][data_type][index]["epsn"]
+            invariant = clipperpy.invariants.PointNormalDistance(iparams)
 
 
         return invariant
