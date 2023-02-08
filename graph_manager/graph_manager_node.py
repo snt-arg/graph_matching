@@ -185,10 +185,11 @@ class GraphManagerNode(Node):
         for attr_name in attr_dict.keys():
             attr_msg = AttributeMsg()
             attr_msg.name = attr_name
-            if type(attr_dict[attr_name]) == str:
+            if isinstance(attr_dict[attr_name], str): 
                 attr_msg.str_value = attr_dict[attr_name]
-            elif type(attr_dict[attr_name]) == float:
-                attr_msg.fl_value = [attr_dict[attr_name]]
+            elif isinstance(attr_dict[attr_name], np.ndarray):
+                attr_msg.fl_value = list(attr_dict[attr_name].astype(float))
+            
             attr_list.append(attr_msg)
 
         return attr_list
@@ -329,7 +330,7 @@ class GraphManagerNode(Node):
             scale_msg.x, scale_msg.y, scale_msg.z = .2, .2, .2
             marker_msg.scale = scale_msg
             color_msg = ColorRGBSMsg()
-            color_msg.r, color_msg.g, color_msg.b, color_msg.a  = 1., 0., 0., 1.
+            color_msg.r, color_msg.g, color_msg.b, color_msg.a  = np.random.rand(1)[0], np.random.rand(1)[0], np.random.rand(1)[0], 1.
             marker_msg.color = color_msg
             marker_msg.lifetime = DurationMsg()
             marker_msg.frame_locked = True

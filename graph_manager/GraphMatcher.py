@@ -384,9 +384,12 @@ class GraphMatcher():
 
     def symmetry_detection(self, candidates):
         X = np.array([match[0] for match in candidates])
-        X_fit = StandardScaler().fit_transform(X.reshape(-1, 1))
-        db = DBSCAN(eps=0.01, min_samples=1).fit(X_fit)
+        self.logger.info("X {}".format(X))
+        # X_fit = StandardScaler().fit_transform(X.reshape(0, 1))
+        X_fit = np.expand_dims(X, axis=1)
+        db = DBSCAN(eps=0.04, min_samples=1).fit(X_fit)
         labels = db.labels_
+        self.logger.info("labels {}".format(labels))
         # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
         # n_noise_ = list(labels).count(-1)
 
