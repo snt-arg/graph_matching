@@ -17,6 +17,7 @@ import time
 import json
 import copy
 import numpy as np
+import pkg_resources
 from rclpy.node import Node
 from .utils import *
 from tf2_ros.transform_listener import TransformListener
@@ -34,6 +35,8 @@ from geometry_msgs.msg import TransformStamped as TransformStampedMsg
 from std_msgs.msg import ColorRGBA as ColorRGBSMsg
 from std_msgs.msg import Header as HeaderMsg
 from builtin_interfaces.msg import Duration as DurationMsg
+from rclpy.parameter import Parameter
+from rclpy.parameter import ParameterType
 
 from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
 from graph_manager_msgs.msg import Graph as GraphMsg
@@ -48,9 +51,69 @@ class GraphManagerNode(Node):
 
     def __init__(self):
         super().__init__('graph_manager')
+        self._declare_parameters()
         self.gm = GraphMatcher(self.get_logger())
         self.set_interface()
         
+
+    def _declare_parameters(self):
+
+        # params = self.declare_parameters(namespace='', parameters=[\
+        #     Parameter('param_1', Parameter.Type.INTEGER, 123),\
+        #     Parameter('levels.datatype.Plane', Parameter.Type.STRING, 'hello world')\
+        #          ])
+        
+        self.declare_parameter('invariants.points.0.sigma', 0.)
+        self.declare_parameter('invariants.points.0.epsilon', 0.)
+        self.declare_parameter('invariants.points.0.mindist', 0)
+        self.declare_parameter('invariants.points&normal.0.sigp', 0.)
+        self.declare_parameter('invariants.points&normal.0.epsp', 0.)
+        self.declare_parameter('invariants.points&normal.0.sign', 0.)
+        self.declare_parameter('invariants.points&normal.0.epsn', 0.)
+        self.declare_parameter('invariants.points&normal.1.sigp', 0.)
+        self.declare_parameter('invariants.points&normal.1.epsp', 0.)
+        self.declare_parameter('invariants.points&normal.1.sign', 0.)
+        self.declare_parameter('invariants.points&normal.1.epsn', 0.)
+        self.declare_parameter('thresholds.local_intralevel', 0.)
+        self.declare_parameter('thresholds.local_interlevel', 0.)
+        self.declare_parameter('thresholds.global', 0.)
+        self.declare_parameter('dbscan.eps', 0.)
+        self.declare_parameter('dbscan.min_samples', 0)
+        self.declare_parameter('levels.name', ["jmhb", "dg"])
+        self.declare_parameter('levels.datatype.floor', "")
+        self.declare_parameter('levels.datatype.Finite Room', "")
+        self.declare_parameter('levels.datatype.Plane',"df")
+        self.declare_parameter('levels.clipper_invariants.floor', 0)
+        self.declare_parameter('levels.clipper_invariants.Finite Room', 0)
+        self.declare_parameter('levels.clipper_invariants.Plane', 0)
+
+    def get_parameters(self):
+        self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
+        self.params["invariants"]["points"][0]["sigma"] = self.get_parameter('invariants.points.0.sigma').value
+        self.params["invariants"]["points"][0]["epsilon"] = self.get_parameter('invariants.points.0.epsilon').value
+        self.params["invariants"]["points"][0]["mindist"] = self.get_parameter('invariants.points.0.mindist').value
+        self.params["invariants"]["points&normal"][0]["sigp"] = self.get_parameter('invariants.points&normal.0.sigp').value
+        self.params["invariants"]["points&normal"][0]["epsp"] = self.get_parameter('invariants.points&normal.0.epsp').value
+        self.params["invariants"]["points&normal"][0]["sign"] = self.get_parameter('invariants.points&normal.0.sign').value
+        self.params["invariants"]["points&normal"][0]["epsn"] = self.get_parameter('invariants.points&normal.0.epsn').value
+        self.params["invariants"]["points&normal"][1]["sigp"] = self.get_parameter('invariants.points&normal.1.sigp').value
+        self.params["invariants"]["points&normal"][1]["epsp"] = self.get_parameter('invariants.points&normal.1.epsp').value
+        self.params["invariants"]["points&normal"][1]["sign"] = self.get_parameter('invariants.points&normal.1.sign').value
+        self.params["invariants"]["points&normal"][1]["epsn"] = self.get_parameter('invariants.points&normal.1.epsn').value
+        self.params["thresholds"]["local_intralevel"] = self.get_parameter('thresholds.local_intralevel').value
+        self.params["thresholds"]["local_interlevel"] = self.get_parameter('thresholds.local_interlevel').value
+        self.params["thresholds"]["global"] = self.get_parameter('thresholds.global').value
+        self.params["dbscan"]["eps"] = self.get_parameter('dbscan.eps').value
+        self.params["dbscan"]["min_samples"] = self.get_parameter('dbscan.min_samples').value
+        self.params["levels"]["name"] = self.get_parameter('levels.name').value
+        self.params["levels"]["datatype"]["floor"] = self.get_parameter('levels.datatype.floor').value
+        self.params["levels"]["datatype"]["Finite Room"] = self.get_parameter('levels.datatype.Finite Room').value
+        self.params["levels"]["datatype"]["Plane"] = self.get_parameter('levels.datatype.Plane').value
+        self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
+        self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
+        self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
+
+        self.get_logger().info('flag self.params{}'.format(self.params))
 
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 0)
@@ -64,7 +127,8 @@ class GraphManagerNode(Node):
     def graph_callback(self, msg):
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
-
+        self.get_parameters()
+        self.gm.set_parameters(self.params)
         nodes = []
         for node_msg in msg.nodes:
             node = [str(node_msg.id), {}]
@@ -79,7 +143,6 @@ class GraphManagerNode(Node):
 
                 if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
                     attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
-
 
             if node_msg.type == "Plane":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]

@@ -18,8 +18,9 @@ class GraphMatcher():
     def __init__(self, logger):
         self.graphs = {}
         self.logger = logger
-        with open(os.path.join(pathlib.Path(__file__).parent.resolve(),'params.json', 'r')) as fcc_file:
-            self.params = json.load(fcc_file)
+
+    def set_parameters(self, params):
+        self.params = params
 
 
     def setGraph(self, graph_def):
@@ -31,7 +32,7 @@ class GraphMatcher():
 
         start_time = time.time()
         sweeped_levels = self.params["levels"]["name"]
-        sweeped_levels_dt = self.params["levels"]["datatypes"]
+        sweeped_levels_dt = self.params["levels"]["datatype"]
         sweeped_levels_ci = self.params["levels"]["clipper_invariants"]
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         lvl = 0
@@ -45,14 +46,14 @@ class GraphMatcher():
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO Fix
             if parents_data:
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, all_pairs_categorical, "Geometric_info")
-                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.logger)
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.params, self.logger)
                 data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parents_data)
                 data1 = self.geometric_info_transformation(data1, sweeped_levels[lvl], parents_data["parent1"])
                 data2 = self.geometric_info_transformation(data2, sweeped_levels[lvl], parents_data["parent2"])
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
                 interlevel_scores = M_aux[:,-1][:-1]
-                good_pairs = interlevel_scores >= self.params["clipper"]["thresholds"]["local_interlevel"]
+                good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"]
                 bad_pairs = [not elem for elem in good_pairs]
                 filtered_bad_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[bad_pairs], nodes1, nodes2))
                 filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[good_pairs], nodes1, nodes2))
@@ -72,12 +73,12 @@ class GraphMatcher():
                 if parents_data:
                     data1 = self.geometric_info_transformation(data1, sweeped_levels[lvl], parents_data["parent1"])
                     data2 = self.geometric_info_transformation(data2, sweeped_levels[lvl], parents_data["parent2"])
-                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.logger)
+                clipper = Clipper(sweeped_levels_dt[sweeped_levels[lvl]], sweeped_levels_ci[sweeped_levels[lvl]], self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 clipper_match_numerical, score = clipper.solve_clipper()
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
 
-                if score > self.params["clipper"]["thresholds"]["local_intralevel"] and clipper_match_categorical not in filter1_matches:
+                if score > self.params["thresholds"]["local_intralevel"] and clipper_match_categorical not in filter1_matches:
                     filter1_scores.append(score)
                     filter1_matches.append(clipper_match_categorical)
                     filter1_lengths.append(len(clipper_match_categorical))
@@ -357,14 +358,14 @@ class GraphMatcher():
                 data1, data2, basis_level_match_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, basis_level_match, "Geometric_info")
                 data1 = self.geometric_info_transformation(data1, sweeped_levels[-1], top_level_info[0])
                 data2 = self.geometric_info_transformation(data2, sweeped_levels[-1], top_level_info[1])
-                clipper = Clipper(sweeped_levels_dt[test_level], 1, self.logger)
+                clipper = Clipper(sweeped_levels_dt[test_level], 1, self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, basis_level_match_numerical)
                 consistency_avg = clipper.get_score_all_inital_u()
                 # self.logger.info("data1 {}".format(data1))
                 # self.logger.info("data2 {}".format(data2))
                 # self.logger.info("data1 - data2 {}".format(data1 - data2))
 
-                if consistency_avg > self.params["clipper"]["thresholds"]["global"]:
+                if consistency_avg > self.params["thresholds"]["global"]:
                     edges_dict_list = []
                     for edge in match_tuples:
                         edge_dict = {"origin_node" : int(edge[0][0]), "target_node" : int(edge[0][1]), "score" : edge[1],\
@@ -386,7 +387,7 @@ class GraphMatcher():
         self.logger.info("X {}".format(X))
         # X_fit = StandardScaler().fit_transform(X.reshape(0, 1))
         X_fit = np.expand_dims(X, axis=1)
-        db = DBSCAN(eps=self.params["DBSCAN"]["eps"], min_samples=self.params["DBSCAN"]["min_samples"]).fit(X_fit)
+        db = DBSCAN(eps=self.params["dbscan"]["eps"], min_samples=self.params["dbscan"]["min_samples"]).fit(X_fit)
         labels = db.labels_
         self.logger.info("labels {}".format(labels))
         # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)

@@ -21,11 +21,13 @@ def generate_launch_description():
     #     'launch_tester_node_ns',
     #     default_value=False
     # )
+    param_file = "/home/adminpc/ros2_ws/src/graph_manager/graph_manager/params.yaml"
 
     graph_manager_node = Node(
         package='graph_manager',
         executable='graph_manager',
         namespace='graph_manager',
+        parameters = [param_file],
         remappings=[
             ('/graph_manager/graphs','/s_graphs/graph_structure'),
         ]

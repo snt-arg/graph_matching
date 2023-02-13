@@ -8,27 +8,27 @@ import pathlib
 
 
 class Clipper():
-    def __init__(self, data_type, name, logger = None) -> None:
+    def __init__(self, data_type, name, params, logger = None) -> None:
         self.logger = logger
-        with open(os.path.join(pathlib.Path(__file__).parent.resolve(),'params.json', 'r')) as fcc_file:
-            self.params = json.load(fcc_file)
+        self.params = params
         invariant = self.stored_invriants(data_type, name)
         self.create_clipper_object(invariant)
+
 
     def stored_invriants(self, data_type, index = None):
         if data_type == "points":
             iparams = clipperpy.invariants.EuclideanDistanceParams()
-            iparams.sigma = self.params["clipper"][data_type][index]["sigma"]
-            iparams.epsilon = self.params["clipper"][data_type][index]["epsilon"]
-            iparams.mindist = self.params["clipper"][data_type][index]["epsilon"]
+            iparams.sigma = self.params["invariants"][data_type][index]["sigma"]
+            iparams.epsilon = self.params["invariants"][data_type][index]["epsilon"]
+            iparams.mindist = self.params["invariants"][data_type][index]["epsilon"]
             invariant = clipperpy.invariants.EuclideanDistance(iparams)
 
         elif data_type == "points&normal":
             iparams = clipperpy.invariants.PointNormalDistanceParams()
-            iparams.sigp = self.params["clipper"][data_type][index]["sigp"]
-            iparams.epsp = self.params["clipper"][data_type][index]["epsp"]
-            iparams.sign = self.params["clipper"][data_type][index]["sign"]
-            iparams.epsn = self.params["clipper"][data_type][index]["epsn"]
+            iparams.sigp = self.params["invariants"][data_type][index]["sigp"]
+            iparams.epsp = self.params["invariants"][data_type][index]["epsp"]
+            iparams.sign = self.params["invariants"][data_type][index]["sign"]
+            iparams.epsn = self.params["invariants"][data_type][index]["epsn"]
             invariant = clipperpy.invariants.PointNormalDistance(iparams)
 
 
