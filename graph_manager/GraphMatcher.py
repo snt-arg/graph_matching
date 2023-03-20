@@ -157,47 +157,6 @@ class GraphMatcher():
         return(success, final_matches_msg_selection)
 
 
-    # def only_walls_match_custom(self, G1_name, G2_name):
-    #     full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
-    #     self.logger.info("Graph Manager only_walls_match_custom: full_graph_matches - {}".format(len(full_graph_matches)))
-    #     # G1_walls = self.graphs[G1_name].filter_graph_by_node_types("Plane")
-    #     # G2_walls = self.graphs[G2_name].filter_graph_by_node_types("Plane")
-    #     # matches = G1_walls.matchByNodeType(G2_walls)
-    #     # self.logger.info("Graph Manager only_walls_match_custom: matches - {}".format(len(matches)))
-    #     # matches = self.filter_local_match_with_global(matches, full_graph_matches)
-    #     matches = self.filter_matches_by_node_type(self.graphs[G1_name], full_graph_matches, "Plane")
-    #     self.logger.info("Graph Manager only_walls_match_custom: matches in full_graph_matches - {}".format(len(matches)))
-    #     scores = []
-    #     good_matches = []
-    #     for A_categorical in matches:
-    #         data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(self.graphs[G1_name], self.graphs[G2_name], A_categorical, "Geometric_info")
-    #         clipper = Clipper("points&normal")
-    #         clipper.score_pairwise_consistency(data1, data2, A_numerical)
-    #         clipper_match_numerical, score = clipper.solve_clipper()
-    #         clipper_match_categorical = clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2)
-    #         if score >= INTRALEVEL_CLIPPER_THR:
-    #             scores.append(score)
-    #             good_matches.append(clipper_match_categorical)
-    #     self.logger.info("Graph Manager only_walls_match_custom: good_matches - {}".format(len(good_matches)))
-    #     matches_list = []
-    #     sorted_matches_indexes = np.argsort(scores)[::-1]
-    #     scores_sorted = []
-    #     success = False
-    #     for i in sorted_matches_indexes:
-    #         success = True
-    #         scores_sorted.append(scores[i])
-    #         match_list = []
-    #         for edge in good_matches[i]:
-    #             edge_dict = {"origin_node" : int(edge[0]), "target_node" : int(edge[1]), "score" : scores[i]}
-    #             match_list.append(edge_dict)
-    #         matches_list.append(match_list)
-
-    #     if success:
-    #         self.subplots_match(G1_name, G2_name, matches_list[0])
-
-    #     return(success, matches_list, scores_sorted)
-
-
     def filter_local_match_with_global(self, local_match, global_matches):
         filtered = set([ local_elem for local_elem in local_match if any(local_elem in global_match for global_match in global_matches)])
         return filtered

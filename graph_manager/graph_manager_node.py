@@ -112,9 +112,7 @@ class GraphManagerNode(Node):
         self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
         self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
-
-        self.get_logger().info('flag self.params{}'.format(self.params))
-
+        
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 0)
         self.unique_match_publisher = self.create_publisher(MatchMsg, 'unique_match', 10)
