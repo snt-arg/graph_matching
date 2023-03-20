@@ -9,7 +9,6 @@ from launch.events import Shutdown
 from launch.substitutions import (EnvironmentVariable, FindExecutable,
                                 LaunchConfiguration, LocalSubstitution,
                                 PythonExpression)
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
@@ -17,17 +16,17 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # launch_tester_node_ns = LaunchConfiguration('launch_tester_node_ns')
 
-    # launch_tester_node_arg = DeclareLaunchArgument(
-    #     'launch_tester_node_ns',
-    #     default_value=False
-    # )
-    param_file = "/home/adminpc/ros2_ws/src/graph_manager/graph_manager/params.yaml"
+    config = os.path.join(
+        get_package_share_directory('graph_manager'),
+        'config',
+        'param_file.yaml'
+    )
 
     graph_manager_node = Node(
         package='graph_manager',
         executable='graph_manager',
         namespace='graph_manager',
-        parameters = [param_file],
+        parameters = [config],
         remappings=[
             ('/graph_manager/graphs','/s_graphs/graph_structure'),
         ]
