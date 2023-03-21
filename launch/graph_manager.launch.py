@@ -19,16 +19,16 @@ def generate_launch_description():
     config = os.path.join(
         get_package_share_directory('graph_manager'),
         'config',
-        'param_file.yaml'
+        'params.yaml'
     )
 
     graph_manager_node = Node(
         package='graph_manager',
         executable='graph_manager',
-        namespace='graph_manager',
+        # namespace='graph_manager',
         parameters = [config],
         remappings=[
-            ('/graph_manager/graphs','/s_graphs/graph_structure'),
+            ('graph_manager/graphs','/s_graphs/graph_structure'),
         ]
     )
 

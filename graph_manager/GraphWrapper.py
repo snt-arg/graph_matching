@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 SCORE_THR = 0.9
 
 
-class GraphManager():
+class GraphWrapper():
     def __init__(self, graph_def = None, graph_obj = None):
         if graph_def:
             graph = nx.Graph()
@@ -21,7 +21,7 @@ class GraphManager():
             self.name = "unknown"
             self.graph = graph_obj
         else:
-            print("GraphManager: definition of graph not provided")
+            print("GraphWrapper: definition of graph not provided")
 
 
     def get_graph(self):
@@ -93,7 +93,7 @@ class GraphManager():
         def filter_node_fn(node):
             return True if self.graph.nodes(data=True)[node]["type"] in types else False 
 
-        graph_filtered = GraphManager(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
         return graph_filtered
 
 
@@ -101,7 +101,7 @@ class GraphManager():
         def filter_node_fn(node):
             return True if node in id_list else False 
 
-        graph_filtered = GraphManager(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
         return graph_filtered
 
 
@@ -112,7 +112,7 @@ class GraphManager():
     def get_neighbourhood_graph(self, node_name):
         neighbours = self.graph.neighbors(node_name)
         filtered_neighbours_names = list([n for n in neighbours]) + [node_name]
-        subgraph = GraphManager(graph_obj= self.graph.subgraph(filtered_neighbours_names))
+        subgraph = GraphWrapper(graph_obj= self.graph.subgraph(filtered_neighbours_names))
         return(subgraph)
 
 
@@ -182,6 +182,9 @@ class GraphManager():
 
     def set_name(self, name):
         self.name = name
+
+    def is_empty(self):
+        return True if len(self.graph.nodes) == 0 else False
 
 
     # ## Geometry functions

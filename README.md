@@ -26,6 +26,7 @@ The only tested ROS version for this package is ROS2 Humble
 
 	- pip install networkx[default]
 	- pip install -U scikit-learn
+	- CLIPPER https://github.com/mit-acl/clipper
 
 #### Building
 

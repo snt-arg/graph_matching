@@ -50,42 +50,10 @@ from .utils import plane_4_params_to_6_params
 class GraphManagerNode(Node):
 
     def __init__(self):
-        super().__init__('graph_manager')
-        self._declare_parameters()
-        self.gm = GraphMatcher(self.get_logger())
+        super().__init__('graph_manager', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
+        self.gm = GraphMatcher(self.get_logger())    
         self.set_interface()
-        
 
-    def _declare_parameters(self):
-
-        # params = self.declare_parameters(namespace='', parameters=[\
-        #     Parameter('param_1', Parameter.Type.INTEGER, 123),\
-        #     Parameter('levels.datatype.Plane', Parameter.Type.STRING, 'hello world')\
-        #          ])
-        
-        self.declare_parameter('invariants.points.0.sigma', 0.)
-        self.declare_parameter('invariants.points.0.epsilon', 0.)
-        self.declare_parameter('invariants.points.0.mindist', 0)
-        self.declare_parameter('invariants.points&normal.0.sigp', 0.)
-        self.declare_parameter('invariants.points&normal.0.epsp', 0.)
-        self.declare_parameter('invariants.points&normal.0.sign', 0.)
-        self.declare_parameter('invariants.points&normal.0.epsn', 0.)
-        self.declare_parameter('invariants.points&normal.1.sigp', 0.)
-        self.declare_parameter('invariants.points&normal.1.epsp', 0.)
-        self.declare_parameter('invariants.points&normal.1.sign', 0.)
-        self.declare_parameter('invariants.points&normal.1.epsn', 0.)
-        self.declare_parameter('thresholds.local_intralevel', 0.)
-        self.declare_parameter('thresholds.local_interlevel', 0.)
-        self.declare_parameter('thresholds.global', 0.)
-        self.declare_parameter('dbscan.eps', 0.)
-        self.declare_parameter('dbscan.min_samples', 0)
-        self.declare_parameter('levels.name', ["jmhb", "dg"])
-        self.declare_parameter('levels.datatype.floor', "")
-        self.declare_parameter('levels.datatype.Finite Room', "")
-        self.declare_parameter('levels.datatype.Plane',"df")
-        self.declare_parameter('levels.clipper_invariants.floor', 0)
-        self.declare_parameter('levels.clipper_invariants.Finite Room', 0)
-        self.declare_parameter('levels.clipper_invariants.Plane', 0)
 
     def get_parameters(self):
         self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
@@ -105,7 +73,7 @@ class GraphManagerNode(Node):
         self.params["thresholds"]["global"] = self.get_parameter('thresholds.global').value
         self.params["dbscan"]["eps"] = self.get_parameter('dbscan.eps').value
         self.params["dbscan"]["min_samples"] = self.get_parameter('dbscan.min_samples').value
-        self.params["levels"]["name"] = self.get_parameter('levels.name').value
+        self.params["levels"]["name"] = self.get_parameter('levels.name').value   
         self.params["levels"]["datatype"]["floor"] = self.get_parameter('levels.datatype.floor').value
         self.params["levels"]["datatype"]["Finite Room"] = self.get_parameter('levels.datatype.Finite Room').value
         self.params["levels"]["datatype"]["Plane"] = self.get_parameter('levels.datatype.Plane').value
@@ -114,12 +82,12 @@ class GraphManagerNode(Node):
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
         
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(GraphMsg,'graphs', self.graph_callback, 0)
-        self.unique_match_publisher = self.create_publisher(MatchMsg, 'unique_match', 10)
-        self.best_match_publisher = self.create_publisher(MatchMsg, 'best_match', 10)
-        self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'unique_match_visualization', 10)
-        self.best_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'best_match_visualization', 10)
-        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'subgraph_match', self.subgraph_match_srv_callback)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graph_manager/graphs', self.graph_callback, 0)
+        self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_manager/unique_match', 10)
+        self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_manager/best_match', 10)
+        self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_manager/unique_match_visualization', 10)
+        self.best_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_manager/best_match_visualization', 10)
+        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_manager/subgraph_match', self.subgraph_match_srv_callback)
 
 
     def graph_callback(self, msg):
@@ -164,48 +132,55 @@ class GraphManagerNode(Node):
         self.gm.setGraph(graph)
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+
+        ### Filtering unparented nodes
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
-        # self.test_with_prior_graph(graph)
+        # ### Match
+        # if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
+        #     success, matches = self.gm.match_custom("Prior", "ONLINE")
 
-        if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-            success, matches = self.gm.match_custom("Prior", "ONLINE")
-
-            if success and len(matches) > 0:
-                best_match_msg = self.generate_match_msg(matches[0])
-                self.best_match_publisher.publish(best_match_msg)
-                best_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-                self.best_match_visualization_publisher.publish(best_match_visualization_msg)
-            if success and len(matches) == 1:
-                unique_match_msg = self.generate_match_msg(matches[0])
-                self.unique_match_publisher.publish(unique_match_msg)
-                unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-                self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
+        #     if success and len(matches) > 0:
+        #         best_match_msg = self.generate_match_msg(matches[0])
+        #         self.best_match_publisher.publish(best_match_msg)
+        #         best_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+        #         self.best_match_visualization_publisher.publish(best_match_visualization_msg)
+        #     if success and len(matches) == 1:
+        #         unique_match_msg = self.generate_match_msg(matches[0])
+        #         self.unique_match_publisher.publish(unique_match_msg)
+        #         unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+        #         self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
 
 
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
-        response.success, matches, response.score = self.gm.only_walls_match_custom(request.base_graph, request.target_graph)
-        
-        if response.success:
-            for match in matches:
-                graph_msg = GraphMsg()
-                for edge in match:
-                    edge_msg = EdgeMsg()
-                    edge_msg.origin_node = edge["origin_node"]
-                    edge_msg.origin_node = edge["target_node"]
-                    attrib_msg = AttributeMsg()
-                    attrib_msg.name = "score"
-                    attrib_msg.fl_value = [edge["score"]]
-                    edge_msg.attributes = [attrib_msg]
-                    graph_msg.edges.append(edge_msg)
-                response.matches.append(graph_msg)
-            self.get_logger().warn('At least one successful match found!')
 
+        if request.base_graph not in self.gm.graphs.keys() or request.target_graph not in self.gm.graphs.keys() or \
+            self.gm.graphs[request.base_graph].is_empty() or self.gm.graphs[request.target_graph].is_empty():
+            response.success = 3
         else:
-            self.get_logger().warn('Graph Manager: no good matches found!')
+            success, matches = self.gm.match_custom(request.base_graph, request.target_graph)
+            
+            if success:
+                matches_msg = [self.generate_match_msg(match) for match in matches]
+                matches_visualization_msg = [self.generate_match_visualization_msg(match) for match in matches]
+                self.get_logger().warn('{} successful match(es) found!'.format(len(matches_msg)))
+                response.success = 0 if len(matches_msg) == 1 else 1
+
+            else:
+                response.success = 2
+                self.get_logger().warn('Graph Manager: no good matches found!')
+
+            if response.success == 0:
+                self.unique_match_publisher.publish(matches_msg[0])
+                self.unique_match_visualization_publisher.publish(matches_visualization_msg[0])
+            if response.success == 0 or response.success == 1:
+                self.best_match_publisher.publish(matches_msg[0])
+                self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
+
+
         return response
 
 
@@ -297,7 +272,6 @@ class GraphManagerNode(Node):
         wall_nodes = ["29","4", "30", "5"]
 
         for graph_basic in [graph_old, graph]:
-            self.get_logger().info('flag graph_basic {}'.format(graph_basic["name"]))
             for node in graph_basic["nodes"]:
 
                 if node[0] == room_node:
@@ -322,7 +296,6 @@ class GraphManagerNode(Node):
                     attrs["draw_pos"] = attrs["Geometric_info"][:2]
                     node[1] = attrs
                     nodes.append(node)
-            self.get_logger().info('flag nodes {}'.format(nodes))
 
             local_graph["nodes"] = nodes
             self.gm.setGraph(local_graph)

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from .GraphManager import GraphManager
+from .GraphWrapper import GraphWrapper
 from .Clipper import Clipper
 from .utils import transform_plane_definition
 
@@ -24,7 +24,7 @@ class GraphMatcher():
 
 
     def setGraph(self, graph_def):
-        self.graphs[graph_def['name']] = GraphManager(graph_def = graph_def)
+        self.graphs[graph_def['name']] = GraphWrapper(graph_def = graph_def)
 
 
     def match_custom(self, G1_name, G2_name):
@@ -36,13 +36,13 @@ class GraphMatcher():
         sweeped_levels_ci = self.params["levels"]["clipper_invariants"]
         full_graph_matches = self.graphs[G1_name].matchByNodeType(self.graphs[G2_name])
         lvl = 0
-        match_graph = GraphManager(graph_def={'name': "match",'nodes' : [], 'edges' : []})
+        match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []})
 
         def match_iteration(G1, G2, lvl, parents_data = None):
             G1_lvl = G1.filter_graph_by_node_types(sweeped_levels[lvl])
             G2_lvl = G2.filter_graph_by_node_types(sweeped_levels[lvl])
-
             all_pairs_categorical = self.get_all_possible_match_pairs(G1_lvl.graph.nodes(), G2_lvl.graph.nodes())
+            
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO Fix
             if parents_data:
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1, G2, all_pairs_categorical, "Geometric_info")
@@ -144,6 +144,7 @@ class GraphMatcher():
             # self.subplots_match(G1_name, G2_name, final_matches_msg[biggest_maches_i[best_match_i]][1])
             biggest_consistent_matches = [final_matches_msg[i] for i in biggest_maches_i]
             final_matches_msg_selection = self.symmetry_detection(biggest_consistent_matches)
+
             if len(final_matches_msg_selection) == 1:
                 self.logger.info("Only one match succeded with score - {}".format(final_matches_msg_selection[0][0]))
             elif len(final_matches_msg_selection) > 1:
