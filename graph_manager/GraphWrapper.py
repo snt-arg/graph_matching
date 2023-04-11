@@ -106,7 +106,7 @@ class GraphWrapper():
 
 
     def stack_nodes_feature(self, node_list, feature):
-        return np.array([self.graph.nodes(data=True)[key][feature] for key in node_list]).astype(np.float64)
+        return np.array([self.get_attributes_of_node(key)[feature] for key in node_list]).astype(np.float64)
 
 
     def get_neighbourhood_graph(self, node_name):
@@ -172,8 +172,10 @@ class GraphWrapper():
 
     def get_attributes_of_node(self, node_id):
         return self.graph.nodes(data=True)[node_id]
-
-
+    
+    def get_attributes_of_all_nodes(self):
+        return self.graph.nodes(data=True)
+    
     def get_attributes_of_edge(self, edge_id):
         return self.graph.edges(data=True)[edge_id]
 
