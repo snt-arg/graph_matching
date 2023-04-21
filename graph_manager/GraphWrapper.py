@@ -21,7 +21,8 @@ class GraphWrapper():
             self.name = "unknown"
             self.graph = graph_obj
         else:
-            print("GraphWrapper: definition of graph not provided")
+            self.graph = nx.Graph()
+            print("GraphWrapper: definition of graph not provided. Empty graph created")
 
 
     def get_graph(self):
@@ -90,11 +91,19 @@ class GraphWrapper():
 
 
     def filter_graph_by_node_types(self, types):
-        def filter_node_fn(node):
-            return True if self.graph.nodes(data=True)[node]["type"] in types else False 
+        def filter_node_types_fn(node):
+            return True if self.graph.nodes(data=True)[node]["type"] in types else False
 
-        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_fn))
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_types_fn))
         return graph_filtered
+    
+    def filter_graph_by_node_attributes(self, attrs):
+        def filter_node_attrs_fn(node):
+            return attrs.items() <= self.graph.nodes(data=True)[node].items()
+
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_attrs_fn))
+        return graph_filtered
+
 
 
     def filter_graph_by_node_list(self, id_list):

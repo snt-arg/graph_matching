@@ -21,7 +21,7 @@
       thresholds : 
         local_intralevel : 0.7
         local_interlevel : 0.7
-        global : 0.8
+        global : 0.7
       dbscan : 
         eps : 0.01
         min_samples : 1

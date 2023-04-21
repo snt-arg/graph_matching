@@ -14,10 +14,8 @@
 
 import rclpy
 import time
-import json
 import copy
 import numpy as np
-import pkg_resources
 from rclpy.node import Node
 from .utils import *
 from tf2_ros.transform_listener import TransformListener
@@ -157,31 +155,43 @@ class GraphManagerNode(Node):
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
 
-        if request.base_graph not in self.gm.graphs.keys() or request.target_graph not in self.gm.graphs.keys() or \
-            self.gm.graphs[request.base_graph].is_empty() or self.gm.graphs[request.target_graph].is_empty():
-            response.success = 3
-        else:
-            success, matches = self.gm.match_custom(request.base_graph, request.target_graph)
-            
-            if success:
-                matches_msg = [self.generate_match_msg(match) for match in matches]
-                matches_visualization_msg = [self.generate_match_visualization_msg(match) for match in matches]
-                self.get_logger().warn('{} successful match(es) found!'.format(len(matches_msg)))
-                response.success = 0 if len(matches_msg) == 1 else 1
 
+        def match_fn(request, response):
+            if request.base_graph not in self.gm.graphs.keys() or request.target_graph not in self.gm.graphs.keys() or \
+                self.gm.graphs[request.base_graph].is_empty() or self.gm.graphs[request.target_graph].is_empty():
+                response.success = 3
             else:
-                response.success = 2
-                self.get_logger().warn('Graph Manager: no good matches found!')
+                success, matches = self.gm.match_custom(request.base_graph, request.target_graph)
+                
+                if success:
+                    matches_msg = [self.generate_match_msg(match) for match in matches]
+                    matches_visualization_msg = [self.generate_match_visualization_msg(match) for match in matches]
+                    self.get_logger().warn('{} successful match(es) found!'.format(len(matches_msg)))
+                    response.success = 0 if len(matches_msg) == 1 else 1
 
-            if response.success == 0:
-                self.unique_match_publisher.publish(matches_msg[0])
-                self.unique_match_visualization_publisher.publish(matches_visualization_msg[0])
-            if response.success == 0 or response.success == 1:
-                self.best_match_publisher.publish(matches_msg[0])
-                self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
+                else:
+                    response.success = 2
+                    self.get_logger().warn('Graph Manager: no good matches found!')
+
+                if response.success == 0:
+                    self.unique_match_publisher.publish(matches_msg[0])
+                    self.unique_match_visualization_publisher.publish(matches_visualization_msg[0])
+                if response.success == 0 or response.success == 1:
+                    self.best_match_publisher.publish(matches_msg[0])
+                    self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
 
 
+            return response
+        
+        response = match_fn(request, response)
         return response
+        # try:
+        #     while rclpy.ok():
+        #         match_fn(request, response)
+        #         time.sleep(1)
+        # except KeyboardInterrupt:
+        #     pass
+        # return
 
 
     def generate_match_msg(self, match):

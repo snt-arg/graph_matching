@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import math
+import itertools
 
 def plane_4_params_to_6_params(plane):
     normal = plane[:3]
@@ -86,6 +87,10 @@ def rotation_matrix_from_euler_degrees(phi, theta, psi):
         R = Rz(degrees_to_radians(psi)) * Ry(degrees_to_radians(theta)) * Rx(degrees_to_radians(phi))
         return np.array(R)
 
+
+def multilist_combinations(lists):
+    return list(itertools.product(*lists))
+
 # pn = np.array([[2,0,0,1,0,0]])
 # p = np.array([[1,0,0]])
 # tra = np.array([1,0,0])
@@ -103,3 +108,6 @@ def rotation_matrix_from_euler_degrees(phi, theta, psi):
 
 # print(((0.92495263 + 0.88753341 + 0.9686793)*2 + 3) / 3)
 # 2.5955923427238172
+
+# [[1,2,3],[4,5,6],[7,8,9,10]]
+# print(multilist_combinations([[1,2,3],[4,5,6],[7,8,9,10]]))
