@@ -67,7 +67,7 @@ class GraphWrapper():
         options = self.define_draw_position_option_by_attr(options)
 
         if fig_name:
-            fig = plt.figure(fig_name)
+            fig = plt.figure(fig_name, figsize=(200,200))
             ax = plt.gca()
             ax.clear()
         nx.draw(self.graph, **options)
@@ -162,6 +162,19 @@ class GraphWrapper():
         else:
             size = None
         return size
+    
+
+    def define_node_linewidth_option_by_combination_type_attr(self):
+        if all(["merge_lvl" in node[1].keys() for node in self.graph.nodes(data=True)]):
+            linewidth = []
+            for node in self.graph.nodes(data=True):
+                if node[1]["merge_lvl"] == 1:
+                    linewidth.append(1)
+                else:
+                    linewidth.append(0)
+        else:
+            linewidth = None
+        return linewidth
 
 
     def filterout_unparented_nodes(self):
@@ -171,7 +184,15 @@ class GraphWrapper():
 
 
     def find_nodes_by_attrs(self, attrs):
-        nodes = [x for x,y in self.graph.nodes(data=True) if all(attrs[attr] in y[attr] for attr in attrs.keys())]
+        def test_fn(a,b):
+            try:
+                iter(b)
+                return a in b
+            except TypeError:
+                return a == b
+            else:
+                return False
+        nodes = [x for x,y in self.graph.nodes(data=True) if all(test_fn(attrs[attr], y[attr]) for attr in attrs.keys())]
         return nodes
 
     

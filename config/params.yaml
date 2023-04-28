@@ -19,9 +19,9 @@
             sign : 0.10
             epsn : 0.35
       thresholds : 
-        local_intralevel : 0.7
-        local_interlevel : 0.7
-        global : 0.7
+        local_intralevel : 0.95
+        local_interlevel : 0.95
+        global : 0.95
       dbscan : 
         eps : 0.01
         min_samples : 1

@@ -132,9 +132,9 @@ class GraphManagerNode(Node):
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
         ### Filtering unparented nodes
-        self.gm.graphs[graph["name"]].filterout_unparented_nodes()
-        options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        # self.gm.graphs[graph["name"]].filterout_unparented_nodes()
+        # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
         # ### Match
         # if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
@@ -196,7 +196,7 @@ class GraphManagerNode(Node):
 
     def generate_match_msg(self, match):
         match_msg = MatchMsg()
-        for edge in match[1]:
+        for edge in match:
             ### Edge
             edge_msg = EdgeMsg()
             edge_msg.origin_node = edge["origin_node"]
@@ -336,7 +336,7 @@ class GraphManagerNode(Node):
         transform_stamped.transform = transform
         
         marker_array = []
-        for i, edge in enumerate(match[1]):
+        for i, edge in enumerate(match):
             origin_point_original = edge["origin_node_attrs"]["Geometric_info"][:3]
             point_msg = PointStampedMsg()
             point_msg.point.x, point_msg.point.y, point_msg.point.z = origin_point_original[0], origin_point_original[1], origin_point_original[2]
