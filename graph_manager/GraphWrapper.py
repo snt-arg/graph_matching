@@ -182,6 +182,9 @@ class GraphWrapper():
         [new_graph.remove_node(node) for node in self.graph.nodes() if len(list([n for n in self.graph.neighbors(node)])) == 0]
         self.graph = new_graph
 
+    def remove_nodes(self, node_IDs):
+        [self.graph.remove_node(node_ID) for node_ID in node_IDs]
+
 
     def find_nodes_by_attrs(self, attrs):
         def test_fn(a,b):

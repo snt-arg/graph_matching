@@ -217,6 +217,23 @@ class GraphMatcher():
         data1 = np.concatenate((data1, [data_parent1]), axis= 0, dtype = np.float64)
         data2 = np.concatenate((data2, [data_parent2]), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent)
+    
+
+    def add_floor_data(self, data1, data2, A_numerical):
+        floor_data = np.repeat([[0,0,0,0,0,1]], len(A_numerical), axis=0)
+        self.logger.info("flag 10 data1 {}".format(data1))
+        A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
+        data1 = np.concatenate(([[0,0,0,0,0,1]], data1), axis= 0, dtype = np.float64)
+        data2 = np.concatenate(([[0,0,0,0,0,1]], data2), axis= 0, dtype = np.float64)
+        self.logger.info("flag 11 data1 {}".format(data1))
+        self.logger.info("flag 11 data2 {}".format(data2))
+        return(data1, data2, A_numerical_with_parent)
+    
+    # def delete_floor_data(self, data1, data2, A_numerical):
+    #     A_numerical = A_numerical[1:]
+    #     self.logger.info("flag data1 {}".format(data1))
+    #     data1 = data1[1:]
+    #     self.logger.info("flag data1 {}".format(data1))
 
 
     def geometric_info_transformation(self, data, level, parent_data):
@@ -481,6 +498,7 @@ class GraphMatcher():
         G2_level_pair_nodes_all = G2_full.find_nodes_by_attrs({"type": sleeped_levels[1]})
         G2_level_pair_nodes_all_unparented = [node for node in G2_level_pair_nodes_all if G2_full.get_neighbourhood_graph(node).filter_graph_by_node_attributes({"type": sleeped_levels[0]})]
         merged_nodes = match_graph.find_nodes_by_attrs({"type": sleeped_levels[1], "merge_lvl": 1})
+        combinations = []
 
         for merged_node in merged_nodes:
             merged_node_match = match_graph.get_attributes_of_node(merged_node)["match"]
@@ -516,12 +534,20 @@ class GraphMatcher():
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, merged_node_match, "Geometric_info")
             data1 = self.geometric_info_transformation(data1, sleeped_levels[1], parent1_data)
             data2 = self.geometric_info_transformation(data2, sleeped_levels[1], parent2_data)
+            # data1, data2, A_numerical = self.add_floor_data(data1, data2, A_numerical)
             clipper = Clipper(self.params["levels"]["datatype"][sleeped_levels[1]], self.params["levels"]["clipper_invariants"][sleeped_levels[1]], self.params, self.logger)
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
-            self.logger.info("flag consistency_avg {}".format(consistency_avg))
-            match_graph.set_node_attributes("consistency_avg", {merged_node: consistency_avg})
-            match_graph.set_node_attributes("match", {merged_node: merged_node_match})
+            # self.logger.info("flag consistency_avg {}".format(consistency_avg))
+            combinations.append({"consistency_avg":consistency_avg, "match": merged_node_match, "base_node_ID": merged_node})
 
+        best_combinations = self.symmetry_detection(combinations)
 
+        for combination in combinations:
+            if combination in best_combinations:
+                match_graph.set_node_attributes("consistency_avg", {combination["base_node_ID"]: combination["consistency_avg"]})
+                match_graph.set_node_attributes("match", {combination["base_node_ID"]: combination["match"]})
+                self.logger.info("flag good combination {}".format(combination))
+            else:
+                match_graph.remove_nodes([combination["base_node_ID"]])
             
