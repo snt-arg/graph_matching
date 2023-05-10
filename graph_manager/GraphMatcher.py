@@ -40,19 +40,6 @@ class GraphMatcher():
         G1_full = self.graphs[G1_name]
         G2_full = self.graphs[G2_name]
 
-        ### Detect unparented nodes
-        unparented_nodes = {}
-        for i, sweeped_level in enumerate(sweeped_levels[1:]):
-            unparented_nodes[sweeped_level] = {"G1": [], "G2": []}
-            for node in G1_full.filter_graph_by_node_types(sweeped_level).get_nodes_ids():
-                if len(G1_full.get_neighbourhood_graph(node).filter_graph_by_node_types(sweeped_levels[i]).get_nodes_ids()) == 0:
-                    unparented_nodes[sweeped_level]["G1"].append(node)
-            for node in G2_full.filter_graph_by_node_types(sweeped_level).get_nodes_ids():
-                if len(G2_full.get_neighbourhood_graph(node).filter_graph_by_node_types(sweeped_levels[i]).get_nodes_ids()) == 0:
-                    unparented_nodes[sweeped_level]["G2"].append(node)
-
-        self.logger.info("unparented_nodes {}".format(unparented_nodes))
-
         def match_iteration(working_node_ID, lvl):
             if working_node_ID:
                 working_node_attrs = match_graph.get_attributes_of_node(working_node_ID)
@@ -110,7 +97,7 @@ class GraphMatcher():
                     node_attr = [(group_node_id, {"type": sweeped_levels[lvl], "match": filter1_matches[good_submatch_i], "merge_lvl" :0,\
                                     "combination_type" : "group", "score_intralevel" : filter1_scores[good_submatch_i]})]
                     if working_node_ID:
-                        edges_attr = [(working_node_ID, group_node_id)]
+                        edges_attr = [(working_node_ID, group_node_id, {})]
                     else:
                         edges_attr = []
                     match_graph.add_subgraph(node_attr, edges_attr)
@@ -133,7 +120,7 @@ class GraphMatcher():
                                                             "combination_type" : "pair", "score_interlevel" : interlevel_scores_dict[lowerlevel_match_pair],\
                                                             "data_node1" : parent1_data[i], "data_node2" : parent2_data[i], "merge_lvl" :0})]
                                 
-                                edges_attr = [(pair_node_id, group_node_id)]
+                                edges_attr = [(pair_node_id, group_node_id, {})]
 
                                 match_graph.add_subgraph(node_attr, edges_attr)
 
@@ -142,8 +129,8 @@ class GraphMatcher():
                                 match_iteration(pair_node_id, lvl + 1)
 
                             else:
-                                edges_attr = [(existing_nodes[0], group_node_id)]
-                                match_graph.add_subgraph([], edges_attr)
+                                edges_attr = [(existing_nodes[0], group_node_id, {})]
+                                match_graph.add_edges(edges_attr)
 
             if lvl < len(sweeped_levels) - 1:
                 self.prune_interlevel(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
@@ -486,8 +473,8 @@ class GraphMatcher():
                 best_combination_node_id = match_graph.get_total_number_nodes() + 1
                 node_attr = [(best_combination_node_id, {"type": merged_levels[1], "match": best_combination["match"], "merge_lvl" :1,\
                                             "combination_type" : "group", "score_intralevel" : best_combination["consistency_avg"]})]
-                edges_attr = [(lower_level_node, best_combination_node_id) for lower_level_node in best_combination["lower_level_nodes_IDs"]]
-                edges_attr.append((best_combination["higher_level_node_ID"], best_combination_node_id))
+                edges_attr = [(lower_level_node, best_combination_node_id, {}) for lower_level_node in best_combination["lower_level_nodes_IDs"]]
+                edges_attr.append((best_combination["higher_level_node_ID"], best_combination_node_id, {}))
                 match_graph.add_subgraph(node_attr, edges_attr)
 
                 match_graph.set_node_attributes("merge_lvl", {best_combination["higher_level_node_ID"]:1})

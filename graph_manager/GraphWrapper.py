@@ -130,9 +130,14 @@ class GraphWrapper():
 
 
     def add_subgraph(self, nodes_def, edges_def):
-        [self.graph.add_node(node_def[0], **node_def[1]) for node_def in nodes_def]
-        [self.graph.add_edge(edge_def[0], edge_def[1]) for edge_def in edges_def]
+        self.add_nodes(nodes_def)
+        self.add_edges(edges_def)
 
+    def add_nodes(self, nodes_def):
+        [self.graph.add_node(node_def[0], **node_def[1]) for node_def in nodes_def]
+
+    def add_edges(self, edges_def):
+        [self.graph.add_edge(edge_def[0], edge_def[1], **edge_def[2]) for edge_def in edges_def]
 
     def define_draw_color_option_by_node_type(self, ):
         color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "orange"}
@@ -211,6 +216,9 @@ class GraphWrapper():
     
     def get_attributes_of_edge(self, edge_id):
         return self.graph.edges(data=True)[edge_id]
+    
+    def get_attributes_of_all_edges(self):
+        return self.graph.edges(data=True)
 
     def get_nodes_ids(self):
         return self.graph.nodes()
@@ -220,6 +228,9 @@ class GraphWrapper():
 
     def is_empty(self):
         return True if len(self.graph.nodes) == 0 else False
+    
+    def to_pytorch_geometric_format(self):
+        self.number_of_nodes = self.get_total_number_nodes
 
 
     # ## Geometry functions
