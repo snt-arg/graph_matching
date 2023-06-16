@@ -528,7 +528,8 @@ class GraphMatcher():
             # self.logger.info("flag consistency_avg {}".format(consistency_avg))
             combinations.append({"consistency_avg":consistency_avg, "match": merged_node_match, "base_node_ID": merged_node})
 
-        best_combinations = self.symmetry_detection(combinations)
+        if combinations:
+            best_combinations = self.symmetry_detection(combinations)
 
         for combination in combinations:
             if combination in best_combinations:
