@@ -3,6 +3,7 @@ import networkx as nx
 import copy
 from networkx.algorithms import isomorphism
 import matplotlib.pyplot as plt
+import itertools
 
 
 SCORE_THR = 0.9
@@ -22,7 +23,7 @@ class GraphWrapper():
             self.graph = graph_obj
         else:
             self.graph = nx.Graph()
-            print("GraphWrapper: definition of graph not provided. Empty graph created")
+            # print("GraphWrapper: definition of graph not provided. Empty graph created")
 
 
     def get_graph(self):
@@ -97,6 +98,13 @@ class GraphWrapper():
         graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_types_fn))
         return graph_filtered
     
+    def filter_graph_by_edge_types(self, types):
+        def filter_edge_types_fn(n1, n2):
+            return True if self.graph[n1][n2]["type"] in types else False
+
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_edge=filter_edge_types_fn))
+        return graph_filtered
+    
     def filter_graph_by_node_attributes(self, attrs):
         def filter_node_attrs_fn(node):
             return attrs.items() <= self.graph.nodes(data=True)[node].items()
@@ -138,6 +146,10 @@ class GraphWrapper():
 
     def add_edges(self, edges_def):
         [self.graph.add_edge(edge_def[0], edge_def[1], **edge_def[2]) for edge_def in edges_def]
+
+    def unfreeze(self):
+        if nx.is_frozen(self.graph):
+            self.graph = nx.Graph(self.graph)
 
     def define_draw_color_option_by_node_type(self, ):
         color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "orange"}
@@ -190,6 +202,13 @@ class GraphWrapper():
     def remove_nodes(self, node_IDs):
         [self.graph.remove_node(node_ID) for node_ID in node_IDs]
 
+    def remove_edges(self, edge_IDs):
+        [self.graph.remove_edge(edge_ID[0], edge_ID[1]) for edge_ID in edge_IDs]
+
+    def remove_all_edges(self):
+        self.graph = nx.Graph(self.graph)
+        edge_IDs = self.get_edges_ids()
+        self.remove_edges(edge_IDs)
 
     def find_nodes_by_attrs(self, attrs):
         def test_fn(a,b):
@@ -214,14 +233,23 @@ class GraphWrapper():
     def get_attributes_of_all_nodes(self):
         return self.graph.nodes(data=True)
     
-    def get_attributes_of_edge(self, edge_id):
-        return self.graph.edges(data=True)[edge_id]
+    def get_attributes_of_edge(self, edge_id): ### TODO Not  working
+        return self.graph.edges(data=True)[edge_id[0],edge_id[1]]
     
     def get_attributes_of_all_edges(self):
         return self.graph.edges(data=True)
 
     def get_nodes_ids(self):
         return self.graph.nodes()
+    
+    def get_edges_ids(self):
+        return self.graph.edges()
+    
+    def update_node_attrs(self, node_id, attrs):
+        self.graph.nodes[node_id].update(attrs)
+
+    def update_edge_attrs(self, edge_id, attrs):
+        self.graph.edges[edge_id[0],edge_id[1]].update(attrs)
 
     def set_name(self, name):
         self.name = name
@@ -229,8 +257,41 @@ class GraphWrapper():
     def is_empty(self):
         return True if len(self.graph.nodes) == 0 else False
     
-    def to_pytorch_geometric_format(self):
-        self.number_of_nodes = self.get_total_number_nodes
+    def get_all_node_types(self):
+        attributes_of_all_nodes = self.get_attributes_of_all_nodes()
+        types = set()
+        for node_attr in attributes_of_all_nodes:
+            types.add(node_attr[1]["type"])
+
+        return types
+    
+    def get_all_edge_types(self):
+        attributes_of_all_edges = self.get_attributes_of_all_edges()
+        types = set()
+        for edge_attr in attributes_of_all_edges:
+            types.add(edge_attr[2]["type"])
+
+        return types
+    
+    def relabel_nodes(self, mapping = False):
+        if not mapping:
+            mapping = dict(zip(self.get_nodes_ids(), range(len(self.get_nodes_ids()))))
+        self.unfreeze()
+        self.graph = nx.relabel_nodes(self.graph, mapping=mapping, copy=False)
+
+        return mapping
+    
+    def to_undirected(self):
+        self.graph.to_directed()
+    
+    # def make_fully_connected(self):
+    #     nodes_IDs = list(self.get_nodes_ids())
+    #     current_edges = set(self.get_edges_ids())
+    #     new_edges = set(itertools.combinations(nodes_IDs,2))
+    #     new_edges = list(np.setdiff1d(new_edges, current_edges, assume_unique=False))
+    #     self.graph.add_edges_from(new_edges)
+    #     SDFasdf
+
 
 
     # ## Geometry functions
