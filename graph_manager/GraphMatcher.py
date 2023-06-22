@@ -74,8 +74,6 @@ class GraphMatcher():
 
             ### INTRALEVEL CANDIDATES COMBINATION
             complete_matches_combinations = G1_lvl.matchByNodeType(G2_lvl)
-            self.logger.info(f"flag sweeped_levels[lvl] {sweeped_levels[lvl]}")
-            self.logger.info(f"flag complete_matches_combinations {complete_matches_combinations}")
             interlevel_consistent_combinations = self.delete_list_if_element_inside(G1_lvl.matchByNodeType(G2_lvl), filtered_bad_pairs_categorical)
             filter1_scores = []
             filter1_matches = []
