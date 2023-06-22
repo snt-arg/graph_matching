@@ -527,8 +527,7 @@ class GraphMatcher():
             consistency_avg = clipper.get_score_all_inital_u()
             combinations.append({"consistency_avg":consistency_avg, "match": merged_node_match, "base_node_ID": merged_node})
 
-        if combinations:
-            best_combinations = self.symmetry_detection(combinations)
+        best_combinations = self.symmetry_detection(combinations) ### TODO: Detect and fix when this line crashes
 
         for combination in combinations:
             if combination in best_combinations:
