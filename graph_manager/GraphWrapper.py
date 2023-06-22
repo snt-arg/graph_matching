@@ -112,7 +112,13 @@ class GraphWrapper():
         graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_attrs_fn))
         return graph_filtered
 
+    def filter_graph_by_node_attributes_containted(self, attrs):
+        def filter_node_attrs_fn(node):
+            return all([True if attrs[key] in self.graph.nodes(data=True)[node][key] else False for key in attrs.keys()])
 
+        graph_filtered = GraphWrapper(graph_obj = nx.subgraph_view(self.graph, filter_node=filter_node_attrs_fn))
+        return graph_filtered
+    
 
     def filter_graph_by_node_list(self, id_list):
         def filter_node_fn(node):
