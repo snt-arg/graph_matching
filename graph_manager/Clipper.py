@@ -48,7 +48,7 @@ class Clipper():
         C = self.get_constraint_matrix()
         M = self.get_affinity_matrix()
         t1 = time.perf_counter()
-        print(f"Affinity matrix creation took {t1-t0:.3f} seconds")
+        # print(f"Affinity matrix creation took {t1-t0:.3f} seconds")
 
 
     # def filter_C_M_matrices(self, external_C):

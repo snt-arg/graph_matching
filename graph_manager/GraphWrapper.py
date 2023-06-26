@@ -52,7 +52,7 @@ class GraphWrapper():
         matches = self.categoricalMatch(G2, categorical_condition, draw)
         matches_as_set_of_tuples = [set(zip(match.keys(), match.values())) for match in matches]
         # matches_as_list = [[[key, match[key]] for key in match.keys()] for match in matches]
-        print("GM: Found {} candidates after isomorphism and cathegorical in type matching".format(len(matches_as_set_of_tuples),))
+        # print("GM: Found {} candidates after isomorphism and cathegorical in type matching".format(len(matches_as_set_of_tuples),))
         return matches_as_set_of_tuples
 
 
@@ -159,6 +159,7 @@ class GraphWrapper():
 
     def define_draw_color_option_by_node_type(self, ):
         color_palette = {"floor" : "orange", "Infinite Room" : "cyan", "Finite Room" : "cyan", "Plane" : "orange"}
+        color_palette.update({"room" : "cyan", "ws" : "orange"})
         type_list = [node[1]["type"] for node in self.graph.nodes(data=True)]
         colors = [color_palette[node_type] for node_type in type_list]
 
@@ -289,6 +290,12 @@ class GraphWrapper():
     
     def to_undirected(self):
         self.graph.to_directed()
+
+    def stringify_node_ids(self):
+        raw_node_ids = list(self.get_nodes_ids())
+        str_node_ids = map(str, raw_node_ids)
+        mapping = dict(zip(raw_node_ids, str_node_ids))
+        self.relabel_nodes(mapping)
     
     # def make_fully_connected(self):
     #     nodes_IDs = list(self.get_nodes_ids())

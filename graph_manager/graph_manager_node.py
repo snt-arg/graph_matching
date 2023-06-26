@@ -127,7 +127,7 @@ class GraphManagerNode(Node):
             edge = (str(edge_msg.origin_node), str(edge_msg.target_node))
             edges.append(edge)
         graph["edges"] = edges
-        self.gm.setGraph(graph)
+        self.gm.set_graph_from_dict(graph, graph["name"])
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
@@ -138,7 +138,7 @@ class GraphManagerNode(Node):
 
         # ### Match
         # if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-        #     success, matches = self.gm.match_custom("Prior", "ONLINE")
+        #     success, matches = self.gm.match("Prior", "ONLINE")
 
         #     if success and len(matches) > 0:
         #         best_match_msg = self.generate_match_msg(matches[0])
@@ -161,7 +161,7 @@ class GraphManagerNode(Node):
                 self.gm.graphs[request.base_graph].is_empty() or self.gm.graphs[request.target_graph].is_empty():
                 response.success = 3
             else:
-                success, matches = self.gm.match_custom(request.base_graph, request.target_graph)
+                success, matches = self.gm.match(request.base_graph, request.target_graph)
                 
                 if success:
                     matches_msg = [self.generate_match_msg(match) for match in matches]
@@ -270,7 +270,7 @@ class GraphManagerNode(Node):
             nodes.append(node)
         graph["nodes"] = nodes
         
-        self.gm.setGraph(graph)
+        self.gm.set_graph_from_dict(graph, graph["name"])
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
@@ -308,11 +308,11 @@ class GraphManagerNode(Node):
                     nodes.append(node)
 
             local_graph["nodes"] = nodes
-            self.gm.setGraph(local_graph)
+            self.gm.set_graph_from_dict(local_graph, local_graph["name"])
             options = {'node_color': self.gm.graphs[local_graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
             self.gm.graphs[local_graph["name"]].draw(local_graph["name"], options, True)
         
-        success, matches = self.gm.match_custom("Prior", "ONLINE")
+        success, matches = self.gm.match("Prior", "ONLINE")
 
 
     def generate_match_visualization_msg(self, match):

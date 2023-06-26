@@ -1,0 +1,49 @@
+{
+    "invariants": {
+        "points": {
+            "0": {
+                "sigma": 0.1,
+                "epsilon": 0.6,
+                "mindist": 0
+            }
+        },
+        "points&normal": {
+            "0": {
+                "sigp": 0.5,
+                "epsp": 0.5,
+                "sign": 0.10,
+                "epsn": 0.35
+            },
+            "1": {
+                "sigp": 0.5,
+                "epsp": 0.5,
+                "sign": 0.10,
+                "epsn": 0.35
+            }
+        }
+    },
+    "thresholds": {
+        "local_intralevel": 0.85,
+        "local_interlevel": 0.85,
+        "global": 0.85
+    },
+    "dbscan": {
+        "eps": 0.01,
+        "min_samples": 1
+    },
+    "levels": {
+        "name": [
+            "room", "ws"
+        ],
+        "datatype": {
+            "floor": "points",
+            "room": "points",
+            "ws": "points&normal"
+        },
+        "clipper_invariants": {
+            "floor": "0",
+            "room": "0",
+            "ws": "0"
+        }
+    }
+}
