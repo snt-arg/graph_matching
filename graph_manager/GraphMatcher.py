@@ -138,7 +138,8 @@ class GraphMatcher():
 
             if lvl < len(sweeped_levels) - 1:
                 self.prune_interlevel(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
-                self.add_upranted_nodes_by_level(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
+                if self.params["active_modules"]["unparented_nodes"]:
+                    self.add_unpranted_nodes_by_level(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
 
             return
 
@@ -479,7 +480,7 @@ class GraphMatcher():
                 match_graph.set_node_attributes("merge_lvl", {best_combination["higher_level_node_ID"]:1})
 
     
-    def add_upranted_nodes_by_level(self, match_graph, G1_full, G2_full, sleeped_levels):
+    def add_unpranted_nodes_by_level(self, match_graph, G1_full, G2_full, sleeped_levels):
         G1_level_pair_nodes_all = G1_full.find_nodes_by_attrs({"type": sleeped_levels[1]})
         G2_level_pair_nodes_all = G2_full.find_nodes_by_attrs({"type": sleeped_levels[1]})
         G2_level_pair_nodes_all_unparented = [node for node in G2_level_pair_nodes_all if G2_full.get_neighbourhood_graph(node).filter_graph_by_node_attributes({"type": sleeped_levels[0]})]

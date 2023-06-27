@@ -54,7 +54,7 @@ class GraphManagerNode(Node):
 
 
     def get_parameters(self):
-        self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
+        self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}, "active_modules" : {}}
         self.params["invariants"]["points"][0]["sigma"] = self.get_parameter('invariants.points.0.sigma').value
         self.params["invariants"]["points"][0]["epsilon"] = self.get_parameter('invariants.points.0.epsilon').value
         self.params["invariants"]["points"][0]["mindist"] = self.get_parameter('invariants.points.0.mindist').value
@@ -78,6 +78,7 @@ class GraphManagerNode(Node):
         self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
         self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
+        self.params["active_modules"]["unparented_nodes"] = self.get_parameter('active_modules.unparented_nodes').value
         
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_manager/graphs', self.graph_callback, 0)
