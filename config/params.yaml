@@ -38,4 +38,5 @@
           Finite Room : 0
           Plane: 0
       active_modules:
+        prune_interlevel : True
         unparented_nodes : True

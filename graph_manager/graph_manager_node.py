@@ -78,6 +78,7 @@ class GraphManagerNode(Node):
         self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
         self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
+        self.params["active_modules"]["prune_interlevel"] = self.get_parameter('active_modules.prune_interlevel').value
         self.params["active_modules"]["unparented_nodes"] = self.get_parameter('active_modules.unparented_nodes').value
         
     def set_interface(self):

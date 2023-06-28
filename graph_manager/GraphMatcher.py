@@ -8,6 +8,7 @@ import pathlib
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
+from itertools import permutations
 
 from .GraphWrapper import GraphWrapper
 from .Clipper import Clipper
@@ -50,7 +51,7 @@ class GraphMatcher():
                 G2_lvl = G2_full.filter_graph_by_node_types(sweeped_levels[lvl])
 
             ### Compute all possible node combinations between both subraphs
-            all_pairs_categorical = set(itertools.product(G1_lvl.graph.nodes(), G2_lvl.get_nodes_ids()))       
+            all_pairs_categorical = set(itertools.product(G1_lvl.get_nodes_ids(), G2_lvl.get_nodes_ids()))       
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO include
             if working_node_ID:
                 ### Assess GC of each candidate pair with higher-level parent
@@ -73,8 +74,14 @@ class GraphMatcher():
                 filtered_bad_pairs_categorical = []
 
             ### INTRALEVEL CANDIDATES COMBINATION
-            complete_matches_combinations = G1_lvl.matchByNodeType(G2_lvl)
-            interlevel_consistent_combinations = self.delete_list_if_element_inside(G1_lvl.matchByNodeType(G2_lvl), filtered_bad_pairs_categorical)
+            # interlevel_candidates_permutations = G1_lvl.matchByNodeType(G2_lvl) ### Deprecated as working in local subraph. Not efficient
+            interlevel_candidates_candidations = []
+            for comb in itertools.permutations(list(G1_lvl.get_nodes_ids()), len(list(G2_lvl.get_nodes_ids()))):
+                zipped = zip(comb, list(G2_lvl.get_nodes_ids()))
+                interlevel_candidates_candidations.append(list(zipped))
+
+            # interlevel_candidates_candidations = itertools.permutations(list(G1_lvl.get_nodes_ids()), list(G2_lvl.get_nodes_ids()))
+            interlevel_consistent_combinations = self.delete_list_if_element_inside(interlevel_candidates_candidations, filtered_bad_pairs_categorical)
             filter1_scores = []
             filter1_matches = []
             filter1_lengths = []
@@ -137,7 +144,8 @@ class GraphMatcher():
                                 match_graph.add_edges(edges_attr)
 
             if lvl < len(sweeped_levels) - 1:
-                self.prune_interlevel(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
+                if self.params["active_modules"]["prune_interlevel"]:
+                    self.prune_interlevel(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
                 if self.params["active_modules"]["unparented_nodes"]:
                     self.add_unpranted_nodes_by_level(match_graph, G1_full, G2_full, sweeped_levels[lvl:lvl+2])
 
