@@ -164,7 +164,7 @@ class GraphMatcher():
             success = True
 
             if len(final_combinations) == 1:
-                self.logger.info("Only one match succeded with score - {}".format(final_combinations[0][0]))
+                self.logger.info("Only one match succeded with score - {}".format(final_combinations))
             elif len(final_combinations) > 1:
                 self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0] for match in final_combinations]))
             self.subplots_match(G1_name, G2_name, final_combinations[0])
