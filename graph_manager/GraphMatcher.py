@@ -56,7 +56,7 @@ class GraphMatcher():
                 # plt.show()
             
             ### Compute all possible node combinations between both subraphs
-            all_pairs_categorical = set(itertools.product(G1_lvl.graph.nodes(), G2_lvl.get_nodes_ids()))  
+            all_pairs_categorical = set(itertools.product(G1_lvl.graph.nodes(), G2_lvl.get_nodes_ids()))     
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO include
             if working_node_ID:
                 ### Assess GC of each candidate pair with higher-level parent

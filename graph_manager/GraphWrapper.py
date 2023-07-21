@@ -148,9 +148,11 @@ class GraphWrapper():
         self.add_edges(edges_def)
 
     def add_nodes(self, nodes_def):
+        self.unfreeze()
         [self.graph.add_node(node_def[0], **node_def[1]) for node_def in nodes_def]
 
     def add_edges(self, edges_def):
+        self.unfreeze()
         [self.graph.add_edge(edge_def[0], edge_def[1], **edge_def[2]) for edge_def in edges_def]
 
     def unfreeze(self):

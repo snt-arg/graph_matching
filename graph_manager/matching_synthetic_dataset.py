@@ -19,20 +19,22 @@ with open(os.path.join(synthetic_datset_dir,"..","config","SyntheticDataset", "g
 
 ### GENERATE DATASET
 
+mode = "multiview"
 dataset_generator = SyntheticDatasetGenerator(synteticdataset_settings)
 # # room_clustering_dataset = dataset_generator.get_ws2room_clustering_datalodaer()
 filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
 
 ### A-GRAPH
-#### ORIGINAL
-# a_graph = copy.deepcopy(filtered_nxdataset["original"][0])
+if mode =="matching":
+    a_graph = copy.deepcopy(filtered_nxdataset["original"][0])
 #### VIEW 1
-base_matrix = dataset_generator.generate_base_matrix()
-dataset_generator.graphs["views"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= False, add_multiview=True)]
-dataset_generator.graphs["original"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= False, add_multiview=False)]
-filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
-a_graph = copy.deepcopy(filtered_nxdataset["views"][0].filter_graph_by_node_attributes_containted({"view" : 1}))
-visualize_nxgraph(filtered_nxdataset["original"][0], "original")
+elif mode == "multiview":
+    base_matrix = dataset_generator.generate_base_matrix()
+    dataset_generator.graphs["views"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= False, add_multiview=True)]
+    dataset_generator.graphs["original"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= False, add_multiview=False)]
+    filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
+    a_graph = copy.deepcopy(filtered_nxdataset["views"][0].filter_graph_by_node_attributes_containted({"view" : 1}))
+    visualize_nxgraph(filtered_nxdataset["original"][0], "original")
 ####
 visualize_nxgraph(a_graph, "a_graph")
 a_graph_nodes_ids = copy.deepcopy(a_graph.get_nodes_ids())
@@ -46,11 +48,13 @@ for node_id in list(a_graph.get_nodes_ids()):
 
 ### S-GRAPH
 #### NOISE
-# s_graph = copy.deepcopy(filtered_nxdataset["noise"][0])
+if mode == "matching":
+    s_graph = copy.deepcopy(filtered_nxdataset["noise"][0])
 #### VIEW 2
-dataset_generator.graphs["views"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= True, add_multiview=True)]
-filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
-s_graph = copy.deepcopy(filtered_nxdataset["views"][0].filter_graph_by_node_attributes_containted({"view" : 2}))
+elif mode == "multiview":
+    dataset_generator.graphs["views"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= True, add_multiview=True)]
+    filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
+    s_graph = copy.deepcopy(filtered_nxdataset["views"][0].filter_graph_by_node_attributes_containted({"view" : 2}))
 ####
 mapping = dict(zip(s_graph.get_nodes_ids(), list(np.array(s_graph.get_nodes_ids()) + len(a_graph_nodes_ids) + 1)))
 s_graph.relabel_nodes(mapping)
