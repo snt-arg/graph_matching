@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'graph_manager'
+package_name = 'graph_matcher'
 
 setup(
     name=package_name,
@@ -19,13 +19,13 @@ setup(
     zip_safe=True,
     maintainer='Jose Andres Millan Romera',
     maintainer_email='josmilrom@gmail.com',
-    description='Graph manager tool for Sgraphs',
+    description='Graph matcher tool for S-graphs',
     license='MIT liscense',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'graph_manager = graph_manager.graph_manager_node:main',
-            'graph_manager_tester = graph_manager.graph_manager_tester_node:main',
+            'graph_matcher = graph_matcher.graph_matcher:main',
+            'graph_matcher_tester = graph_matcher.graph_matcher_tester_node:main',
         ],
     },
 )
