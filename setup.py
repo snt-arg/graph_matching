@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'graph_matcher'
+package_name = 'graph_matching'
 
 setup(
     name=package_name,
@@ -24,8 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'graph_matcher = graph_matcher.graph_matcher:main',
-            'graph_matcher_tester = graph_matcher.graph_matcher_tester_node:main',
+            'graph_matching = graph_matching.graph_matching:main',
+            'graph_matching_tester = graph_matching.graph_matching_tester_node:main',
         ],
     },
 )

@@ -8,12 +8,12 @@ graph_manager_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath
 with open(os.path.join(graph_manager_dir,"config", "syntheticDS_params.json")) as f:
     syntheticDS_params = json.load(f)
 
-synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_reasoning", "graph_reasoning")
+synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_datasets", "graph_datasets")
 sys.path.append(synthetic_datset_dir)
 from SyntheticDatasetGenerator import SyntheticDatasetGenerator
 from graph_visualizer import visualize_nxgraph
 
-with open(os.path.join(synthetic_datset_dir,"..","config","SyntheticDataset", "graph_matching.json")) as f:
+with open(os.path.join(os.path.dirname(synthetic_datset_dir),"config", "graph_matching.json")) as f:
     synteticdataset_settings = json.load(f)
 
 

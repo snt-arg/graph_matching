@@ -1,8 +1,8 @@
-# Graph Matcher
+# Graph Matching
 
 ## Overview
 
-Graph Matcher stores and performs graph operations related to S-Graphs.
+Graph Matching stores and performs graph operations related to S-Graphs.
 
 ### License
 
@@ -12,7 +12,7 @@ The source code is released under MIT License [![License: MIT](https://img.shiel
 Affiliation: [University of Luxembourg](https://www.anybotics.com/)<br />
 Maintainer: Jose Andres Millan Romera, josmilrom@gmail.com**
 
-The graph_matcher package has been tested under [ROS2] Humble on Ubuntu 20.04.
+The graph_matching package has been tested under [ROS2] Humble on Ubuntu 20.04.
 This is research code, expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 
@@ -33,7 +33,7 @@ The only tested ROS version for this package is ROS2 Humble
 To build from source, clone the latest version from this repository into your catkin workspace and compile the package using
 
 	cd catkin_workspace/src
-	git clone https://github.com/snt-arg/graph_matcher.git
+	git clone https://github.com/snt-arg/graph_matching.git
 	cd ../
 	colcon build
 
@@ -48,11 +48,11 @@ Run the unit tests with
 
 Run the main node with
 
-	ros2 launch graph_matcher graph_matcher.launch.py
+	ros2 launch graph_matching graph_matching.launch.py
 
 Run the main and tester node with
 
-	ros2 launch graph_matcher graph_matcher_tester.launch.py 
+	ros2 launch graph_matching graph_matching_tester.launch.py 
 
 ## Config files (TODO)
 
@@ -66,9 +66,9 @@ Config file folder/set 2
 
 ## Launch files
 
-* **graph_matcher.launch.py :** Launch of graph matcher node
+* **graph_matching.launch.py :** Launch of graph matching node
 
-* **graph_matcher_tester.launch.py :** Launch of graph matcher node and, a second later, the tester node
+* **graph_matching_tester.launch.py :** Launch of graph matching node and, a second later, the tester node
 
 
 ## Nodes
@@ -80,19 +80,19 @@ Stores and performs graph operations related to S-Graphs.
 
 #### Subscribed Topics
 
-* **`/graphs`** ([graph_matcher_msgs/Graph])
+* **`/graphs`** ([graph_matching_msgs/Graph])
 
 
 #### Published Topics
 
-* **`/best_match`** ([graph_matcher_msgs/Match])
-* **`/unique_match`** ([graph_matcher_msgs/Match])
+* **`/best_match`** ([graph_matching_msgs/Match])
+* **`/unique_match`** ([graph_matching_msgs/Match])
 * **`/best_match_visualization`** ([visualization_msgs/MarkerArray)
 * **`/visualization_match_visualization`** ([visualization_msgs/MarkerArray)
 
 #### Services
 
-* **`subgraph_match_srv`** ([graph_matcher_msgs/SubgraphMatchSrv])
+* **`subgraph_match_srv`** ([graph_matching_msgs/SubgraphMatchSrv])
 
 	Returns the subgraph match (list of pairs of nodes) most probable, subject to matching type. NOT SUPPORTED AT THE MOMENT
 

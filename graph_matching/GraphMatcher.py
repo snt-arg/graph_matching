@@ -4,15 +4,17 @@ import time
 import copy
 import json
 import os
-import pathlib
+import pathlib, sys
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from GraphWrapper import GraphWrapper
 from Clipper import Clipper
 from utils import transform_plane_definition, multilist_combinations
 
+graph_manager_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper","graph_wrapper")
+sys.path.append(graph_manager_dir)
+from GraphWrapper import GraphWrapper
 
 class GraphMatcher():
     def __init__(self, logger):
