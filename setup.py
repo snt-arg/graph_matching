@@ -19,7 +19,7 @@ setup(
     zip_safe=True,
     maintainer='Jose Andres Millan Romera',
     maintainer_email='josmilrom@gmail.com',
-    description='Graph matcher tool for S-graphs',
+    description='Graph matching tool for S-graphs',
     license='MIT liscense',
     tests_require=['pytest'],
     entry_points={

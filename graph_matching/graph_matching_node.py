@@ -36,19 +36,19 @@ from builtin_interfaces.msg import Duration as DurationMsg
 from rclpy.parameter import Parameter
 from rclpy.parameter import ParameterType
 
-from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
-from graph_manager_msgs.msg import Graph as GraphMsg
-from graph_manager_msgs.msg import Match as MatchMsg
-from graph_manager_msgs.msg import Node as NodeMsg
-from graph_manager_msgs.msg import Edge as EdgeMsg
-from graph_manager_msgs.msg import Attribute as AttributeMsg
+from graph_matching_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+from graph_matching_msgs.msg import Graph as GraphMsg
+from graph_matching_msgs.msg import Match as MatchMsg
+from graph_matching_msgs.msg import Node as NodeMsg
+from graph_matching_msgs.msg import Edge as EdgeMsg
+from graph_matching_msgs.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
 class GraphManagerNode(Node):
 
     def __init__(self):
-        super().__init__('graph_manager', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
+        super().__init__('graph_matching', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
         self.gm = GraphMatcher(self.get_logger())    
         self.set_interface()
 
@@ -80,12 +80,12 @@ class GraphManagerNode(Node):
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
         
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(GraphMsg,'graph_manager/graphs', self.graph_callback, 0)
-        self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_manager/unique_match', 10)
-        self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_manager/best_match', 10)
-        self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_manager/unique_match_visualization', 10)
-        self.best_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_manager/best_match_visualization', 10)
-        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_manager/subgraph_match', self.subgraph_match_srv_callback)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
+        self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/unique_match', 10)
+        self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
+        self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization', 10)
+        self.best_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/best_match_visualization', 10)
+        self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_matching/subgraph_match', self.subgraph_match_srv_callback)
 
 
     def graph_callback(self, msg):
@@ -394,11 +394,11 @@ class GraphManagerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    graph_manager_node = GraphManagerNode()
+    graph_matching_node = GraphManagerNode()
 
-    rclpy.spin(graph_manager_node)
+    rclpy.spin(graph_matching_node)
     rclpy.get_logger().warn('Destroying node!')
-    graph_manager_node.destroy_node()
+    graph_matching_node.destroy_node()
     rclpy.shutdown()
 
 

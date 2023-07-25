@@ -12,11 +12,11 @@ testing_mode = "node" # node / library
 if testing_mode == "library":
     from .. import srv as SubgraphMatchSrv
 elif testing_mode == "node":
-    from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv
-    from graph_manager_msgs.msg import Graph as GraphMsg
-    from graph_manager_msgs.msg import Node as NodeMsg
-    from graph_manager_msgs.msg import Edge as EdgeMsg
-    from graph_manager_msgs.msg import Attribute as AttributeMsg
+    from graph_matching_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+    from graph_matching_msgs.msg import Graph as GraphMsg
+    from graph_matching_msgs.msg import Node as NodeMsg
+    from graph_matching_msgs.msg import Edge as EdgeMsg
+    from graph_matching_msgs.msg import Attribute as AttributeMsg
 
 
 ROOM_POINT_NOISE_LIMITS = [-0.01,0.01]
@@ -188,7 +188,7 @@ if testing_mode == "library":
 class GraphManagerTesterNode(Node):
 
     def __init__(self):
-        super().__init__('graph_manager_tester')
+        super().__init__('graph_matching_tester')
         self.set_interface()
         self.send_graphs()
         time.sleep(2)
@@ -260,11 +260,11 @@ class GraphManagerTesterNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    graph_manager_node = GraphManagerTesterNode()
+    graph_matching_node = GraphManagerTesterNode()
 
-    rclpy.spin(graph_manager_node)
+    rclpy.spin(graph_matching_node)
 
-    graph_manager_node.destroy_node()
+    graph_matching_node.destroy_node()
     rclpy.shutdown()
 
 
