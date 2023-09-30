@@ -111,3 +111,90 @@ def multilist_combinations(lists):
 
 # [[1,2,3],[4,5,6],[7,8,9,10]]
 # print(multilist_combinations([[1,2,3],[4,5,6],[7,8,9,10]]))
+
+def relative_positions(ws_1_def, ws_2_def):
+    center_1, center_2 = np.array(ws_1_def["center"]), np.array(ws_2_def["center"])
+    rel_pos_1 = center_2 - center_1
+    rel_pos_2 = -rel_pos_1
+
+    return rel_pos_1, rel_pos_2
+
+
+
+def segments_distance(ws_1_def, ws_2_def):
+    """ distance between two segments in the plane:
+      one segment is (x11, y11) to (x12, y12)
+      the other is   (x21, y21) to (x22, y22)
+    """
+    def segments_intersect(x11, y11, x12, y12, x21, y21, x22, y22):
+        """ whether two segments in the plane intersect:
+            one segment is (x11, y11) to (x12, y12)
+            the other is   (x21, y21) to (x22, y22)
+        """
+        dx1 = x12 - x11
+        dy1 = y12 - y11
+        dx2 = x22 - x21
+        dy2 = y22 - y21
+        delta = dx2 * dy1 - dy2 * dx1
+        if delta == 0: return False  # parallel segments
+        s = (dx1 * (y21 - y11) + dy1 * (x11 - x21)) / delta
+        t = (dx2 * (y11 - y21) + dy2 * (x21 - x11)) / (-delta)
+        return (0 <= s <= 1) and (0 <= t <= 1)
+
+    def point_segment_distance(px, py, x1, y1, x2, y2):
+        dx = x2 - x1
+        dy = y2 - y1
+        if dx == dy == 0:  # the segment's just a point
+            return math.hypot(px - x1, py - y1)
+
+        # Calculate the t that minimizes the distance.
+        t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
+
+        # See if this represents one of the segment's
+        # end points or a point in the middle.
+        if t < 0:
+            dx = px - x1
+            dy = py - y1
+        elif t > 1:
+            dx = px - x2
+            dy = py - y2
+        else:
+            near_x = x1 + t * dx
+            near_y = y1 + t * dy
+            dx = px - near_x
+            dy = py - near_y
+
+        return math.hypot(dx, dy)
+
+    p11, p12, p21, p22 = ws_1_def[0], ws_1_def[1], ws_2_def[0], ws_2_def[1]
+    x11, y11 = p11[0],p11[1]
+    x12, y12 = p12[0],p12[1]
+    x21, y21 = p21[0],p21[1]
+    x22, y22 = p22[0],p22[1]
+
+    if segments_intersect(x11, y11, x12, y12, x21, y21, x22, y22): return np.array([0])
+    # try each of the 4 vertices w/the other segment
+    distances = []
+    distances.append(point_segment_distance(x11, y11, x21, y21, x22, y22))
+    distances.append(point_segment_distance(x12, y12, x21, y21, x22, y22))
+    distances.append(point_segment_distance(x21, y21, x11, y11, x12, y12))
+    distances.append(point_segment_distance(x22, y22, x11, y11, x12, y12))
+    return np.array([min(distances)])
+
+def segment_intersection(segment_1, segment_2):
+    a1,a2, b1,b2 = segment_1[0],segment_1[1],segment_2[0],segment_2[1],
+    def perp( a ) :
+        b = np.empty_like(a)
+        b[0] = -a[1]
+        b[1] = a[0]
+        return b
+    da = a2-a1
+    db = b2-b1
+    dp = a1-b1
+    dap = perp(da)
+    denom = np.dot( dap, db)
+    num = np.dot( dap, dp )
+    return (num / denom.astype(float))*db + b1
+
+
+
