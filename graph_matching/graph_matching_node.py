@@ -36,16 +36,16 @@ from builtin_interfaces.msg import Duration as DurationMsg
 from rclpy.parameter import Parameter
 from rclpy.parameter import ParameterType
 
-from graph_matching_msgs.srv import SubgraphMatch as SubgraphMatchSrv
-from graph_matching_msgs.msg import Graph as GraphMsg
-from graph_matching_msgs.msg import Match as MatchMsg
-from graph_matching_msgs.msg import Node as NodeMsg
-from graph_matching_msgs.msg import Edge as EdgeMsg
-from graph_matching_msgs.msg import Attribute as AttributeMsg
+from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv # TODO: CHANGE LOCATION OF MESSAGES
+from graph_manager_msgs.msg import Graph as GraphMsg
+from graph_manager_msgs.msg import Match as MatchMsg
+from graph_manager_msgs.msg import Node as NodeMsg
+from graph_manager_msgs.msg import Edge as EdgeMsg
+from graph_manager_msgs.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
-class GraphManagerNode(Node):
+class GraphMatchingNode(Node):
 
     def __init__(self):
         super().__init__('graph_matching', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
@@ -53,7 +53,7 @@ class GraphManagerNode(Node):
         self.set_interface()
 
 
-    def get_parameters(self):
+    def get_parameters_(self):
         self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
         self.params["invariants"]["points"][0]["sigma"] = self.get_parameter('invariants.points.0.sigma').value
         self.params["invariants"]["points"][0]["epsilon"] = self.get_parameter('invariants.points.0.epsilon').value
@@ -91,7 +91,7 @@ class GraphManagerNode(Node):
     def graph_callback(self, msg):
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
-        self.get_parameters()
+        self.get_parameters_()
         self.gm.set_parameters(self.params)
         nodes = []
         for node_msg in msg.nodes:
@@ -394,7 +394,7 @@ class GraphManagerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    graph_matching_node = GraphManagerNode()
+    graph_matching_node = GraphMatchingNode()
 
     rclpy.spin(graph_matching_node)
     rclpy.get_logger().warn('Destroying node!')

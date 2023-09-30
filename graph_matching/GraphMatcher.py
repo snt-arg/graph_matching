@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from Clipper import Clipper
-from utils import transform_plane_definition, multilist_combinations
+from .Clipper import Clipper
+from .utils import transform_plane_definition, multilist_combinations
 
-graph_manager_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper","graph_wrapper")
-sys.path.append(graph_manager_dir)
-from GraphWrapper import GraphWrapper
+graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper")
+sys.path.append(graph_wrapper_dir)
+from graph_wrapper.GraphWrapper import GraphWrapper
 
 class GraphMatcher():
     def __init__(self, logger):
