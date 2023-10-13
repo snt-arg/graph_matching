@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rclpy
+import rclpy, os
 import time
 import copy
 import numpy as np
+import json
+
 from rclpy.node import Node
 from .utils import *
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 from tf2_ros.buffer_interface import BufferInterface
+import ament_index_python
+from ament_index_python.packages import get_package_share_directory
 import tf2_geometry_msgs 
 from visualization_msgs.msg import Marker as MarkerMsg
 from visualization_msgs.msg import MarkerArray as MarkerArrayMsg
@@ -51,9 +55,11 @@ class GraphMatchingNode(Node):
         super().__init__('graph_matching', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
         self.gm = GraphMatcher(self.get_logger())    
         self.set_interface()
+        self.get_json_parameters_()
+        # self.get_logger().info(f"{self.params}")
 
 
-    def get_parameters_(self):
+    def get_yaml_parameters_(self):
         self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
         self.params["invariants"]["points"][0]["sigma"] = self.get_parameter('invariants.points.0.sigma').value
         self.params["invariants"]["points"][0]["epsilon"] = self.get_parameter('invariants.points.0.epsilon').value
@@ -78,6 +84,15 @@ class GraphMatchingNode(Node):
         self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
         self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
         self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
+
+        self.get_logger().info(f"{self.params}")
+
+
+    def get_json_parameters_(self):
+        matching_package_path = ament_index_python.get_package_share_directory("graph_matching")
+        json_file_path = os.path.join(matching_package_path, "config/syntheticDS_params.json")
+        with open(json_file_path) as json_file:
+            self.params = json.load(json_file)
         
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
@@ -91,7 +106,7 @@ class GraphMatchingNode(Node):
     def graph_callback(self, msg):
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
-        self.get_parameters_()
+        # self.get_yaml_parameters_()
         self.gm.set_parameters(self.params)
         nodes = []
         for node_msg in msg.nodes:
