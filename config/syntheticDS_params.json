@@ -33,17 +33,17 @@
     },
     "levels": {
         "name": [
-            "room", "ws"
+            "Finite Room", "Plane"
         ],
         "datatype": {
             "floor": "points",
-            "room": "points",
-            "ws": "points&normal"
+            "Finite Room": "points",
+            "Plane": "points&normal"
         },
         "clipper_invariants": {
             "floor": "0",
-            "room": "0",
-            "ws": "0"
+            "Finite Room": "0",
+            "Plane": "0"
         }
     }
 }
