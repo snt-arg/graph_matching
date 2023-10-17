@@ -40,12 +40,12 @@ from builtin_interfaces.msg import Duration as DurationMsg
 from rclpy.parameter import Parameter
 from rclpy.parameter import ParameterType
 
-from graph_manager_msgs.srv import SubgraphMatch as SubgraphMatchSrv # TODO: CHANGE LOCATION OF MESSAGES
-from graph_manager_msgs.msg import Graph as GraphMsg
-from graph_manager_msgs.msg import Match as MatchMsg
-from graph_manager_msgs.msg import Node as NodeMsg
-from graph_manager_msgs.msg import Edge as EdgeMsg
-from graph_manager_msgs.msg import Attribute as AttributeMsg
+from reasoning_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+from reasoning_msgs.msg import Graph as GraphMsg
+from reasoning_msgs.msg import Match as MatchMsg
+from reasoning_msgs.msg import Node as NodeMsg
+from reasoning_msgs.msg import Edge as EdgeMsg
+from reasoning_msgs.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
