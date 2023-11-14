@@ -144,7 +144,7 @@ class GraphMatchingNode(Node):
         graph["edges"] = edges
         self.gm.set_graph_from_dict(graph, graph["name"])
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
 
         ### Filtering unparented nodes
         # self.gm.graphs[graph["name"]].filterout_unparented_nodes()
@@ -168,7 +168,7 @@ class GraphMatchingNode(Node):
 
 
     def subgraph_match_srv_callback(self, request, response):
-        self.get_logger().info('Graph Manager: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
+        self.get_logger().info('Graph Matching: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
 
 
         def match_fn(request, response):
@@ -186,7 +186,7 @@ class GraphMatchingNode(Node):
 
                 else:
                     response.success = 2
-                    self.get_logger().warn('Graph Manager: no good matches found!')
+                    self.get_logger().warn('Graph Matching: no good matches found!')
 
                 if response.success == 0:
                     self.unique_match_publisher.publish(matches_msg[0])

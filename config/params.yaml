@@ -1,4 +1,4 @@
-graph_manager:
+graph_matching:
   ros__parameters:
     invariants:
       points:

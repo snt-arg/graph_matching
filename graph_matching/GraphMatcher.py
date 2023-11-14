@@ -157,7 +157,7 @@ class GraphMatcher():
         linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-        match_graph.draw("match graph", options = options, show = True)
+        match_graph.draw("match graph", options = options, show = self.params["verbose"])
 
         final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
 
@@ -169,7 +169,9 @@ class GraphMatcher():
                 self.logger.info("Only one match succeded with score - {}".format(final_combinations))
             elif len(final_combinations) > 1:
                 self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0] for match in final_combinations]))
-            self.subplots_match(G1_name, G2_name, final_combinations[0])
+
+            if self.params["verbose"]:
+                self.subplots_match(G1_name, G2_name, final_combinations[0])
 
         else:
             success = False
@@ -343,7 +345,7 @@ class GraphMatcher():
         linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-        pruned_match_graph.draw("pruned match graph", options = options, show = True)
+        pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
             if working_node_ID:

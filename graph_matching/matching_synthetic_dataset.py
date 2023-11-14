@@ -4,8 +4,8 @@ import numpy as np
 
 from GraphMatcher import GraphMatcher
 
-graph_manager_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-with open(os.path.join(graph_manager_dir,"config", "syntheticDS_params.json")) as f:
+reasoning_msgs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+with open(os.path.join(reasoning_msgs,"config", "syntheticDS_params.json")) as f:
     syntheticDS_params = json.load(f)
 
 synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_datasets", "graph_datasets")

@@ -196,5 +196,3 @@ def segment_intersection(segment_1, segment_2):
     num = np.dot( dap, dp )
     return (num / denom.astype(float))*db + b1
 
-
-
