@@ -10,7 +10,7 @@
         },
         "points&normal": {
             "0": {
-                "sigp": 0.5,
+                "sigp": 0.4,
                 "epsp": 0.4,
                 "sign": 0.10,
                 "epsn": 0.35
@@ -25,11 +25,11 @@
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.85, 0.85],
-            "Finite Room" : [0.85]
+            "ws" : [0.85, 0.85],
+            "room" : [0.85]
         },
         "local_interlevel": {
-            "Finite Room - Plane" : [0.85]
+            "room - ws" : [0.85]
         },
         "global": [0.85]
     },
@@ -39,17 +39,17 @@
     },
     "levels": {
         "name": [
-            "Finite Room", "Plane"
+            "room", "ws"
         ],
         "datatype": {
             "floor": "points",
-            "Finite Room": "points",
-            "Plane": "points&normal"
+            "room": "points",
+            "ws": "points&normal"
         },
         "clipper_invariants": {
             "floor": "0",
-            "Finite Room": "0",
-            "Plane": "0"
+            "room": "0",
+            "ws": "0"
         }
     }
 }

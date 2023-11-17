@@ -109,6 +109,7 @@ class GraphMatchingNode(Node):
         # self.get_yaml_parameters_()
         self.gm.set_parameters(self.params)
         nodes = []
+        num_rooms = 0
         for node_msg in msg.nodes:
             node = [str(node_msg.id), {}]
             attributes = {}
@@ -126,6 +127,7 @@ class GraphMatchingNode(Node):
             if node_msg.type == "Plane":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "Finite Room":
+                num_rooms += 1
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "floor":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
@@ -144,16 +146,28 @@ class GraphMatchingNode(Node):
         graph["edges"] = edges
         self.gm.set_graph_from_dict(graph, graph["name"])
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
+        # self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
+
+        # ### Save dictionary of graphs
+        # self.get_logger().info(f"FLAG type(graph) {graph}")
+        # json_object = json.dumps(graph)
+        # with open(f"/home/adminpc/reasoning_ws/src/graph_matching/graph_dicts/{graph['name']}.json", "w") as outfile:
+        #     outfile.write(json_object)
+
 
         ### Filtering unparented nodes
         # self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
+
         # ### Match
-        # if msg.name == "ONLINE" and len(self.gm.graphs[graph["name"]].graph.nodes())>0:
-        #     success, matches = self.gm.match("Prior", "ONLINE")
+        if num_rooms==1:
+            prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
+            self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
+            ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
+            success, matches = self.gm.match("Prior", "Online")
+            time.sleep(999)
 
         #     if success and len(matches) > 0:
         #         best_match_msg = self.generate_match_msg(matches[0])
@@ -165,6 +179,8 @@ class GraphMatchingNode(Node):
         #         self.unique_match_publisher.publish(unique_match_msg)
         #         unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
         #         self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
+
+
 
 
     def subgraph_match_srv_callback(self, request, response):

@@ -13,9 +13,20 @@ def plane_4_params_to_6_params(plane):
 def plane_6_params_to_4_params(point_and_normal):
     point = np.array(point_and_normal[:3])
     normal = np.array(point_and_normal[3:6])
-    distance = - np.dot(point, normal)
+    ### OLD
+    # distance = - np.dot(point, normal)
+    ### NEW
+    closest_point = closest_point_on_line(point, np.array([0,0,0]), normal)
+    distance = -1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
+    ### end
     return(np.concatenate((normal, [distance])))
 
+def closest_point_on_line(point, line_origin, line_normal):
+    line_normal_unit = line_normal / np.linalg.norm(line_normal)
+    vector_to_point = point - line_origin
+    distance_along_normal = np.dot(vector_to_point, line_normal_unit)
+    closest_point = line_origin + distance_along_normal * line_normal_unit
+    return closest_point
 
 def transform_plane_definition(points_and_normals, translation, rotation, logger = None):
     translated_points_and_normals = []
