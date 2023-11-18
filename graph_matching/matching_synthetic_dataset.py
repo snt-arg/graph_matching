@@ -53,33 +53,32 @@ for node_id in list(a_graph.get_nodes_ids()):
 #### ORIGINAL
 if mode == "matching":
 
+    def deviate_plane(room_id, ws_id, deviation):
+        # Deviate plane
+        deviated_ws_attrs = s_graph.get_attributes_of_node(ws_id)
+        deviated_ws_attrs["center"] = deviated_ws_attrs["center"] + deviation
+        deviated_ws_attrs["limits"][0] = deviated_ws_attrs["limits"][0] + deviation
+        deviated_ws_attrs["limits"][1] = deviated_ws_attrs["limits"][1] + deviation
+        deviated_ws_attrs["viz_data"] = [deviated_ws_attrs["limits"][0][:2], deviated_ws_attrs["limits"][1][:2]]
+        deviated_ws_attrs["Geometric_info"] = np.concatenate([deviated_ws_attrs["center"], deviated_ws_attrs["normal"]])
+
+        # Deviate room
+        deviated_room_attrs = s_graph.get_attributes_of_node(room_id)
+        deviated_room_center = np.sum([s_graph.get_attributes_of_node(ws)["center"] for ws in ws_of_deviated_room], axis = 0) / len(ws_of_deviated_room)
+        deviated_room_attrs["center"] = deviated_room_center
+        deviated_room_attrs["Geometric_info"] = deviated_room_center
+        deviated_room_attrs["viz_data"] = deviated_room_center[:2]
+
     # Select nodes to deviate
     s_graph = copy.deepcopy(filtered_nxdataset["original"][0])
     deviated_room_id = list(s_graph.filter_graph_by_node_attributes_containted({"type" : "room"}).get_nodes_ids())[0]
     s_graph.get_neighbourhood_graph(deviated_room_id)
     ws_of_deviated_room = list(s_graph.get_neighbourhood_graph(deviated_room_id).filter_graph_by_node_attributes_containted({"type" : "ws"}).get_nodes_ids())
     deviated_ws_id = ws_of_deviated_room[0]
+    deviation = np.array([0,0.3,0])
+    deviate_plane(deviated_room_id, deviated_ws_id, deviation)
 
-    # Deviate plane
-    deviated_ws_attrs = s_graph.get_attributes_of_node(deviated_ws_id)
-    deviation = np.array([0.3,0,0])
-    deviated_ws_attrs["center"] = deviated_ws_attrs["center"] + deviation
-    deviated_ws_attrs["limits"][0] = deviated_ws_attrs["limits"][0] + deviation
-    deviated_ws_attrs["limits"][1] = deviated_ws_attrs["limits"][1] + deviation
-    deviated_ws_attrs["viz_data"] = [deviated_ws_attrs["limits"][0][:2], deviated_ws_attrs["limits"][1][:2]]
-    deviated_ws_attrs["Geometric_info"] = np.concatenate([deviated_ws_attrs["center"], deviated_ws_attrs["normal"]])
 
-    # Deviate room
-    deviated_room_attrs = s_graph.get_attributes_of_node(deviated_room_id)
-    deviated_room_center = np.sum([s_graph.get_attributes_of_node(ws)["center"] for ws in ws_of_deviated_room], axis = 0) / len(ws_of_deviated_room)
-    deviated_room_attrs["center"] = deviated_room_center
-    deviated_room_attrs["Geometric_info"] = deviated_room_center
-    deviated_room_attrs["viz_data"] = deviated_room_center[:2]
-
-    # s_graph.set_node_attributes("center", {deviated_ws_id : deviated_ws_attrs["center"]})
-    # s_graph.set_node_attributes("limits", {deviated_ws_id : deviated_ws_attrs["limits"]})
-    # s_graph.set_node_attributes("viz_data", {deviated_ws_id : deviated_ws_attrs["viz_data"]})
-    
 #### VIEW 2
 elif mode == "multiview":
     dataset_generator.graphs["views"] = [dataset_generator.generate_graph_from_base_matrix(base_matrix,add_noise= True, add_multiview=True)]
@@ -121,6 +120,9 @@ graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
 ### MATCH
 # time.sleep(99)
 success, final_combinations = graph_matcher.match("A-Graph", "S-Graph")
+print(f"flag first final match ")
+for i in final_combinations[0]:
+    print(f"flag {i['origin_node_attrs']['type']} {i['score']}")
 if success:
     edges = []
     for edge_dict in final_combinations[0]:

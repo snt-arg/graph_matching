@@ -11,7 +11,7 @@
         "points&normal": {
             "0": {
                 "sigp": 0.4,
-                "epsp": 0.4,
+                "epsp": 0.5,
                 "sign": 0.10,
                 "epsn": 0.35
             },
