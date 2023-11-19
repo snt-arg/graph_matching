@@ -173,7 +173,7 @@ class GraphMatcher():
         match_graph.draw("match graph", options = options, show = self.params["verbose"])
 
         final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
-
+        print(f"flag final_combinations {final_combinations}")
         if final_combinations:
             self.logger.info("Found {} good matches!!!".format(len(final_combinations)))
             success = True
@@ -376,11 +376,30 @@ class GraphMatcher():
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
             if working_node_ID:
-                working_node_matches = pruned_match_graph.get_attributes_of_node(working_node_ID)["match"]
-                working_node_score = pruned_match_graph.get_attributes_of_node(working_node_ID)["score_intralevel"]
+                #### NEW
+                working_node_attrs = pruned_match_graph.get_attributes_of_node(working_node_ID)
+                if lvl == 1:
+                    working_node_matches = working_node_attrs["match"]
+                    working_node_score = working_node_attrs["score_intralevel"]
+                    working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
+                                    "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
+                else:
+                    working_node_tuples = []
+                    working_node_split_matches = working_node_attrs["split_match"]
+                    working_node_split_scores = working_node_attrs["split_scores"]
+                    for i, working_node_split_match in enumerate(working_node_split_matches):
+                        for pair in working_node_split_match:
+                            pair_dictionary = {"origin_node" : int(pair[0]), "target_node" : int(pair[1]), "score" : working_node_split_scores[i],\
+                                    "origin_node_attrs" : G1_nodes[pair[0]], "target_node_attrs" : G2_nodes[pair[1]]}
+                            working_node_tuples.append(pair_dictionary)
 
-                working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
-                                "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
+                ### OLD
+                # working_node_matches = pruned_match_graph.get_attributes_of_node(working_node_ID)["match"]
+                # working_node_score = pruned_match_graph.get_attributes_of_node(working_node_ID)["score_intralevel"]
+                # working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
+                #                 "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
+                ### END
+                
                 if len(swept_levels) > lvl:
                     neighbour_nodes_IDs = pruned_match_graph.get_neighbourhood_graph(working_node_ID).find_nodes_by_attrs({"type": swept_levels[lvl]})
             else:
@@ -511,16 +530,16 @@ class GraphMatcher():
             
             for best_combination in best_combinations:
                 best_combination_node_id = match_graph.get_total_number_nodes() + 1
-                low_lvl_split_match, low_lvl_split_score = [], []
+                split_match, split_score = [], []
 
                 for lower_level_node_id in best_combination["lower_level_nodes_IDs"]:
                     lower_level_node_attrs = match_graph.get_attributes_of_node(lower_level_node_id)
-                    low_lvl_split_match.append(lower_level_node_attrs["match"])
-                    low_lvl_split_score.append(lower_level_node_attrs["score_intralevel"])
+                    split_match.append(lower_level_node_attrs["match"])
+                    split_score.append(lower_level_node_attrs["score_intralevel"])
 
                 node_attr = [(best_combination_node_id, {"type": merged_levels[1], "match": best_combination["match"], "merge_lvl" :1,\
                                             "combination_type" : "group", "score_intralevel" : best_combination["consistency_avg"],
-                                            "low_lvl_split_match" : low_lvl_split_match, "low_lvl_split_score" : low_lvl_split_score})]
+                                            "split_match" : split_match, "split_scores" : split_score})]
                 edges_attr = [(lower_level_node, best_combination_node_id, {}) for lower_level_node in best_combination["lower_level_nodes_IDs"]]
                 edges_attr.append((best_combination["higher_level_node_ID"], best_combination_node_id, {}))
                 match_graph.add_subgraph(node_attr, edges_attr)
