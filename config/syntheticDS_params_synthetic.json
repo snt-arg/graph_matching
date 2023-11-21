@@ -11,7 +11,7 @@
         "points&normal": {
             "0": {
                 "sigp": 0.4,
-                "epsp": 0.5,
+                "epsp": 0.2,
                 "sign": 0.10,
                 "epsn": 0.35
             },
@@ -29,7 +29,7 @@
             "room" : [0.85]
         },
         "local_interlevel": {
-            "room - ws" : [0.85]
+            "room - ws" : [0.85, 0.85]
         },
         "global": [0.85]
     },

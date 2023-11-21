@@ -120,9 +120,13 @@ graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
 ### MATCH
 # time.sleep(99)
 success, final_combinations = graph_matcher.match("A-Graph", "S-Graph")
-print(f"flag first final match ")
-for i in final_combinations[0]:
-    print(f"flag {i['origin_node_attrs']['type']} {i['score']}")
+for final_combination in final_combinations:
+    print(f"flag new final combination")
+    for i in final_combination:
+        print(f"flag {i['origin_node_attrs']['type']} {i['score']}")
+
+print(f"flag NUMBER OF MATCHES: {len(final_combinations)}")
+
 if success:
     edges = []
     for edge_dict in final_combinations[0]:
