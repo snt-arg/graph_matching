@@ -162,23 +162,27 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
-        if num_rooms==1:
-            prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
-            self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
+        if num_rooms==2:
+            # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
+            # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
             success, matches = self.gm.match("Prior", "Online")
-            time.sleep(999)
+            for match in matches:
+                self.get_logger().info(f"flag new consistent match")
+                for i in match:
+                    self.get_logger().info(f"flag {i['origin_node_attrs']['type']} {i['score']}")
+                self.get_logger().info(f" ")
 
-        #     if success and len(matches) > 0:
-        #         best_match_msg = self.generate_match_msg(matches[0])
-        #         self.best_match_publisher.publish(best_match_msg)
-        #         best_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-        #         self.best_match_visualization_publisher.publish(best_match_visualization_msg)
-        #     if success and len(matches) == 1:
-        #         unique_match_msg = self.generate_match_msg(matches[0])
-        #         self.unique_match_publisher.publish(unique_match_msg)
-        #         unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-        #         self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
+            if success and len(matches) > 0:
+                best_match_msg = self.generate_match_msg(matches[0])
+                self.best_match_publisher.publish(best_match_msg)
+                best_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+                self.best_match_visualization_publisher.publish(best_match_visualization_msg)
+            if success and len(matches) == 1:
+                unique_match_msg = self.generate_match_msg(matches[0])
+                self.unique_match_publisher.publish(unique_match_msg)
+                unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+                self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
 
 
 
@@ -211,6 +215,11 @@ class GraphMatchingNode(Node):
                     self.best_match_publisher.publish(matches_msg[0])
                     self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
 
+            for match in matches:
+                self.get_logger().info(f"flag new consistent match")
+                for i in match:
+                    self.get_logger().info(f"flag {i['origin_node_attrs']['type']} {i['score']}")
+                self.get_logger().info(f" ")
 
             return response
         
