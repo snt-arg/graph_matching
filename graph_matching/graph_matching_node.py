@@ -162,7 +162,7 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
-        if num_rooms==2:
+        if graph["name"] == "Online" and num_rooms>=2:
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58

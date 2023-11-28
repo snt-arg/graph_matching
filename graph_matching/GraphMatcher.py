@@ -171,7 +171,7 @@ class GraphMatcher():
         linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-        match_graph.draw("match graph", options = options, show = self.params["verbose"])
+        # match_graph.draw("match graph", options = options, show = self.params["verbose"])
 
         final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
         # print(f"flag final_combinations {final_combinations}")
@@ -373,7 +373,7 @@ class GraphMatcher():
         linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-        pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
+        # pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
             if working_node_ID:
