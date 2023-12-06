@@ -97,22 +97,37 @@ class GraphMatcher():
             for A_categorical in interlevel_consistent_combinations:
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
                 if working_node_ID:
+                    data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, A_numerical, working_node_attrs["data_node1"],working_node_attrs["data_node2"])
+                    parent_pair = all_pairs_and_parent_numerical[-1]
+                    A_numerical = all_pairs_and_parent_numerical
                     data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], working_node_attrs["data_node1"]))
                     data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], working_node_attrs["data_node2"]))
+                    
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["clipper_invariants"][swept_levels[lvl]], self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
-                # self.logger.info(f"FLAG A_categorical {A_categorical}")
-                # self.logger.info(f"FLAG M_aux {M_aux}")
+
                 clipper_match_numerical, score = clipper.solve_clipper()
-                # self.logger.info(f"FLAG clipper_match_numerical {len(clipper_match_numerical)}")
-                # self.logger.info(f"FLAG score {score}")
+
+                if working_node_ID:
+                    index = -1
+                    for i, e in enumerate(clipper_match_numerical):
+                        if np.array_equal(e, parent_pair):
+                            index = i
+                            break
+
+                    if index != -1:
+                        clipper_match_numerical = np.delete(clipper_match_numerical, index, axis= 0)
+                    else:
+                        score = 0.
+
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
                 
                 if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches:
                     filter1_scores.append(score)
                     filter1_matches.append(clipper_match_categorical)
                     filter1_lengths.append(len(clipper_match_categorical))
+                    
             if filter1_scores:
                 sorted_matches_indexes = [index for index, val in enumerate(filter1_lengths) if val == max(filter1_lengths)]
                 # sorted_matches_indexes = range(len(filter1_lengths))
