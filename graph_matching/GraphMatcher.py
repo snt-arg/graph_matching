@@ -108,19 +108,18 @@ class GraphMatcher():
                 M_aux, _ = clipper.get_M_C_matrices()
 
                 clipper_match_numerical, score = clipper.solve_clipper()
-
-                if working_node_ID:
+                if working_node_ID: 
+                    # self.logger.info(f"FLAG clipper_match_numerical {clipper_match_numerical}")
+                    # self.logger.info(f"FLAG M_aux {M_aux}")
                     index = -1
                     for i, e in enumerate(clipper_match_numerical):
                         if np.array_equal(e, parent_pair):
                             index = i
                             break
-
                     if index != -1:
                         clipper_match_numerical = np.delete(clipper_match_numerical, index, axis= 0)
                     else:
                         score = 0.
-
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
                 
                 if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches:
@@ -249,12 +248,12 @@ class GraphMatcher():
         return(data1, data2, A_numerical_with_parent)
 
 
-    def add_floor_data(self, data1, data2, A_numerical): ### TODO: Not working. It does not desambiguate
-        floor_data = np.repeat([[0,0,0,0,0,1]], len(A_numerical), axis=0)
-        A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
-        data1 = np.concatenate(([ data1, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
-        data2 = np.concatenate(([ data2, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
-        return(data1, data2, A_numerical_with_parent)
+    # def add_floor_data(self, data1, data2, A_numerical): ### TODO: Not working. It does not desambiguate
+    #     floor_data = np.repeat([[0,0,0,0,0,1]], len(A_numerical), axis=0)
+    #     A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
+    #     data1 = np.concatenate(([ data1, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
+    #     data2 = np.concatenate(([ data2, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
+    #     return(data1, data2, A_numerical_with_parent)
 
     # def delete_floor_data(self, data1, data2, A_numerical):
     #     A_numerical = A_numerical[1:]
@@ -611,7 +610,7 @@ class GraphMatcher():
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, merged_node_match, "Geometric_info")
                 data1 = self.geometric_info_transformation(data1, swept_levels[1], parent1_data)
                 data2 = self.geometric_info_transformation(data2, swept_levels[1], parent2_data)
-                data1, data2, A_numerical = self.add_floor_data(data1, data2, A_numerical)
+                # data1, data2, A_numerical = self.add_floor_data(data1, data2, A_numerical)
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], self.params["levels"]["clipper_invariants"][swept_levels[1]], self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 consistency_avg = clipper.get_score_all_inital_u()

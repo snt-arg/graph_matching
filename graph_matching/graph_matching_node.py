@@ -97,9 +97,12 @@ class GraphMatchingNode(Node):
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
         self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/unique_match', 10)
-        self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
+        # self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
         self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization', 10)
-        self.best_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/best_match_visualization', 10)
+        # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_1_visualization', 10)
+        # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_2_visualization', 10)
+        # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_3_visualization', 10)
+        # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_4_visualization', 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_matching/subgraph_match', self.subgraph_match_srv_callback)
 
 
@@ -162,6 +165,7 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
+        self.get_logger().info(f"flag num_rooms {num_rooms}")
         if graph["name"] == "Online" and num_rooms>=2:
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
@@ -173,18 +177,20 @@ class GraphMatchingNode(Node):
                     self.get_logger().info(f"flag {i['origin_node_attrs']['type']} {i['score']}")
                 self.get_logger().info(f" ")
 
-            if success and len(matches) > 0:
-                best_match_msg = self.generate_match_msg(matches[0])
-                self.best_match_publisher.publish(best_match_msg)
-                best_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-                self.best_match_visualization_publisher.publish(best_match_visualization_msg)
+            if success and len(matches) > 1:
+                for i, match in enumerate(matches):
+                    symmetry_match_msg = self.generate_match_msg(match)
+                    symmetry_match_publisher = self.create_publisher(MatchMsg, f'graph_matching/symmetry_match_{i+1}', 10)
+                    symmetry_match_publisher.publish(symmetry_match_msg)
+                    symmetry_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+                    symmetry_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, f'graph_matching/symmetry_match_{i+1}_visualization', 10)
+                    symmetry_match_visualization_publisher.publish(symmetry_match_visualization_msg)
+
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
                 self.unique_match_publisher.publish(unique_match_msg)
                 unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
                 self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
-
-
 
 
     def subgraph_match_srv_callback(self, request, response):
