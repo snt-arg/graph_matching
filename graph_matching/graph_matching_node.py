@@ -188,7 +188,7 @@ class GraphMatchingNode(Node):
 
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
-                self.unique_match_publisher.publish(unique_match_msg)
+                # self.unique_match_publisher.publish(unique_match_msg)
                 unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
                 self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
 
