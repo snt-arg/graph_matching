@@ -165,7 +165,7 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
-        self.get_logger().info(f"flag num_rooms {num_rooms}")
+        # self.get_logger().info(f"flag num_rooms {num_rooms}")
         if graph["name"] == "Online" and num_rooms>=2:
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
@@ -188,7 +188,7 @@ class GraphMatchingNode(Node):
 
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
-                # self.unique_match_publisher.publish(unique_match_msg)
+                self.unique_match_publisher.publish(unique_match_msg)
                 unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
                 self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
 

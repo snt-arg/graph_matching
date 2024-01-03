@@ -53,8 +53,6 @@ class GraphMatcher():
                 filter_out_nodes[0] += list(np.array(list(match_node_attrs[1]['match']))[:,0])
                 filter_out_nodes[1] += list(np.array(list(match_node_attrs[1]['match']))[:,1])
             filter_in_nodes = [list(set(list(G1_full.get_nodes_ids())) - set(filter_out_nodes[0])), list(set(list(G2_full.get_nodes_ids())) - set(filter_out_nodes[1]))]
-            self.logger.info(f"flag G1 all {len(G1_full.get_nodes_ids())} in {len(filter_in_nodes[0])}")
-            self.logger.info(f"flag G2 all {len(G2_full.get_nodes_ids())} in {len(filter_in_nodes[1])}")
             G1_full = G1_full.filter_graph_by_node_list(filter_in_nodes[0])
             G2_full = G2_full.filter_graph_by_node_list(filter_in_nodes[1])
 
@@ -62,9 +60,6 @@ class GraphMatcher():
             stored_match_graph = None
             
         def match_iteration(working_node_ID, lvl):
-            self.logger.info(f"flag new match intertion, lvl {swept_levels[lvl]}")
-            self.logger.info(f"flag G1 inside {len(G1_full.get_nodes_ids())}")
-            self.logger.info(f"flag G2 inside {len(G2_full.get_nodes_ids())}")
             ### INTERLEVEL CANDIDATES GENERATION
             if working_node_ID:
                 ### Extract every children of the parent higher-level match which belongs to current level
@@ -115,18 +110,14 @@ class GraphMatcher():
                 data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1]))
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
-                self.logger.info(f"flag n_extra_pairs {n_extra_pairs}")
                 if n_extra_pairs == 1:
                     interlevel_scores = M_aux[:,-1][:-1]
                 elif n_extra_pairs == 2:
                     interlevel_scores = np.array(M_aux[:,-2:])
-                    self.logger.info(f"flag interlevel_scores 2 1 {interlevel_scores}")
                     interlevel_scores = (interlevel_scores[:,0] + interlevel_scores[:,1]) / 2
-                    self.logger.info(f"flag interlevel_scores 2 2 {interlevel_scores}")
                     interlevel_scores = interlevel_scores[:-2]
                 good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][0]
                 bad_pairs = [not elem for elem in good_pairs]
-                self.logger.info(f"flag good_pairs {sum(good_pairs)} bad_pairs {sum(bad_pairs)}")
                 filtered_bad_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[bad_pairs], nodes1, nodes2))
                 filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[good_pairs], nodes1, nodes2))
                 interlevel_scores_dict = {list(filtered_good_pairs_categorical)[i]: interlevel_scores[good_pairs][i] for i in range(len(filtered_good_pairs_categorical))}
@@ -227,7 +218,7 @@ class GraphMatcher():
                                 match_graph.add_edges(edges_attr)
 
             if lvl < len(swept_levels) - 1:
-                self.prune_interlevel(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
+                self.prune_interlevel(match_graph, self.graphs[G1_name], self.graphs[G2_name], swept_levels[lvl:lvl+2])
                 self.select_best_global_localization_pair(match_graph, swept_levels[lvl:lvl+2])
                 # self.add_upranted_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
 
@@ -256,7 +247,36 @@ class GraphMatcher():
 
             if len(final_combinations) == 1:
                 self.logger.info("Only one match succeded with score - {}".format(final_combinations[0][0]["score"]))
-                self.stored_match_graph = match_graph
+
+                if not self.stored_match_graph:
+                    self.stored_match_graph = match_graph.filter_graph_by_node_attributes({"merge_lvl":1})
+
+                else:
+                    for swept_level in swept_levels:
+                        current_node_id = list(match_graph.filter_graph_by_node_attributes({"merge_lvl":1, "type" : swept_level}).get_nodes_ids())[0]
+                        current_node_attrs = match_graph.get_attributes_of_node(current_node_id)
+                        stored_node_id = list(self.stored_match_graph.filter_graph_by_node_attributes({"merge_lvl":1, "type" : swept_level}).get_nodes_ids())[0]
+                        stored_node_attrs = self.stored_match_graph.get_attributes_of_node(stored_node_id)
+                        stored_node_attrs["match"].update(current_node_attrs["match"])
+                        stored_node_attrs["score_intralevel"] = current_node_attrs["score_intralevel"]
+                        if "split_match" in stored_node_attrs.keys():
+                            stored_node_attrs['split_match'] += current_node_attrs['split_match']
+                            stored_node_attrs['split_scores'] += current_node_attrs['split_scores']
+
+                    # node_color = self.stored_match_graph.define_draw_color_option_by_node_type()
+                    # node_size = self.stored_match_graph.define_node_size_option_by_combination_type_attr()
+                    # linewidths = self.stored_match_graph.define_node_linewidth_option_by_combination_type_attr()
+                    # options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
+                    #             "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
+                    # self.stored_match_graph.draw("test stored match graph", options = options, show = self.params["verbose"])
+
+                    # node_color = match_graph.define_draw_color_option_by_node_type()
+                    # node_size = match_graph.define_node_size_option_by_combination_type_attr()
+                    # linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
+                    # options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
+                    #             "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
+                    # match_graph.draw("test current graph", options = options, show = self.params["verbose"])
+                    # time.sleep(999)
 
             elif len(final_combinations) > 1:
                 self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0]["score"] for match in final_combinations]))
@@ -307,9 +327,12 @@ class GraphMatcher():
 
 
     def add_parents_data(self, data1, data2, A_numerical, data_parent1, data_parent2):
+        if len(np.array(data_parent1).shape) == 1:
+            data_parent1 = [data_parent1]
+            data_parent2 = [data_parent2]
         A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
-        data1 = np.concatenate((data1, [data_parent1]), axis= 0, dtype = np.float64)
-        data2 = np.concatenate((data2, [data_parent2]), axis= 0, dtype = np.float64)
+        data1 = np.concatenate((data1, data_parent1), axis= 0, dtype = np.float64)
+        data2 = np.concatenate((data2, data_parent2), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent)
 
 
@@ -611,6 +634,13 @@ class GraphMatcher():
             for node in combination:
                 A_categorical.update(match_graph.get_attributes_of_node(node)["match"])
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
+            if self.stored_match_graph:
+                stored_match_graph = copy.deepcopy(self.stored_match_graph)
+                stored_match_graph_lvl_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": merged_levels[1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
+                stored_match_graph_lvl_data = np.array([(copy.deepcopy(G1_full.get_attributes_of_node(match[0])["Geometric_info"]), copy.deepcopy(G2_full.get_attributes_of_node(match[1])["Geometric_info"])) for match in stored_match_graph_lvl_match])
+                data1, data2, A_numerical = self.add_parents_data(data1, data2, A_numerical, stored_match_graph_lvl_data[:,0,:], stored_match_graph_lvl_data[:,1,:])
+
+            
             data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
             data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
             clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
@@ -627,7 +657,6 @@ class GraphMatcher():
             best_combinations = self.symmetry_detection(consistent_combinations)
             
             for best_combination in best_combinations:
-                best_combination_node_id = match_graph.get_total_number_nodes() + 1
                 split_match, split_score = [], []
 
                 for lower_level_node_id in best_combination["lower_level_nodes_IDs"]:
@@ -635,6 +664,7 @@ class GraphMatcher():
                     split_match.append(lower_level_node_attrs["match"])
                     split_score.append(lower_level_node_attrs["score_intralevel"])
 
+                best_combination_node_id = match_graph.get_total_number_nodes() + 1
                 node_attr = [(best_combination_node_id, {"type": merged_levels[1], "match": best_combination["match"], "merge_lvl" :1,\
                                             "combination_type" : "group", "score_intralevel" : best_combination["consistency_avg"],
                                             "split_match" : split_match, "split_scores" : split_score, "best_pair" : False})]
@@ -643,6 +673,7 @@ class GraphMatcher():
                 match_graph.add_subgraph(node_attr, edges_attr)
 
                 match_graph.set_node_attributes("merge_lvl", {best_combination["higher_level_node_ID"]:1})
+
 
     def select_best_global_localization_pair(self, match_graph, swept_levels):
         MG_ws_nodes = match_graph.find_nodes_by_attrs({"type": swept_levels[-1], "combination_type" : "group","merge_lvl": len(swept_levels)-1})
