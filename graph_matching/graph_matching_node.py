@@ -182,7 +182,7 @@ class GraphMatchingNode(Node):
                     symmetry_match_msg = self.generate_match_msg(match)
                     symmetry_match_publisher = self.create_publisher(MatchMsg, f'graph_matching/symmetry_match_{i+1}', 10)
                     symmetry_match_publisher.publish(symmetry_match_msg)
-                    symmetry_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
+                    symmetry_match_visualization_msg = self.generate_match_visualization_msg(matches[i])
                     symmetry_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, f'graph_matching/symmetry_match_{i+1}_visualization', 10)
                     symmetry_match_visualization_publisher.publish(symmetry_match_visualization_msg)
 

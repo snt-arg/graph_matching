@@ -233,7 +233,8 @@ class GraphMatcher():
             linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
             options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                         "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-            match_graph.draw("match graph", options = options, show = self.params["verbose"])
+            if len(list(match_graph.get_nodes_ids())) != 0:
+                match_graph.draw("match graph", options = options, show = self.params["verbose"])
 
             self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
             final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
@@ -330,7 +331,12 @@ class GraphMatcher():
         if len(np.array(data_parent1).shape) == 1:
             data_parent1 = [data_parent1]
             data_parent2 = [data_parent2]
-        A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
+            A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
+        else:
+            aux = np.dstack((np.arange(data1.shape[0], data1.shape[0] + data_parent1.shape[0]), np.arange(data1.shape[0], data1.shape[0] + data_parent1.shape[0])))[0]
+            self.logger.info(f"flag aux {aux}")
+            A_numerical_with_parent = np.concatenate((A_numerical, aux), axis= 0, dtype = np.int32)
+            
         data1 = np.concatenate((data1, data_parent1), axis= 0, dtype = np.float64)
         data2 = np.concatenate((data2, data_parent2), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent)
@@ -497,7 +503,8 @@ class GraphMatcher():
         linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-        pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
+        if len(list(pruned_match_graph.get_nodes_ids())) != 0:
+            pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
             if working_node_ID:
@@ -634,18 +641,28 @@ class GraphMatcher():
             for node in combination:
                 A_categorical.update(match_graph.get_attributes_of_node(node)["match"])
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
+            data1_trans = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
+            data2_trans = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
+            clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
+            clipper.score_pairwise_consistency(data1_trans, data2_trans, A_numerical)
+            consistency_avg = clipper.get_score_all_inital_u()
+            self.logger.info(f"flag consistency_avg 1 {consistency_avg}")
+
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
                 stored_match_graph_lvl_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": merged_levels[1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
                 stored_match_graph_lvl_data = np.array([(copy.deepcopy(G1_full.get_attributes_of_node(match[0])["Geometric_info"]), copy.deepcopy(G2_full.get_attributes_of_node(match[1])["Geometric_info"])) for match in stored_match_graph_lvl_match])
+                self.logger.info(f"flag stored_match_graph_lvl_match {len(stored_match_graph_lvl_match)}")
+                self.logger.info(f"flag A_numerical {A_numerical}")
                 data1, data2, A_numerical = self.add_parents_data(data1, data2, A_numerical, stored_match_graph_lvl_data[:,0,:], stored_match_graph_lvl_data[:,1,:])
-
+                data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
+                data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
+                self.logger.info(f"flag A_numerical {A_numerical}")
+                clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
+                clipper.score_pairwise_consistency(data1, data2, A_numerical)
+                consistency_avg = clipper.get_score_all_inital_u()
+                self.logger.info(f"flag consistency_avg 2 {consistency_avg}")
             
-            data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
-            data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
-            clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
-            clipper.score_pairwise_consistency(data1, data2, A_numerical)
-            consistency_avg = clipper.get_score_all_inital_u()
             if consistency_avg >= self.params["thresholds"]["global"]:
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
 
