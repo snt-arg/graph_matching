@@ -141,6 +141,8 @@ class GraphMatchingNode(Node):
             node[1]["type"] = node_msg.type
             nodes.append(node)
         graph["nodes"] = nodes
+        if msg.name == "Online":
+            self.get_logger().info(f"flag graph[nodes] {graph['nodes']}")
 
         edges = []
         for edge_msg in msg.edges:
