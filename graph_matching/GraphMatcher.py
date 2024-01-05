@@ -75,6 +75,7 @@ class GraphMatcher():
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
                 best_pair_ids = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": swept_levels[-1], "combination_type" : "group","merge_lvl": 1})[0])["best_pair"]
+                flag_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": swept_levels[-1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
                 best_pair_attrs = [copy.deepcopy(self.graphs[G1_name].get_attributes_of_node(best_pair_ids[0])), copy.deepcopy(self.graphs[G2_name].get_attributes_of_node(best_pair_ids[1]))]
                 best_pair_attrs[1]["Geometric_info"] = self.change_pos_dt(self.graphs[G2_name], [best_pair_ids[1]], self.params["levels"]["datatype"][swept_levels[-1]], self.params["levels"]["datatype"][swept_levels[lvl]])[0]
                 best_pair_attrs[0]["Geometric_info"] = self.change_pos_dt(self.graphs[G1_name], [best_pair_ids[0]], self.params["levels"]["datatype"][swept_levels[-1]], self.params["levels"]["datatype"][swept_levels[lvl]])[0]
@@ -755,57 +756,46 @@ class GraphMatcher():
     def add_deviated_nodes_by_level(self, MG_full, G1_full, G2_full, swept_levels):
         # Best Pair data
         MG_room_nodes = MG_full.find_nodes_by_attrs({"type": swept_levels[0], "combination_type" : "group","merge_lvl": 1})
-        MG_ws_nodes = MG_full.find_nodes_by_attrs({"type": swept_levels[-1], "combination_type" : "group","merge_lvl": 1})
+        MG_planes_nodes = MG_full.find_nodes_by_attrs({"type": swept_levels[-1], "combination_type" : "group","merge_lvl": 1})
         
-        if len(MG_room_nodes) == 1 and len(MG_ws_nodes) == 1:
-            self.logger.info(f"FLAG unique match, looking for deviations")
-            MG_ws_node_attrs = MG_full.get_attributes_of_node(MG_ws_nodes[0])
-            best_pair = MG_ws_node_attrs["best_pair"]
-            parent1_data = G1_full.get_attributes_of_node(best_pair[0])["Geometric_info"]
-            parent2_data = G2_full.get_attributes_of_node(best_pair[1])["Geometric_info"]
-            self.best_pair_node_attrs = MG_ws_node_attrs
-
-
-            MG_rooms_match = MG_full.get_attributes_of_node(MG_room_nodes[0])["match"]
-            MG1_rooms_match_nodes = np.array(list(MG_rooms_match))[:,0]
-            MG2_rooms_match_nodes = np.array(list(MG_rooms_match))[:,1]
-
-            matched_plane_pairs_nodes = MG_full.find_nodes_by_attrs({"type": swept_levels[1], "combination_type" : "group","merge_lvl": 1})
-            MG_planes_match = MG_full.get_attributes_of_node(matched_plane_pairs_nodes[0])["match"]
+        if len(MG_room_nodes) == 1 and len(MG_planes_nodes) == 1:
+            MG_ws_node_attrs = MG_full.get_attributes_of_node(MG_planes_nodes[0])
+            MG_planes_match = MG_ws_node_attrs["match"]
             MG1_planes_match_nodes = np.array(list(MG_planes_match))[:,0]
             MG2_planes_match_nodes = np.array(list(MG_planes_match))[:,1]
+            all_walls_gi1, all_walls_gi2, all_walls_A_numerical, all_walls_nodes1, all_walls_nodes2 = self.generate_clipper_input(G1_full, G2_full, MG_ws_node_attrs["match"], "Geometric_info")
+            best_pair = MG_ws_node_attrs["best_pair"]
+            best_pair_data1 = G1_full.get_attributes_of_node(best_pair[0])["Geometric_info"]
+            best_pair_data2 = G2_full.get_attributes_of_node(best_pair[1])["Geometric_info"]
+            self.best_pair_data = [best_pair_data1, best_pair_data2]
+            MG_rooms_match = MG_full.get_attributes_of_node(MG_room_nodes[0])["match"]
+
             for MG_room_match in MG_rooms_match:
-                G1_matched_room, G2_matched_room = MG_room_match[0], MG_room_match[1]
-                G1_room_planes = G1_full.get_neighbourhood_graph(G1_matched_room).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
-                G2_room_planes = G2_full.get_neighbourhood_graph(G2_matched_room).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
+                G1_room_planes = G1_full.get_neighbourhood_graph(MG_room_match[0]).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
+                G2_room_planes = G2_full.get_neighbourhood_graph(MG_room_match[1]).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
                 G1_unmatched_planes = list(set(G1_room_planes) - set(MG1_planes_match_nodes))
                 G2_unmatched_planes = list(set(G2_room_planes) - set(MG2_planes_match_nodes))
-                if len(G1_unmatched_planes) != 0 and len(G2_unmatched_planes) != 0:
 
+                if len(G1_unmatched_planes) != 0 and len(G2_unmatched_planes) != 0:
                     ### Use clipper utility function to compute consistency
                     wild_nodes_combination = multilist_combinations([G1_unmatched_planes, G2_unmatched_planes])
-                    data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, wild_nodes_combination, "Geometric_info")
+                    wild_nodes_data1, wild_nodes_data2, wild_pairs_numerical, wild_nodes1, wild_odes2 = self.generate_clipper_input(G1_full, G2_full, wild_nodes_combination, "Geometric_info")
+                    data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(wild_nodes_data1, wild_nodes_data2, wild_pairs_numerical, all_walls_gi1, all_walls_gi2)
+                    data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[1], self.best_pair_data[0]))
+                    data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[1], self.best_pair_data[1]))
                     clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], "1", self.params, self.logger)
-                    data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parent1_data, parent2_data)
-                    data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[1], parent1_data))
-                    data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[1], parent2_data))
                     clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                     M_aux, _ = clipper.get_M_C_matrices()
-                    interlevel_scores = M_aux[:,-1][:-1]
+                    entry_interlevel_scores = M_aux[len(wild_nodes_combination):,:len(wild_nodes_combination)]
+                    self.logger.info(f"flag entry_interlevel_scores {entry_interlevel_scores}")
+                    interlevel_scores = np.sum(entry_interlevel_scores, axis = 0) / (len(all_pairs_and_parent_numerical) - len(wild_nodes_combination))
                     self.logger.info(f"FLAG interlevel_scores {interlevel_scores}")
                     good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][1]
-                    good_pairs_score = interlevel_scores[good_pairs]
-                    bad_pairs = [not elem for elem in good_pairs]
-                    filtered_bad_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[bad_pairs], nodes1, nodes2))
-                    filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[good_pairs], nodes1, nodes2))
+                    filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_and_parent_numerical[:len(wild_nodes_combination)][good_pairs], wild_nodes1, wild_odes2))
+                    self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
-                    self.logger.info(f"flag good / bad pairs {len(filtered_good_pairs_categorical)} {len(filtered_bad_pairs_categorical)}")
-
-                    self.logger.info(f"FLAG filtered_good_pairs_categorical {filtered_good_pairs_categorical}")
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
+                        MG_ws_node_attrs["match"].update(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_match"].append(set([filtered_good_pair_categorical]))
-                        MG_ws_node_split_match = MG_ws_node_attrs["split_match"]
                         MG_ws_node_attrs["split_scores"].append(interlevel_scores[i])
-                        MG_ws_node_split_scores = MG_ws_node_attrs["split_scores"]
-                        MG_full.set_node_attributes("split_match", {MG_ws_nodes[0] : MG_ws_node_split_match})
-                        MG_full.set_node_attributes("split_scores", {MG_ws_nodes[0] : MG_ws_node_split_scores})
+                        self.logger.info(f"flag MG_ws_node_attrs {MG_ws_node_attrs}")

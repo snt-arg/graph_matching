@@ -11,14 +11,14 @@
         "points&normal": {
             "0": {
                 "sigp": 0.5,
-                "epsp": 100,
-                "sign": 0.10,
+                "epsp": 0.3,
+                "sign": 0.05,
                 "epsn": 0.35
             },
             "1": {
                 "sigp": 0.5,
-                "epsp": 5000.0,
-                "sign": 0.10,
+                "epsp": 0.5,
+                "sign": 0.08,
                 "epsn": 0.35
             }
         }
