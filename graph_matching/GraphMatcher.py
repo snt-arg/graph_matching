@@ -761,6 +761,7 @@ class GraphMatcher():
         if len(MG_room_nodes) == 1 and len(MG_planes_nodes) == 1:
             MG_ws_node_attrs = MG_full.get_attributes_of_node(MG_planes_nodes[0])
             MG_planes_match = MG_ws_node_attrs["match"]
+            self.logger.info(f"flag unique matched pairs {MG_planes_match}")
             MG1_planes_match_nodes = np.array(list(MG_planes_match))[:,0]
             MG2_planes_match_nodes = np.array(list(MG_planes_match))[:,1]
             all_walls_gi1, all_walls_gi2, all_walls_A_numerical, all_walls_nodes1, all_walls_nodes2 = self.generate_clipper_input(G1_full, G2_full, MG_ws_node_attrs["match"], "Geometric_info")
@@ -791,11 +792,13 @@ class GraphMatcher():
                     interlevel_scores = np.sum(entry_interlevel_scores, axis = 0) / (len(all_pairs_and_parent_numerical) - len(wild_nodes_combination))
                     self.logger.info(f"FLAG interlevel_scores {interlevel_scores}")
                     good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][1]
+                    filtered_good_pairs_score = interlevel_scores[good_pairs]
                     filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_and_parent_numerical[:len(wild_nodes_combination)][good_pairs], wild_nodes1, wild_odes2))
                     self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
+                        self.logger.info(f"flag including deviation of pair {filtered_good_pair_categorical}")
                         MG_ws_node_attrs["match"].update(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_match"].append(set([filtered_good_pair_categorical]))
-                        MG_ws_node_attrs["split_scores"].append(interlevel_scores[i])
-                        self.logger.info(f"flag MG_ws_node_attrs {MG_ws_node_attrs}")
+                        MG_ws_node_attrs["split_scores"].append(filtered_good_pairs_score[i])
+                        # self.logger.info(f"flag MG_ws_node_attrs {MG_ws_node_attrs}")

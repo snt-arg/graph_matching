@@ -175,7 +175,7 @@ class GraphMatchingNode(Node):
             for match in matches:
                 self.get_logger().info(f"flag new consistent match")
                 for i in match:
-                    self.get_logger().info(f"flag {i['origin_node_attrs']['type']} {i['score']}")
+                    self.get_logger().info(f"flag {i['origin_node_attrs']['type']}. nodes {i['origin_node']} - {i['target_node']}. score {i['score']}")
                 self.get_logger().info(f" ")
 
             if success and len(matches) > 1:
@@ -216,7 +216,7 @@ class GraphMatchingNode(Node):
                     self.get_logger().warn('Graph Matching: no good matches found!')
 
                 if response.success == 0:
-                    self.unique_match_publisher.publish(matches_msg[0])
+                    # self.unique_match_publisher.publish(matches_msg[0])
                     self.unique_match_visualization_publisher.publish(matches_visualization_msg[0])
                 if response.success == 0 or response.success == 1:
                     self.best_match_publisher.publish(matches_msg[0])
