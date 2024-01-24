@@ -76,27 +76,27 @@ def transform_point(original, translation, rotation):
     return full_transformation_matrix.dot(tmp.transpose())[0:3].transpose() 
 
 
-def rotation_matrix_from_euler_degrees(phi, theta, psi):
-        def Rx(phi):
-            return np.matrix([[ 1, 0           , 0           ],\
-                        [ 0, math.cos(phi),-math.sin(phi)],\
-                        [ 0, math.sin(phi), math.cos(phi)]])
+# def rotation_matrix_from_euler_degrees(phi, theta, psi):
+#         def Rx(phi):
+#             return np.matrix([[ 1, 0           , 0           ],\
+#                         [ 0, math.cos(phi),-math.sin(phi)],\
+#                         [ 0, math.sin(phi), math.cos(phi)]])
         
-        def Ry(theta):
-            return np.matrix([[ math.cos(theta), 0, math.sin(theta)],\
-                        [ 0           , 1, 0           ],\
-                        [-math.sin(theta), 0, math.cos(theta)]])
+#         def Ry(theta):
+#             return np.matrix([[ math.cos(theta), 0, math.sin(theta)],\
+#                         [ 0           , 1, 0           ],\
+#                         [-math.sin(theta), 0, math.cos(theta)]])
         
-        def Rz(psi):
-            return np.matrix([[ math.cos(psi), -math.sin(psi), 0 ],\
-                        [ math.sin(psi), math.cos(psi) , 0 ],\
-                        [ 0           , 0            , 1 ]])
+#         def Rz(psi):
+#             return np.matrix([[ math.cos(psi), -math.sin(psi), 0 ],\
+#                         [ math.sin(psi), math.cos(psi) , 0 ],\
+#                         [ 0           , 0            , 1 ]])
 
-        def degrees_to_radians(deg):
-            return deg*math.pi/180
+#         def degrees_to_radians(deg):
+#             return deg*math.pi/180
 
-        R = Rz(degrees_to_radians(psi)) * Ry(degrees_to_radians(theta)) * Rx(degrees_to_radians(phi))
-        return np.array(R)
+#         R = Rz(degrees_to_radians(psi)) * Ry(degrees_to_radians(theta)) * Rx(degrees_to_radians(phi))
+#         return np.array(R)
 
 
 def multilist_combinations(lists):
@@ -207,3 +207,10 @@ def segment_intersection(segment_1, segment_2):
     num = np.dot( dap, dp )
     return (num / denom.astype(float))*db + b1
 
+
+# normal = [1,1,0]
+# theta = -np.arctan2(normal[1], normal[0])
+# rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
+
+# translated = np.matmul(rotation,np.array([1,1,0]))
+# print(translated)

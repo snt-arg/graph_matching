@@ -359,6 +359,9 @@ class GraphMatcher():
     def geometric_info_transformation(self, data, level, parent_data):
         if level == "Plane":
             rotation = np.array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])
+            normal = parent_data[3:]
+            theta = -np.arctan2(normal[1], normal[0])
+            rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
             transformed = transform_plane_definition(data, -parent_data[:3], rotation, self.logger)
         else:
             transformed = data
