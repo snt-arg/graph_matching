@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import math
+import transforms3d.euler as eul
 import itertools
 
 def plane_4_params_to_6_params(plane):
@@ -208,9 +209,13 @@ def segment_intersection(segment_1, segment_2):
     return (num / denom.astype(float))*db + b1
 
 
-# normal = [1,1,0]
-# theta = -np.arctan2(normal[1], normal[0])
-# rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
+translation = [1,0,0]
+normal = [0,1,0]
 
-# translated = np.matmul(rotation,np.array([1,1,0]))
-# print(translated)
+theta = np.arctan2(normal[1], normal[0])
+rotation= eul.euler2mat(0, 0, theta, axes='sxyz')
+
+#rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
+translated = np.matmul(rotation,translation)
+print(rotation)
+print(translated)

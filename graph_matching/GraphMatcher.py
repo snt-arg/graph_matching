@@ -8,6 +8,7 @@ import pathlib, sys
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
+import transforms3d.euler as eul
 
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
@@ -106,7 +107,6 @@ class GraphMatcher():
                 #         all_pairs_and_parent_numerical = copy.deepcopy(all_pairs_numerical)
                 #     data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_and_parent_numerical, best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"])
                 #     origin_nodes_attrs = [best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"]]
-
                 data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], origin_nodes_attrs[0]))
                 data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1]))
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
@@ -306,7 +306,9 @@ class GraphMatcher():
             return( not any(set([tuple(pair) for pair in new_match]) == set([tuple(pair) for pair in match]) for match in other_matches))
 
 
-    def generate_clipper_input(self, G1, G2, A_categorical, feature_name):
+    def generate_clipper_input(self, G1_in, G2_in, A_categorical, feature_name):
+        G1 = copy.deepcopy(G1_in)
+        G2 = copy.deepcopy(G2_in)
         nodes1, nodes2 = list(np.array(list(A_categorical))[:,0]), list(np.array(list(A_categorical))[:,1])
         data1 = G1.stack_nodes_feature(nodes1, feature_name)
         data2 = G2.stack_nodes_feature(nodes2, feature_name)
@@ -314,9 +316,10 @@ class GraphMatcher():
         return(data1, data2, A_numerical, nodes1, nodes2)
 
 
-    def change_pos_dt(self, graph, node_list, in_dt, out_dt):
-        original = graph.stack_nodes_feature(node_list, "Geometric_info")
-
+    def change_pos_dt(self, graph_in, node_list, in_dt, out_dt):
+        graph = copy.deepcopy(graph_in)
+        original_aux = graph.stack_nodes_feature(node_list, "Geometric_info")
+        original = copy.deepcopy(original_aux)
         if in_dt == out_dt:
             processed = original
         elif in_dt == "points" and out_dt == "points&normal":
@@ -356,14 +359,21 @@ class GraphMatcher():
     #     self.logger.info("flag data1 {}".format(data1))
 
 
-    def geometric_info_transformation(self, data, level, parent_data):
+    def geometric_info_transformation(self, data_in, level, parent_data_in):
+        data = copy.deepcopy(data_in)
+        parent_data = copy.deepcopy(parent_data_in)
         if level == "Plane":
-            rotation = np.array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])
-            normal = parent_data[3:]
-            theta = -np.arctan2(normal[1], normal[0])
-            rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
+            if len(parent_data) == 3:# TODO use parent dt
+                rotation = np.array([[1,0,0],[0,1,0],[0,0,1]])
+            elif len(parent_data) == 6:
+                normal = parent_data[3:]
+                psi = np.arctan2(normal[1], normal[0])
+                rotation= eul.euler2mat(0, 0, psi, axes='sxyz')
+            else:
+                raise ValueError("Wrong parent_data")
+
             transformed = transform_plane_definition(data, -parent_data[:3], rotation, self.logger)
-        else:
+        else: # TODO: translate room
             transformed = data
 
         return transformed
@@ -625,6 +635,7 @@ class GraphMatcher():
 
 
     def merge_lower_level_groups(self, match_graph, G1_full, G2_full, working_node_ID, merged_levels):
+
         higher_level_single_pairs_nodes = list(match_graph.get_neighbourhood_graph(working_node_ID)\
                                                             .filter_graph_by_node_types(merged_levels[0])\
                                                             .filter_graph_by_node_attributes({"combination_type" : "pair"})\
@@ -719,8 +730,8 @@ class GraphMatcher():
                 # self.logger.info("flag wild_nodes_combination {}".format(wild_nodes_combination))
 
                 ### Use clipper utility function to compute consistency
-                parent1_data = G1_full.get_attributes_of_node(G1_matched_nodes[0])["Geometric_info"]
-                parent2_data = G2_full.get_attributes_of_node(G2_matched_nodes[0])["Geometric_info"]
+                parent1_data = copy.deepcopy(G1_full.get_attributes_of_node(G1_matched_nodes[0])["Geometric_info"])
+                parent2_data = copy.deepcopy(G2_full.get_attributes_of_node(G2_matched_nodes[0])["Geometric_info"])
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, wild_nodes_combination, "Geometric_info")
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], self.params["levels"]["clipper_invariants"][swept_levels[1]], self.params, self.logger)
                 data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parent1_data, parent2_data)
@@ -769,8 +780,8 @@ class GraphMatcher():
             MG2_planes_match_nodes = np.array(list(MG_planes_match))[:,1]
             all_walls_gi1, all_walls_gi2, all_walls_A_numerical, all_walls_nodes1, all_walls_nodes2 = self.generate_clipper_input(G1_full, G2_full, MG_ws_node_attrs["match"], "Geometric_info")
             best_pair = MG_ws_node_attrs["best_pair"]
-            best_pair_data1 = G1_full.get_attributes_of_node(best_pair[0])["Geometric_info"]
-            best_pair_data2 = G2_full.get_attributes_of_node(best_pair[1])["Geometric_info"]
+            best_pair_data1 = copy.deepcopy(G1_full.get_attributes_of_node(best_pair[0])["Geometric_info"])
+            best_pair_data2 = copy.deepcopy(G2_full.get_attributes_of_node(best_pair[1])["Geometric_info"])
             self.best_pair_data = [best_pair_data1, best_pair_data2]
             MG_rooms_match = MG_full.get_attributes_of_node(MG_room_nodes[0])["match"]
 
@@ -793,7 +804,6 @@ class GraphMatcher():
                     entry_interlevel_scores = M_aux[len(wild_nodes_combination):,:len(wild_nodes_combination)]
                     self.logger.info(f"flag entry_interlevel_scores {entry_interlevel_scores}")
                     interlevel_scores = np.sum(entry_interlevel_scores, axis = 0) / (len(all_pairs_and_parent_numerical) - len(wild_nodes_combination))
-                    self.logger.info(f"FLAG interlevel_scores {interlevel_scores}")
                     good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][1]
                     filtered_good_pairs_score = interlevel_scores[good_pairs]
                     filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_and_parent_numerical[:len(wild_nodes_combination)][good_pairs], wild_nodes1, wild_odes2))
