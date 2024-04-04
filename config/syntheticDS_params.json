@@ -17,21 +17,21 @@
             },
             "1": {
                 "sigp": 0.5,
-                "epsp": 0.5,
-                "sign": 0.08,
+                "epsp": 0.3,
+                "sign": 0.05,
                 "epsn": 0.35
             }
         }
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.8, 0.75],
+            "Plane" : [0.8, 0.8],
             "Finite Room" : [0.8]
         },
         "local_interlevel": {
-            "Finite Room - Plane" : [0.8, 0.75]
+            "Finite Room - Plane" : [0.8, 0.8]
         },
-        "global": [0.85]
+        "global": [0.8]
     },
     "dbscan": {
         "eps": 0.01,

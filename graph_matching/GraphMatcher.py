@@ -45,6 +45,7 @@ class GraphMatcher():
         lvl = 0
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
+
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []})
         if self.stored_match_graph:
             stored_match_graph = copy.deepcopy(self.stored_match_graph)
@@ -72,6 +73,7 @@ class GraphMatcher():
                 ### Extract every node in the hole graph which belongs to the current level
                 G1_lvl = G1_full.filter_graph_by_node_types(swept_levels[lvl])
                 G2_lvl = G2_full.filter_graph_by_node_types(swept_levels[lvl])
+
            
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
@@ -280,7 +282,10 @@ class GraphMatcher():
                     # match_graph.draw("test current graph", options = options, show = self.params["verbose"])
                     # time.sleep(999)
 
+                final_combinations_full = self.gather_final_combinations_from_match_graph(self.graphs[G1_name], self.graphs[G2_name], self.stored_match_graph, swept_levels)
+
             elif len(final_combinations) > 1:
+                final_combinations_full = []
                 self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0]["score"] for match in final_combinations]))
 
             if self.params["verbose"]:
@@ -289,9 +294,10 @@ class GraphMatcher():
         else:
             success = False
             final_combinations = []
+            final_combinations_full = []
         self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
 
-        return(success, final_combinations)
+        return(success, final_combinations, final_combinations_full)
 
 
     def filter_local_match_with_global(self, local_match, global_matches):
@@ -345,12 +351,13 @@ class GraphMatcher():
         return(data1, data2, A_numerical_with_parent)
 
 
-    # def add_floor_data(self, data1, data2, A_numerical): ### TODO: Not working. It does not desambiguate
-    #     floor_data = np.repeat([[0,0,0,0,0,1]], len(A_numerical), axis=0)
-    #     A_numerical_with_parent = np.concatenate((A_numerical, [[data1.shape[0], data2.shape[0]]]), axis= 0, dtype = np.int32)
-    #     data1 = np.concatenate(([ data1, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
-    #     data2 = np.concatenate(([ data2, [0,0,0,0,0,1]]), axis= 0, dtype = np.float64)
-    #     return(data1, data2, A_numerical_with_parent)
+    def add_floor_data(self, data1, data2, A_numerical):
+        floor_pair_numerical = [data1.shape[0], data2.shape[0]]
+        floor_points = [data1[A_numerical[0][0]], data2[A_numerical[0][1]]]
+        A_numerical_with_parent = np.concatenate((A_numerical, [floor_pair_numerical]), axis= 0, dtype = np.int32)
+        data1 = np.concatenate(([ data1, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
+        data2 = np.concatenate(([ data2, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
+        return(data1, data2, A_numerical_with_parent, floor_pair_numerical)
 
     # def delete_floor_data(self, data1, data2, A_numerical):
     #     A_numerical = A_numerical[1:]
@@ -655,6 +662,7 @@ class GraphMatcher():
             for node in combination:
                 A_categorical.update(match_graph.get_attributes_of_node(node)["match"])
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
+            data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
 
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
@@ -751,7 +759,7 @@ class GraphMatcher():
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, merged_node_match, "Geometric_info")
                 data1 = self.geometric_info_transformation(data1, swept_levels[1], parent1_data)
                 data2 = self.geometric_info_transformation(data2, swept_levels[1], parent2_data)
-                # data1, data2, A_numerical = self.add_floor_data(data1, data2, A_numerical)
+                # data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], self.params["levels"]["clipper_invariants"][swept_levels[1]], self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 consistency_avg = clipper.get_score_all_inital_u()

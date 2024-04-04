@@ -98,7 +98,8 @@ class GraphMatchingNode(Node):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
         self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/unique_match', 10)
         # self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
-        self.unique_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization', 10)
+        self.unique_match_visualization_inc_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/incremental', 10)
+        self.unique_match_visualization_full_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/full', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_1_visualization', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_2_visualization', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_3_visualization', 10)
@@ -109,7 +110,6 @@ class GraphMatchingNode(Node):
     def graph_callback(self, msg):
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
-
         # self.get_yaml_parameters_()
         self.gm.set_parameters(self.params)
         nodes = []
@@ -150,6 +150,13 @@ class GraphMatchingNode(Node):
         graph["edges"] = edges
         self.gm.set_graph_from_dict(graph, graph["name"])
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+        # #### FILTERING OUT ROOMS
+        # if graph["name"] == "Prior":
+        #     all_room_node_ids = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
+        #     all_node_ids = list(self.gm.graphs['Prior'].get_nodes_ids())
+        #     self.gm.graphs['Prior'] = self.gm.graphs['Prior'].filter_graph_by_node_list(list(set(all_node_ids) - set(all_room_node_ids)) + ['57', '52'])
+        # ### END
+
         # self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
 
         # ### Save dictionary of graphs
@@ -171,7 +178,7 @@ class GraphMatchingNode(Node):
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
-            success, matches = self.gm.match("Prior", "Online")
+            success, matches, matches_full = self.gm.match("Prior", "Online")
             for match in matches:
                 self.get_logger().info(f"flag new consistent match")
                 for i in match:
@@ -190,8 +197,10 @@ class GraphMatchingNode(Node):
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
                 # self.unique_match_publisher.publish(unique_match_msg)
-                unique_match_visualization_msg = self.generate_match_visualization_msg(matches[0])
-                self.unique_match_visualization_publisher.publish(unique_match_visualization_msg)
+                unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
+                self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
+                unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])
+                self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -217,7 +226,7 @@ class GraphMatchingNode(Node):
 
                 if response.success == 0:
                     # self.unique_match_publisher.publish(matches_msg[0])
-                    self.unique_match_visualization_publisher.publish(matches_visualization_msg[0])
+                    self.unique_match_visualization_inc_publisher.publish(matches_visualization_msg[0])
                 if response.success == 0 or response.success == 1:
                     self.best_match_publisher.publish(matches_msg[0])
                     self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
