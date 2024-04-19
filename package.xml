@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>Graph Matching tool for S-graphs</description>
   <maintainer email="josmilrom@gmail.com">Jose Andres Millan Romera</maintainer>
-  <license>MIT License</license>
+  <license>GPLv3</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
