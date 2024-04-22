@@ -6,7 +6,7 @@ Graph Matching stores and performs graph operations related to S-Graphs.
 
 ### License
 
-The source code is released under MIT License [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT).
+The source code is released under GPLv3 License [![License: MIT](https://img.shields.io/badge/License-GPLv2-yellow.svg)](https://opensource.org/license/gpl-3-0).
 
 **Author: Jose Andres Millan Romera<br />
 Affiliation: [University of Luxembourg](https://www.anybotics.com/)<br />
