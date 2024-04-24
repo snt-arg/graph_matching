@@ -527,31 +527,23 @@ class GraphMatcher():
         G1_nodes = G1_full.get_attributes_of_all_nodes()
         G2_nodes = G2_full.get_attributes_of_all_nodes()
         pruned_match_graph = match_graph.filter_graph_by_node_attributes({"merge_lvl":len(swept_levels)-1})
-        self.logger.info(f"flag pruned_match_graph {pruned_match_graph.get_attributes_of_all_nodes()}")
-        self.logger.info(f"flag len(swept_levels)-1 {len(swept_levels)-1}")
         node_color = pruned_match_graph.define_draw_color_option_by_node_type()
         node_size = pruned_match_graph.define_node_size_option_by_combination_type_attr()
         linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
         if len(list(pruned_match_graph.get_nodes_ids())) != 0:
-            self.logger.info(f"flag 0")
             pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
-            self.logger.info(f"flag 2")
             if working_node_ID != None:
                 #### NEW
-                self.logger.info(f"flag 3")
                 working_node_attrs = pruned_match_graph.get_attributes_of_node(working_node_ID)
                 if lvl == 1:
-                    self.logger.info(f"flag 4")
                     working_node_matches = working_node_attrs["match"]
-                    self.logger.info(f"flag working_node_matches {working_node_matches}")
                     working_node_score = working_node_attrs["score_intralevel"]
                     working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
                                     "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
-                    self.logger.info(f"flag working_node_tuples {working_node_tuples}")
 
                 else:
                     working_node_tuples = []
@@ -848,8 +840,3 @@ class GraphMatcher():
                         MG_ws_node_attrs_dev["split_match"].append(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs_dev["split_scores"].append(filtered_good_pairs_score[i])
                         MG_ws_node_attrs_dev["score_intralevel"] = filtered_good_pairs_score[i]
-
-                        for id in MG_full.get_nodes_ids():
-                            self.logger.info(f"flag MG_full.get_attributes_of_all_nodes {MG_full.get_attributes_of_node(id)}")
-
-                        self.logger.info(f"flag self.stored_match_graph_dev.get_attributes_of_node(0) {self.stored_match_graph_dev.get_attributes_of_node(0)}")

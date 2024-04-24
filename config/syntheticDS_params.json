@@ -4,14 +4,14 @@
         "points": {
             "0": {
                 "sigma": 0.5,
-                "epsilon": 0.1,
+                "epsilon": 0.2,
                 "mindist": 0
             }
         },
         "points&normal": {
             "0": {
                 "sigp": 0.5,
-                "epsp": 0.1,
+                "epsp": 0.05,
                 "sign": 0.05,
                 "epsn": 0.1
             },

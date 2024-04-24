@@ -93,6 +93,8 @@ class GraphMatchingNode(Node):
         json_file_path = os.path.join(matching_package_path, "config/syntheticDS_params.json")
         with open(json_file_path) as json_file:
             self.params = json.load(json_file)
+            self.get_logger().info('flag self.params invariants {}'.format(self.params["invariants"]))
+
         
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
