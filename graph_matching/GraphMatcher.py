@@ -25,6 +25,7 @@ class GraphMatcher():
         self.graphs = {}
         self.logger = logger
         self.stored_match_graph = None
+        self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "Plane", "merge_lvl": 0})], "edges":[], "name": "deviations"})
 
     def set_parameters(self, params):
         self.params = params
@@ -281,11 +282,17 @@ class GraphMatcher():
                     #             "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
                     # match_graph.draw("test current graph", options = options, show = self.params["verbose"])
                     # time.sleep(999)
+                    
 
                 final_combinations_full = self.gather_final_combinations_from_match_graph(self.graphs[G1_name], self.graphs[G2_name], self.stored_match_graph, swept_levels)
+                self.logger.info(f"flag to start function for dev")
+                final_combinations_dev = self.gather_final_combinations_from_match_graph(self.graphs[G1_name], self.graphs[G2_name], self.stored_match_graph_dev, [swept_levels[-1]])
+                self.logger.info(f"flag final_combinations_dev {final_combinations_dev} ")
+                self.logger.info(f"flag swept_levels {swept_levels} ")
 
             elif len(final_combinations) > 1:
                 final_combinations_full = []
+                final_combinations_dev = []
                 self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0]["score"] for match in final_combinations]))
 
             if self.params["verbose"]:
@@ -295,9 +302,11 @@ class GraphMatcher():
             success = False
             final_combinations = []
             final_combinations_full = []
+            final_combinations_dev = []
+
         self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
 
-        return(success, final_combinations, final_combinations_full)
+        return(success, final_combinations, final_combinations_full, final_combinations_dev)
 
 
     def filter_local_match_with_global(self, local_match, global_matches):
@@ -518,23 +527,32 @@ class GraphMatcher():
         G1_nodes = G1_full.get_attributes_of_all_nodes()
         G2_nodes = G2_full.get_attributes_of_all_nodes()
         pruned_match_graph = match_graph.filter_graph_by_node_attributes({"merge_lvl":len(swept_levels)-1})
+        self.logger.info(f"flag pruned_match_graph {pruned_match_graph.get_attributes_of_all_nodes()}")
+        self.logger.info(f"flag len(swept_levels)-1 {len(swept_levels)-1}")
         node_color = pruned_match_graph.define_draw_color_option_by_node_type()
         node_size = pruned_match_graph.define_node_size_option_by_combination_type_attr()
         linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                     "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
         if len(list(pruned_match_graph.get_nodes_ids())) != 0:
+            self.logger.info(f"flag 0")
             pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
-            if working_node_ID:
+            self.logger.info(f"flag 2")
+            if working_node_ID != None:
                 #### NEW
+                self.logger.info(f"flag 3")
                 working_node_attrs = pruned_match_graph.get_attributes_of_node(working_node_ID)
                 if lvl == 1:
+                    self.logger.info(f"flag 4")
                     working_node_matches = working_node_attrs["match"]
+                    self.logger.info(f"flag working_node_matches {working_node_matches}")
                     working_node_score = working_node_attrs["score_intralevel"]
                     working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
                                     "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
+                    self.logger.info(f"flag working_node_tuples {working_node_tuples}")
+
                 else:
                     working_node_tuples = []
                     working_node_split_matches = working_node_attrs["split_match"]
@@ -561,6 +579,8 @@ class GraphMatcher():
 
             stacked_tuples = []
             if len(swept_levels) > lvl:
+                self.logger.info(f"flag 1")
+                self.logger.info(f"flag neighbour_nodes_IDs {neighbour_nodes_IDs}")
                 for neighbour_node_ID in neighbour_nodes_IDs:
                     lower_level_nodes_tuples = gather_final_combinations_from_match_graph_iteration(neighbour_node_ID, lvl+1)
                     for lower_level_nodes_tuple in lower_level_nodes_tuples:
@@ -572,7 +592,6 @@ class GraphMatcher():
             return stacked_tuples
 
         return gather_final_combinations_from_match_graph_iteration(None, 0)
-
 
 
     # def full_graph_affinity_filter(self, G1, G2, swept_levels, matches_tuples_list):
@@ -782,6 +801,8 @@ class GraphMatcher():
         
         if len(MG_room_nodes) == 1 and len(MG_planes_nodes) == 1:
             MG_ws_node_attrs = MG_full.get_attributes_of_node(MG_planes_nodes[0])
+            MG_ws_node_attrs_dev = self.stored_match_graph_dev.get_attributes_of_node(0)
+
             MG_planes_match = MG_ws_node_attrs["match"]
             self.logger.info(f"flag unique matched pairs {MG_planes_match}")
             MG1_planes_match_nodes = np.array(list(MG_planes_match))[:,0]
@@ -818,8 +839,17 @@ class GraphMatcher():
                     self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
-                        self.logger.info(f"flag including deviation of pair {filtered_good_pair_categorical}")
+                        self.logger.info(f"flag including DEVIATION of pair {filtered_good_pair_categorical}")
                         MG_ws_node_attrs["match"].update(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_match"].append(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_scores"].append(filtered_good_pairs_score[i])
                         # self.logger.info(f"flag MG_ws_node_attrs {MG_ws_node_attrs}")
+                        MG_ws_node_attrs_dev["match"].update(set([filtered_good_pair_categorical]))
+                        MG_ws_node_attrs_dev["split_match"].append(set([filtered_good_pair_categorical]))
+                        MG_ws_node_attrs_dev["split_scores"].append(filtered_good_pairs_score[i])
+                        MG_ws_node_attrs_dev["score_intralevel"] = filtered_good_pairs_score[i]
+
+                        for id in MG_full.get_nodes_ids():
+                            self.logger.info(f"flag MG_full.get_attributes_of_all_nodes {MG_full.get_attributes_of_node(id)}")
+
+                        self.logger.info(f"flag self.stored_match_graph_dev.get_attributes_of_node(0) {self.stored_match_graph_dev.get_attributes_of_node(0)}")

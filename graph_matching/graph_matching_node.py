@@ -100,6 +100,7 @@ class GraphMatchingNode(Node):
         # self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
         self.unique_match_visualization_inc_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/incremental', 10)
         self.unique_match_visualization_full_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/full', 10)
+        self.unique_match_visualization_dev_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/dev', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_1_visualization', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_2_visualization', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_3_visualization', 10)
@@ -178,7 +179,7 @@ class GraphMatchingNode(Node):
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
-            success, matches, matches_full = self.gm.match("Prior", "Online")
+            success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online")
             for match in matches:
                 self.get_logger().info(f"flag new consistent match")
                 for i in match:
@@ -201,6 +202,8 @@ class GraphMatchingNode(Node):
                 self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
                 unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
+                unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
+                self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -371,7 +374,7 @@ class GraphMatchingNode(Node):
         success, matches = self.gm.match("Prior", "ONLINE")
 
 
-    def generate_match_visualization_msg(self, match):
+    def generate_match_visualization_msg(self, match, match_type = "normal"):
         source_frame = "map"
         target_frame = "prior_map"
         tf_buffer = Buffer()
@@ -393,6 +396,7 @@ class GraphMatchingNode(Node):
         
         marker_array = []
         for i, edge in enumerate(match):
+            self.get_logger().info('flag edge {}'.format(edge))
             origin_point_original = edge["origin_node_attrs"]["Geometric_info"][:3]
             point_msg = PointStampedMsg()
             point_msg.point.x, point_msg.point.y, point_msg.point.z = origin_point_original[0], origin_point_original[1], origin_point_original[2]
@@ -427,7 +431,11 @@ class GraphMatchingNode(Node):
             marker_msg.action = 0
             # marker_msg.pose = PoseMsg()
             scale_msg = Vector3Msg()
-            scale_msg.x, scale_msg.y, scale_msg.z = .2, .2, .2
+            if match_type == "normal":
+                scale = .2
+            elif match_type == "deviations":
+                scale = .4
+            scale_msg.x, scale_msg.y, scale_msg.z = scale, scale, scale
             marker_msg.scale = scale_msg
             color_msg = ColorRGBSMsg()
             color_msg.r, color_msg.g, color_msg.b, color_msg.a  = np.random.rand(1)[0], np.random.rand(1)[0], np.random.rand(1)[0], 1.
