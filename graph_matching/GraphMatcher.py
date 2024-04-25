@@ -25,7 +25,7 @@ class GraphMatcher():
         self.graphs = {}
         self.logger = logger
         self.stored_match_graph = None
-        self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "Plane", "merge_lvl": 0})], "edges":[], "name": "deviations"})
+        self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "Plane", "merge_lvl": 0, "score_intralevel": 0})], "edges":[], "name": "deviations"})
 
     def set_parameters(self, params):
         self.params = params

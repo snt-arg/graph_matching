@@ -440,7 +440,11 @@ class GraphMatchingNode(Node):
             scale_msg.x, scale_msg.y, scale_msg.z = scale, scale, scale
             marker_msg.scale = scale_msg
             color_msg = ColorRGBSMsg()
-            color_msg.r, color_msg.g, color_msg.b, color_msg.a  = np.random.rand(1)[0], np.random.rand(1)[0], np.random.rand(1)[0], 1.
+            if match_type == "normal":
+                color_msg.r, color_msg.g, color_msg.b = np.random.uniform(0.2,1), np.random.uniform(0.2,1), np.random.uniform(0.2,1)
+            elif match_type == "deviations":
+                color_msg.r, color_msg.g, color_msg.b = 0., 0., 0.
+            color_msg.a = 1.
             marker_msg.color = color_msg
             marker_msg.lifetime = DurationMsg()
             marker_msg.frame_locked = True
