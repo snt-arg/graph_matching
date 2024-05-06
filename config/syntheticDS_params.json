@@ -25,11 +25,15 @@
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.2, 0.2],
+            "Plane" : [0.1, 0.15],
             "Finite Room" : [0.2]
         },
         "local_interlevel": {
-            "Finite Room - Plane" : [0.2, 0.2]
+            "Finite Room - Plane" : [0.1, 0.15]
+        },
+        "global_intralevel_deviations": {
+            "Plane" : 0.3,
+            "Finite Room" : 0.2
         },
         "global": [0.2]
     },

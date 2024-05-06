@@ -206,6 +206,7 @@ class GraphMatchingNode(Node):
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
                 unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
+                asdf
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -398,7 +399,6 @@ class GraphMatchingNode(Node):
         
         marker_array = []
         for i, edge in enumerate(match):
-            self.get_logger().info('flag edge {}'.format(edge))
             origin_point_original = edge["origin_node_attrs"]["Geometric_info"][:3]
             point_msg = PointStampedMsg()
             point_msg.point.x, point_msg.point.y, point_msg.point.z = origin_point_original[0], origin_point_original[1], origin_point_original[2]
@@ -441,7 +441,7 @@ class GraphMatchingNode(Node):
             marker_msg.scale = scale_msg
             color_msg = ColorRGBSMsg()
             if match_type == "normal":
-                color_msg.r, color_msg.g, color_msg.b = np.random.uniform(0.2,1), np.random.uniform(0.2,1), np.random.uniform(0.2,1)
+                color_msg.r, color_msg.g, color_msg.b = np.random.uniform(0.5,1), np.random.uniform(0.5,1), np.random.uniform(0.5,1)
             elif match_type == "deviations":
                 color_msg.r, color_msg.g, color_msg.b = 0., 0., 0.
             color_msg.a = 1.
