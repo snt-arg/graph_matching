@@ -32,7 +32,6 @@ class GraphMatcher():
 
     def set_graph_from_dict(self, graph_def, graph_name):
         self.graphs[graph_name] = GraphWrapper(graph_def = graph_def)
-        # self.logger.info(f"flag {graph_name}, {self.graphs[graph_name].get_attributes_of_all_nodes()}")
 
     def set_graph_from_wrapper(self, graph_wrapper, graph_name):
         self.graphs[graph_name] = graph_wrapper
@@ -67,6 +66,7 @@ class GraphMatcher():
             if working_node_ID:
                 ### Extract every children of the parent higher-level match which belongs to current level
                 working_node_attrs = match_graph.get_attributes_of_node(working_node_ID)
+                self.logger.info(f"flag working_node_ID match {working_node_attrs['match']}")
                 G1_lvl = G1_full.get_neighbourhood_graph(working_node_attrs["match"][0]).filter_graph_by_node_types(swept_levels[lvl])
                 G2_lvl = G2_full.get_neighbourhood_graph(working_node_attrs["match"][1]).filter_graph_by_node_types(swept_levels[lvl])
 
@@ -94,9 +94,6 @@ class GraphMatcher():
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["clipper_invariants"][swept_levels[lvl]], self.params, self.logger)
                 n_extra_pairs = 0
                 if working_node_ID:
-                    # self.logger.info(f"flag IN WORKIGN NODE")
-                    # self.logger.info(f"flag data1 {data1}")
-                    # self.logger.info(f"flag working_node_attrs[data_node1] {working_node_attrs['data_node1']}")
                     n_extra_pairs += 1
                     data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, working_node_attrs["data_node1"],working_node_attrs["data_node2"])
                     origin_nodes_attrs = [working_node_attrs["data_node1"], working_node_attrs["data_node2"]]
@@ -120,6 +117,8 @@ class GraphMatcher():
                     interlevel_scores = np.array(M_aux[:,-2:])
                     interlevel_scores = (interlevel_scores[:,0] + interlevel_scores[:,1]) / 2
                     interlevel_scores = interlevel_scores[:-2]
+
+                # self.logger.info(f"flag interlevel_scores {interlevel_scores, len(interlevel_scores)}")
                 good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][0]
                 bad_pairs = [not elem for elem in good_pairs]
                 filtered_bad_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[bad_pairs], nodes1, nodes2))
@@ -137,11 +136,13 @@ class GraphMatcher():
             # self.logger.info(f"flag G1_lvl.matchByNodeType(G2_lvl) {G1_lvl.matchByNodeType(G2_lvl)}")
             # interlevel_consistent_combinations = self.delete_list_if_element_inside(G1_lvl.matchByNodeType(G2_lvl), filtered_bad_pairs_categorical)
             interlevel_consistent_combinations = self.remove_bad_pairs(G1_lvl.matchByNodeType(G2_lvl), filtered_bad_pairs_categorical)
+            self.logger.info(f"flag interlevel_consistent_combinations {interlevel_consistent_combinations, len(interlevel_consistent_combinations)}")
             filter1_scores = []
             filter1_matches = []
             filter1_lengths = []
 
             for A_categorical in interlevel_consistent_combinations:
+                self.logger.info(f"flag A_categorical {A_categorical, len(A_categorical)}")
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
                 if working_node_ID:
                     ### ADD FLOOR ORIENTATION
@@ -172,7 +173,8 @@ class GraphMatcher():
                 #         score = 0.
                 ### END
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
-                
+                self.logger.info(f"flag score {score}")
+                self.logger.info(f"flag clipper_match_categorical {clipper_match_categorical, len(clipper_match_categorical)}")
                 if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches:
                     filter1_scores.append(score)
                     filter1_matches.append(clipper_match_categorical)
@@ -190,7 +192,6 @@ class GraphMatcher():
                     else:
                         edges_attr = []
                     match_graph.add_subgraph(node_attr, edges_attr)
-
 
                     ## Next level
                     if lvl < len(swept_levels) - 1:
@@ -222,6 +223,13 @@ class GraphMatcher():
                                 match_graph.add_edges(edges_attr)
 
             if lvl < len(swept_levels) - 1:
+                # node_color = match_graph.define_draw_color_option_by_node_type()
+                # node_size = match_graph.define_node_size_option_by_combination_type_attr()
+                # linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
+                # options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
+                #         "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
+                # match_graph.draw("raw match graph", options = options, show = self.params["verbose"])
+                self.draw_as_match_graph(match_graph, "raw match graph")
                 self.prune_interlevel(match_graph, self.graphs[G1_name], self.graphs[G2_name], swept_levels[lvl:lvl+2])
                 self.select_best_global_localization_pair(match_graph, swept_levels[lvl:lvl+2])
                 # self.add_upranted_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
@@ -231,14 +239,8 @@ class GraphMatcher():
         if G1_full.get_nodes_ids() and G2_full.get_nodes_ids():
 
             match_iteration(None, lvl)
-
-            node_color = match_graph.define_draw_color_option_by_node_type()
-            node_size = match_graph.define_node_size_option_by_combination_type_attr()
-            linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
-            options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
-                        "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
             if len(list(match_graph.get_nodes_ids())) != 0:
-                match_graph.draw("match graph", options = options, show = self.params["verbose"])
+                self.draw_as_match_graph(match_graph, "match graph")
 
             self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
             final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
@@ -303,6 +305,7 @@ class GraphMatcher():
             final_combinations_dev = []
 
         self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
+        time.sleep(199)
 
         return(success, final_combinations, final_combinations_full, final_combinations_dev)
 
@@ -525,13 +528,9 @@ class GraphMatcher():
         G1_nodes = G1_full.get_attributes_of_all_nodes()
         G2_nodes = G2_full.get_attributes_of_all_nodes()
         pruned_match_graph = match_graph.filter_graph_by_node_attributes({"merge_lvl":len(swept_levels)-1})
-        node_color = pruned_match_graph.define_draw_color_option_by_node_type()
-        node_size = pruned_match_graph.define_node_size_option_by_combination_type_attr()
-        linewidths = pruned_match_graph.define_node_linewidth_option_by_combination_type_attr()
-        options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
-                    "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
+
         if len(list(pruned_match_graph.get_nodes_ids())) != 0:
-            pruned_match_graph.draw("pruned match graph", options = options, show = self.params["verbose"])
+            self.draw_as_match_graph(pruned_match_graph, "pruned match graph")
 
         def gather_final_combinations_from_match_graph_iteration(working_node_ID, lvl):
             if working_node_ID != None:
@@ -863,3 +862,11 @@ class GraphMatcher():
                         MG_ws_node_attrs_dev["split_match"].append(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs_dev["split_scores"].append(filtered_good_pairs_score[i])
                         MG_ws_node_attrs_dev["score_intralevel"] = filtered_good_pairs_score[i]
+
+    def draw_as_match_graph(self, match_graph, name):
+        node_color = match_graph.define_draw_color_option_by_node_type()
+        node_size = match_graph.define_node_size_option_by_combination_type_attr()
+        linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
+        options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
+                "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
+        match_graph.draw(name, options = options, show = self.params["verbose"])
