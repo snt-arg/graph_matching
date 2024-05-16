@@ -206,7 +206,6 @@ class GraphMatchingNode(Node):
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
                 unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
-                asdf
 
 
     def subgraph_match_srv_callback(self, request, response):
