@@ -182,6 +182,11 @@ class GraphMatcher():
                     
             if filter1_scores:
                 sorted_matches_indexes = [index for index, val in enumerate(filter1_lengths) if val == max(filter1_lengths)]
+
+                if working_node_ID:
+                    best_submatch_score = max([filter1_scores[i] for i in sorted_matches_indexes])
+                    match_graph.update_node_attrs(working_node_ID, {"downstream_score" : best_submatch_score})
+
                 # sorted_matches_indexes = range(len(filter1_lengths))
                 for good_submatch_i in sorted_matches_indexes:
                     group_node_id = match_graph.get_total_number_nodes() + 1
@@ -222,13 +227,10 @@ class GraphMatcher():
                                 edges_attr = [(existing_nodes[0], group_node_id, {})]
                                 match_graph.add_edges(edges_attr)
 
+            elif working_node_ID:
+                match_graph.update_node_attrs(working_node_ID, {"downstream_score" : 0.0})
+
             if lvl < len(swept_levels) - 1:
-                # node_color = match_graph.define_draw_color_option_by_node_type()
-                # node_size = match_graph.define_node_size_option_by_combination_type_attr()
-                # linewidths = match_graph.define_node_linewidth_option_by_combination_type_attr()
-                # options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
-                #         "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
-                # match_graph.draw("raw match graph", options = options, show = self.params["verbose"])
                 self.draw_as_match_graph(match_graph, "raw match graph")
                 self.prune_interlevel(match_graph, self.graphs[G1_name], self.graphs[G2_name], swept_levels[lvl:lvl+2])
                 self.select_best_global_localization_pair(match_graph, swept_levels[lvl:lvl+2])
@@ -305,7 +307,7 @@ class GraphMatcher():
             final_combinations_dev = []
 
         self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
-        time.sleep(199)
+        # time.sleep(199)
 
         return(success, final_combinations, final_combinations_full, final_combinations_dev)
 
@@ -468,7 +470,7 @@ class GraphMatcher():
 
     def delete_list_if_element_inside(self, lists, filter_elements_list):
         return [list1 for list1 in lists if not any([element in list1 for element in filter_elements_list])]
-    
+
 
     def remove_bad_pairs(self, lists, bad_pairs):
         lists_1 = []
@@ -662,7 +664,11 @@ class GraphMatcher():
                                                     .get_nodes_ids()) for node in higher_level_single_pairs_nodes]
 
         combinations = multilist_combinations(lower_level_group_nodes)
-        parent_node_attrs = match_graph.get_attributes_of_node(higher_level_single_pairs_nodes[0])
+
+        
+        self.logger.info(f"flag downstream scores {[match_graph.get_attributes_of_node(i).get('downstream_score') for i in higher_level_single_pairs_nodes]}")
+        best_parent_index = np.argmax([match_graph.get_attributes_of_node(i).get('downstream_score') for i in higher_level_single_pairs_nodes])
+        parent_node_attrs = match_graph.get_attributes_of_node(higher_level_single_pairs_nodes[best_parent_index])
         # parent1_data = self.change_pos_dt(G1_full, [parent_node_attrs["match"][0]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         # parent2_data = self.change_pos_dt(G2_full, [parent_node_attrs["match"][1]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         consistent_combinations = []
