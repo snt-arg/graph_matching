@@ -212,30 +212,36 @@ class GraphMatcher():
                     if lvl < len(swept_levels) - 1:
                         parent1_data = self.change_pos_dt(G1_full, np.array(list(filter1_matches[good_submatch_i]))[:,0], self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["datatype"][swept_levels[lvl+1]])
                         parent2_data = self.change_pos_dt(G2_full, np.array(list(filter1_matches[good_submatch_i]))[:,1], self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["datatype"][swept_levels[lvl+1]])
-                        for i, lowerlevel_match_pair in enumerate(filter1_matches[good_submatch_i]):
-                            existing_nodes = match_graph.find_nodes_by_attrs({"type": swept_levels[lvl], \
-                                                "match" : lowerlevel_match_pair, "combination_type" : "pair"})
-                            if not existing_nodes:
+                    else: 
+                        parent1_data = self.change_pos_dt(G1_full, np.array(list(filter1_matches[good_submatch_i]))[:,0], self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["datatype"][swept_levels[lvl]])
+                        parent2_data = self.change_pos_dt(G2_full, np.array(list(filter1_matches[good_submatch_i]))[:,1], self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["datatype"][swept_levels[lvl]])
+                   
 
-                                # G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match_pair[0])
-                                # G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match_pair[1])
+                    for i, lowerlevel_match_pair in enumerate(filter1_matches[good_submatch_i]):
+                        existing_nodes = match_graph.find_nodes_by_attrs({"type": swept_levels[lvl], \
+                                            "match" : lowerlevel_match_pair, "combination_type" : "pair"})
+                        if not existing_nodes:
 
-                                pair_node_id = match_graph.get_total_number_nodes() + 1
-                                node_attr = [(pair_node_id, {"type": swept_levels[lvl], "match": lowerlevel_match_pair,\
-                                                            "combination_type" : "pair", "score_interlevel" : interlevel_scores_dict[lowerlevel_match_pair],\
-                                                            "data_node1" : parent1_data[i], "data_node2" : parent2_data[i], "merge_lvl" :0, "best_pair" : False})]
+                            # G1_neighborhood = self.graphs[G1_name].get_neighbourhood_graph(lowerlevel_match_pair[0])
+                            # G2_neighborhood = self.graphs[G2_name].get_neighbourhood_graph(lowerlevel_match_pair[1])
 
-                                edges_attr = [(pair_node_id, group_node_id, {})]
+                            pair_node_id = match_graph.get_total_number_nodes() + 1
+                            node_attr = [(pair_node_id, {"type": swept_levels[lvl], "match": lowerlevel_match_pair,\
+                                                        "combination_type" : "pair", "score_interlevel" : interlevel_scores_dict[lowerlevel_match_pair],\
+                                                        "data_node1" : parent1_data[i], "data_node2" : parent2_data[i], "merge_lvl" :0, "best_pair" : False})]
 
-                                match_graph.add_subgraph(node_attr, edges_attr)
+                            edges_attr = [(pair_node_id, group_node_id, {})]
 
-                                # next_parents_data = {"match" : lowerlevel_match_pair, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : pair_node_id}
-                                # match_iteration(pair_node_id, lvl + 1, next_parents_data)
+                            match_graph.add_subgraph(node_attr, edges_attr)
+
+                            # next_parents_data = {"match" : lowerlevel_match_pair, "parent1" : parent1_data[i], "parent2" : parent2_data[i], "id" : pair_node_id}
+                            # match_iteration(pair_node_id, lvl + 1, next_parents_data)
+                            if lvl < len(swept_levels) - 1:
                                 match_iteration(pair_node_id, lvl + 1)
 
-                            else:
-                                edges_attr = [(existing_nodes[0], group_node_id, {})]
-                                match_graph.add_edges(edges_attr)
+                        else:
+                            edges_attr = [(existing_nodes[0], group_node_id, {})]
+                            match_graph.add_edges(edges_attr)
 
             elif working_node_ID:
                 match_graph.update_node_attrs(working_node_ID, {"downstream_score" : 0.0})
@@ -243,6 +249,8 @@ class GraphMatcher():
             ### Prune the match_graph to remove inconsistent matches and select the best localization pair for the next level.
             if lvl < len(swept_levels) - 1:
                 self.draw_as_match_graph(match_graph, "raw match graph")
+                n_nodes_raw_match_graph = len(match_graph.get_nodes_ids())
+                self.logger.info(f"dbg n_nodes_raw_match_graph {n_nodes_raw_match_graph}")
                 self.prune_interlevel(match_graph, self.graphs[G1_name], self.graphs[G2_name], swept_levels[lvl:lvl+2])
                 self.select_best_global_localization_pair(match_graph, swept_levels[lvl:lvl+2])
                 # self.add_upranted_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
@@ -257,7 +265,7 @@ class GraphMatcher():
             if len(list(match_graph.get_nodes_ids())) != 0:
                 self.draw_as_match_graph(match_graph, "match graph")
 
-            self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
+            # self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
             final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
 
         else:
@@ -303,7 +311,7 @@ class GraphMatcher():
                 final_combinations_full = self.gather_final_combinations_from_match_graph(self.graphs[G1_name], self.graphs[G2_name], self.stored_match_graph, swept_levels)
                 self.logger.info(f"flag to start function for dev")
                 final_combinations_dev = self.gather_final_combinations_from_match_graph(self.graphs[G1_name], self.graphs[G2_name], self.stored_match_graph_dev, [swept_levels[-1]])
-                self.logger.info(f"flag final_combinations_dev {final_combinations_dev}")
+                # self.logger.info(f"flag final_combinations_dev {final_combinations_dev}")
 
             elif len(final_combinations) > 1:
                 final_combinations_full = []
@@ -871,7 +879,7 @@ class GraphMatcher():
                     self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
-                        self.logger.info(f"flag including DEVIATION of pair {filtered_good_pair_categorical}")
+                        # self.logger.info(f"flag including DEVIATION of pair {filtered_good_pair_categorical}")
                         MG_ws_node_attrs["match"].update(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_match"].append(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_scores"].append(filtered_good_pairs_score[i])

@@ -176,7 +176,7 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
-        # self.get_logger().info(f"flag num_rooms {num_rooms}")
+        self.get_logger().info(f"flag num_rooms {num_rooms}")
         if graph["name"] == "Online" and num_rooms>=2:
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
@@ -206,11 +206,11 @@ class GraphMatchingNode(Node):
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
                 unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
+                time.sleep(999)
 
 
     def subgraph_match_srv_callback(self, request, response):
         self.get_logger().info('Graph Matching: Received match request from {} to {}'.format(request.base_graph, request.target_graph))
-
 
         def match_fn(request, response):
             if request.base_graph not in self.gm.graphs.keys() or request.target_graph not in self.gm.graphs.keys() or \
