@@ -11,8 +11,8 @@ class Clipper():
     def __init__(self, data_type, name, params, logger = None) -> None:
         self.logger = logger
         self.params = params
-        invariant = self.stored_invriants(data_type, name)
-        self.create_clipper_object(invariant)
+        self.invariant = self.stored_invriants(data_type, name)
+        self.create_clipper_object(self.invariant)
 
 
     def stored_invriants(self, data_type, index = None):
@@ -43,7 +43,7 @@ class Clipper():
 
     def score_pairwise_consistency(self, D1, D2, A):
         t0 = time.perf_counter()
-        self.A = A
+        self.D1, self.D2, self.A = D1, D2, A
         self.clipper.score_pairwise_consistency(D1.T, D2.T, A)
         C = self.get_constraint_matrix()
         M = self.get_affinity_matrix()
@@ -84,25 +84,38 @@ class Clipper():
 
 
     def solve_clipper(self):
-        t0 = time.perf_counter()
-        self.clipper.solve()
-        t1 = time.perf_counter()
-        len_solution = len(self.clipper.get_solution().nodes)
-        if len_solution > 0:
-            # n_non_diagonal_entries_solution = len_solution*(len_solution-1)
-            n_non_diagonal_entries_solution = len_solution
-            if not n_non_diagonal_entries_solution:
-                n_non_diagonal_entries_solution = 1
-            avg_score = self.clipper.get_solution().score / n_non_diagonal_entries_solution
-            # self.logger.info("n_non_diagonal_entries_solution {}".format(n_non_diagonal_entries_solution))
-            # self.logger.info("self.get_affinity_matrix() {}".format(self.get_affinity_matrix()))
-            # self.logger.info("self.clipper.get_solution().u {}".format(self.clipper.get_solution().u))
-            # self.logger.info("self.clipper.get_solution().score {}".format(self.clipper.get_solution().score))
-            # self.logger.info("avg_score {}".format(avg_score))
-        else:
-            avg_score = 0
+        best_score, best_selected_associations = 0, None
+        for i in range(self.params["solver_iterations"]):
+            self.create_clipper_object(self.invariant)
+            self.score_pairwise_consistency(self.D1, self.D2, self.A)
+            t0 = time.perf_counter()
+            self.clipper.solve()
+            t1 = time.perf_counter()
+            solution = self.clipper.get_solution()
+            len_solution = len(solution.nodes)
+            # self.logger.info(f"dbg clipper solution dir {solution.__dir__()}")
+            if len_solution > 0:
+                # n_non_diagonal_entries_solution = len_solution*(len_solution-1)
+                n_non_diagonal_entries_solution = len_solution
+                if not n_non_diagonal_entries_solution:
+                    n_non_diagonal_entries_solution = 1
+                avg_score = solution.score / n_non_diagonal_entries_solution
+                # self.logger.info("n_non_diagonal_entries_solution {}".format(n_non_diagonal_entries_solution))
+                # self.logger.info("self.get_affinity_matrix() {}".format(self.get_affinity_matrix()))
+                # self.logger.info("self.clipper.get_solution().u {}".format(self.clipper.get_solution().u))
+                # self.logger.info("self.clipper.get_solution().score {}".format(self.clipper.get_solution().score))
+                # self.logger.info("avg_score {}".format(avg_score))
+            else:
+                avg_score = 0
 
-        return(self.clipper.get_selected_associations(), avg_score)
+            if avg_score > best_score:
+                best_score = avg_score
+                best_selected_associations = self.clipper.get_selected_associations()
+        # self.logger.info(f"dbg clipper solution u {solution.u}")
+        # self.logger.info(f"dbg clipper solution score {solution.score}")
+        # self.logger.info(f"dbg clipper solution nodes {solution.nodes}")
+        # self.logger.info(f"dbg clipper clipper selected {self.clipper.get_selected_associations()}")
+        return(best_selected_associations, best_score)
 
 
     def categorize_clipper_output(self, Ain_numerical, nodes1, nodes2):

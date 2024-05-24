@@ -55,5 +55,6 @@
             "Finite Room": "0",
             "Plane": "0"
         }
-    }
+    },
+    "solver_iterations": 10
 }

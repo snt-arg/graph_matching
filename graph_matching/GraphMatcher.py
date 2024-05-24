@@ -165,7 +165,7 @@ class GraphMatcher():
                 ### DEBUGGING
                 dbg_scores_list,dbg_lengths_list, dbg_tuples_list, C_list, M_list = [],[], [], [], []
 
-                for i in range(3):
+                for i in range(1):
                     clipper = Clipper(self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["clipper_invariants"][swept_levels[lvl]], self.params, self.logger)
                     C, M = clipper.score_pairwise_consistency(data1, data2, A_numerical)
                     C_list.append(C)
@@ -188,8 +188,8 @@ class GraphMatcher():
                 # self.logger.info(f"dbg building raw - dbg_scores_list equal {all(element == dbg_scores_list[0] for element in dbg_scores_list)}")
                 # self.logger.info(f"dbg building raw - dbg_lengths_list equal {all(element == dbg_lengths_list[0] for element in dbg_lengths_list)}")
                 # self.logger.info(f"dbg building raw - dbg_tuples_list {dbg_tuples_list}")
-                tuples_all_equal = all(set(lst) == set(dbg_tuples_list[0]) for lst in dbg_tuples_list)
-                self.logger.info(f"dbg building raw - dbg_tuples_list equal {tuples_all_equal}")
+                # tuples_all_equal = all(set(lst) == set(dbg_tuples_list[0]) for lst in dbg_tuples_list)
+                # self.logger.info(f"dbg building raw - dbg_tuples_list equal {tuples_all_equal}")
                 # self.logger.info(f"dbg building raw - C_list {C_list}")
                 # self.logger.info(f"dbg building raw - M_list {M_list}")
 
