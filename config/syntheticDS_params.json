@@ -17,7 +17,7 @@
             },
             "1": {
                 "sigp": 0.5,
-                "epsp": 0.25,
+                "epsp": 0.1,
                 "sign": 0.05,
                 "epsn": 0.2
             }
@@ -25,8 +25,8 @@
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.2, 0.25],
-            "Finite Room" : [0.2]
+            "Plane" : [0.2, 0.2],
+            "Finite Room" : [0.15]
         },
         "local_interlevel": {
             "Finite Room - Plane" : [0.2, 0.5]
@@ -35,10 +35,10 @@
             "Plane" : 0.3,
             "Finite Room" : 0.2
         },
-        "global": [0.2]
+        "global": [0.8]
     },
     "dbscan": {
-        "eps": 0.01,
+        "eps": 0.005,
         "min_samples": 1
     },
     "levels": {

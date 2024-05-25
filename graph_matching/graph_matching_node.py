@@ -58,42 +58,13 @@ class GraphMatchingNode(Node):
         self.get_json_parameters_()
         # self.get_logger().info(f"{self.params}")
 
-
-    def get_yaml_parameters_(self):
-        self.params = {"invariants" : {"points" : [{}], "points&normal" : [{}, {}]}, "thresholds" : {}, "dbscan": {}, "levels": {"datatype": {}, "clipper_invariants" : {}}}
-        self.params["invariants"]["points"][0]["sigma"] = self.get_parameter('invariants.points.0.sigma').value
-        self.params["invariants"]["points"][0]["epsilon"] = self.get_parameter('invariants.points.0.epsilon').value
-        self.params["invariants"]["points"][0]["mindist"] = self.get_parameter('invariants.points.0.mindist').value
-        self.params["invariants"]["points&normal"][0]["sigp"] = self.get_parameter('invariants.points&normal.0.sigp').value
-        self.params["invariants"]["points&normal"][0]["epsp"] = self.get_parameter('invariants.points&normal.0.epsp').value
-        self.params["invariants"]["points&normal"][0]["sign"] = self.get_parameter('invariants.points&normal.0.sign').value
-        self.params["invariants"]["points&normal"][0]["epsn"] = self.get_parameter('invariants.points&normal.0.epsn').value
-        self.params["invariants"]["points&normal"][1]["sigp"] = self.get_parameter('invariants.points&normal.1.sigp').value
-        self.params["invariants"]["points&normal"][1]["epsp"] = self.get_parameter('invariants.points&normal.1.epsp').value
-        self.params["invariants"]["points&normal"][1]["sign"] = self.get_parameter('invariants.points&normal.1.sign').value
-        self.params["invariants"]["points&normal"][1]["epsn"] = self.get_parameter('invariants.points&normal.1.epsn').value
-        self.params["thresholds"]["local_intralevel"] = self.get_parameter('thresholds.local_intralevel').value
-        self.params["thresholds"]["local_interlevel"] = self.get_parameter('thresholds.local_interlevel').value
-        self.params["thresholds"]["global"] = self.get_parameter('thresholds.global').value
-        self.params["dbscan"]["eps"] = self.get_parameter('dbscan.eps').value
-        self.params["dbscan"]["min_samples"] = self.get_parameter('dbscan.min_samples').value
-        self.params["levels"]["name"] = self.get_parameter('levels.name').value   
-        self.params["levels"]["datatype"]["floor"] = self.get_parameter('levels.datatype.floor').value
-        self.params["levels"]["datatype"]["Finite Room"] = self.get_parameter('levels.datatype.Finite Room').value
-        self.params["levels"]["datatype"]["Plane"] = self.get_parameter('levels.datatype.Plane').value
-        self.params["levels"]["clipper_invariants"]["floor"] = self.get_parameter('levels.clipper_invariants.floor').value
-        self.params["levels"]["clipper_invariants"]["Finite Room"] = self.get_parameter('levels.clipper_invariants.Finite Room').value
-        self.params["levels"]["clipper_invariants"]["Plane"] = self.get_parameter('levels.clipper_invariants.Plane').value
-
-        self.get_logger().info(f"{self.params}")
-
-
     def get_json_parameters_(self):
         matching_package_path = ament_index_python.get_package_share_directory("graph_matching")
         json_file_path = os.path.join(matching_package_path, "config/syntheticDS_params.json")
         with open(json_file_path) as json_file:
             self.params = json.load(json_file)
             self.get_logger().info('flag self.params invariants {}'.format(self.params["invariants"]))
+            self.get_logger().info('flag self.params thresholds {}'.format(self.params["thresholds"]))
 
         
     def set_interface(self):
@@ -113,7 +84,6 @@ class GraphMatchingNode(Node):
     def graph_callback(self, msg):
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         graph = {"name" : msg.name}
-        # self.get_yaml_parameters_()
         self.gm.set_parameters(self.params)
         nodes = []
         num_rooms = 0

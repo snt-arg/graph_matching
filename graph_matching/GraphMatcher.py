@@ -703,8 +703,10 @@ class GraphMatcher():
             plt.ylim(0, 1)
             plt.legend()
             plt.title("Symmetries detection")
+            # plt.show()
 
         plot_symmetry_detection_scores(X, best_cluster_candidates)
+        # time.sleep(555)
 
         return best_cluster_candidates
 
@@ -802,8 +804,9 @@ class GraphMatcher():
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
             ### END
-
+            self.logger.info(f"dbg consistency_avg {consistency_avg}")
             if consistency_avg >= self.params["thresholds"]["global"]:
+                self.logger.info(f"dbg consistency_avg IN {consistency_avg}")
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
             # for consistent_combination in consistent_combinations:
             #     self.logger.info(f"flag consistent_combination 1 {consistent_combination['match']}")
