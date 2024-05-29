@@ -130,7 +130,12 @@ class GraphMatchingNode(Node):
         #     self.gm.graphs['Prior'] = self.gm.graphs['Prior'].filter_graph_by_node_list(list(set(all_node_ids) - set(all_room_node_ids)) + ['57', '52'])
         # ### END
 
-        # self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
+        self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
+        ### DEBUG
+        # for node_id, attrs in self.gm.graphs[graph["name"]].get_attributes_of_all_nodes():
+        #     self.get_logger().info(f"dbg node_id {node_id} normal {attrs['Geometric_info']}")
+        
+        ### END DEBUG
 
         # ### Save dictionary of graphs
         # self.get_logger().info(f"FLAG type(graph) {graph}")
@@ -176,7 +181,7 @@ class GraphMatchingNode(Node):
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
                 unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
-                time.sleep(999)
+                # time.sleep(999)
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -304,7 +309,7 @@ class GraphMatchingNode(Node):
         self.gm.set_graph_from_dict(graph, graph["name"])
         self.gm.graphs[graph["name"]].filterout_unparented_nodes()
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
         ### create room point centered graph
         room_node = "56"

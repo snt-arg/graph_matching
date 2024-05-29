@@ -47,6 +47,8 @@ class Clipper():
         self.clipper.score_pairwise_consistency(D1.T, D2.T, A)
         C = self.get_constraint_matrix()
         M = self.get_affinity_matrix()
+        # self.logger.info(f"dbg clipper score_pairwise_consistency C {C}")
+        # self.logger.info(f"dbg clipper score_pairwise_consistency M {M}")
         t1 = time.perf_counter()
         # print(f"Affinity matrix creation took {t1-t0:.3f} seconds")
         return C, M
@@ -131,6 +133,7 @@ class Clipper():
 
     def get_score_all_inital_u(self):
         M = self.get_affinity_matrix()
+        self.logger.info(f"dbg get_score_all_inital_u M {M}")
         len_u = M.shape[0]
         # self.logger.info("M {}".format(M))
         u = np.ones(len_u)

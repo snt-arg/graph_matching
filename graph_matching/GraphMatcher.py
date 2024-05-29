@@ -47,6 +47,9 @@ class GraphMatcher():
         lvl = 0
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
+
+        # self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
+        # time.sleep(999)
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
         ###  Create a deep copy of the stored_match_graph to store the matching results.
@@ -114,16 +117,20 @@ class GraphMatcher():
                 #         all_pairs_and_parent_numerical = copy.deepcopy(all_pairs_numerical)
                 #     data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_and_parent_numerical, best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"])
                 #     origin_nodes_attrs = [best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"]]
+                # self.logger.info(f"dbg assess_floor_consistency data1 {len(data1[0]), data1}")
+                # self.logger.info(f"dbg assess_floor_consistency data2 {len(data1[0]), data2}")
                 data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], origin_nodes_attrs[0]))
                 data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1]))
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
+                
                 if n_extra_pairs == 1:
                     interlevel_scores = M_aux[:,-1][:-1]
                 elif n_extra_pairs == 2:
                     interlevel_scores = np.array(M_aux[:,-2:])
                     interlevel_scores = (interlevel_scores[:,0] + interlevel_scores[:,1]) / 2
                     interlevel_scores = interlevel_scores[:-2]
+                self.logger.info(f"dbg match_iteration max interlevel_scores {max(interlevel_scores)}")
 
                 # self.logger.info(f"flag interlevel_scores {interlevel_scores, len(interlevel_scores)}")
                 good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][0]
@@ -171,7 +178,6 @@ class GraphMatcher():
                     C_list.append(C)
                     M_list.append(M)
                     M_aux, _ = clipper.get_M_C_matrices()
-
                     clipper_match_numerical, score = clipper.solve_clipper()
                     # self.logger.info(f"dbg building raw - clipper_match_numerical {clipper_match_numerical}")
                     clipper_match_numerical_tuples = [tuple(pair) for pair in clipper_match_numerical]
@@ -426,7 +432,46 @@ class GraphMatcher():
         data1 = np.concatenate(([ data1, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
         data2 = np.concatenate(([ data2, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent, floor_pair_numerical)
+    
+    def assess_floor_consistency(self, data1, data2, A_numerical, merged_level):
+        floor_pair_numerical = [[i + data1.shape[0], j + data2.shape[0]] for i,j in A_numerical]
+        original_M_shape = [data1.shape[0], data2.shape[0]]
+        data1_floor_points = [ [data_point[0], data_point[1], 1, 0,0,1] for data_point in data1]
+        data2_floor_points = [ [data_point[0], data_point[1], 1, 0,0,1] for data_point in data2]
+        A_numerical_with_parent = np.concatenate((A_numerical, floor_pair_numerical), axis= 0, dtype = np.int32)
+        data1 = np.concatenate(([ data1, data1_floor_points]), axis= 0, dtype = np.float64)
+        data2 = np.concatenate(([ data2, data2_floor_points]), axis= 0, dtype = np.float64)
+        self.plot_geometry_setlist([data1_floor_points,data2_floor_points],"points&normal")
+        time.sleep(999)
+        clipper = Clipper(self.params["levels"]["datatype"][merged_level], "floor", self.params, self.logger)
+        clipper.score_pairwise_consistency(data1, data2, A_numerical_with_parent)
+        M, _ = clipper.get_M_C_matrices()
+        M_crossed_area = M[:original_M_shape[0], original_M_shape[1]:]
+        # avg_score = np.sum(M[-1,:])/(M.shape[0]-1) ### need to be changed to M_crossed_area
+        avg_score = None
+        elemnt_condition = (M_crossed_area > 0.8).all()
+        self.logger.info(f"dbg assess_floor_consistency data1.shape {data1.shape}")
+        self.logger.info(f"dbg assess_floor_consistency M.shape {M.shape}")
+        self.logger.info(f"dbg assess_floor_consistency M_crossed_area {M_crossed_area}")
+        self.logger.info(f"dbg assess_floor_consistency elemnt_condition {elemnt_condition}")
+        return(elemnt_condition, avg_score)
 
+    def assess_floor_consistency_old(self, data1, data2, A_numerical, merged_level):
+        ### ASSUMING BOTH DEFFINITIONS ARE CENTERED
+        floor_pair_numerical = [data1.shape[0], data2.shape[0]]
+        floor_points = [[0,0,0,0,0,1]],[[0,0,0,0,0,1]]
+        A_numerical_with_parent = np.concatenate((A_numerical, [floor_pair_numerical]), axis= 0, dtype = np.int32)
+        data1 = np.concatenate(([ data1, floor_points[0]]), axis= 0, dtype = np.float64)
+        data2 = np.concatenate(([ data2, floor_points[1]]), axis= 0, dtype = np.float64)
+        clipper = Clipper(self.params["levels"]["datatype"][merged_level], "floor", self.params, self.logger)
+        clipper.score_pairwise_consistency(data1, data2, A_numerical_with_parent)
+        M, _ = clipper.get_M_C_matrices()
+        avg_score = np.sum(M[-1,:])/(M.shape[0]-1)
+        elemnt_condition = (M[-1,:-1] > 0.8).all()
+        self.logger.info(f"dbg assess_floor_consistency M[-1,:] {M[-1,:-1], elemnt_condition}")
+        return(elemnt_condition, avg_score)
+
+    
     # def delete_floor_data(self, data1, data2, A_numerical):
     #     A_numerical = A_numerical[1:]
     #     self.logger.info("flag data1 {}".format(data1))
@@ -627,7 +672,6 @@ class GraphMatcher():
 
             stacked_tuples = []
             if len(swept_levels) > lvl:
-                self.logger.info(f"flag 1")
                 self.logger.info(f"flag neighbour_nodes_IDs {neighbour_nodes_IDs}")
                 for neighbour_node_ID in neighbour_nodes_IDs:
                     lower_level_nodes_tuples = gather_final_combinations_from_match_graph_iteration(neighbour_node_ID, lvl+1)
@@ -774,7 +818,7 @@ class GraphMatcher():
             for node in combination:
                 A_categorical.update(match_graph.get_attributes_of_node(node)["match"])
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
-            data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
+            # data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
 
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
@@ -787,25 +831,16 @@ class GraphMatcher():
                 # clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 # consistency_avg = clipper.get_score_all_inital_u()
             
-            ### DEBUGING
-            # data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
-            # data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
-            # dbg_consistency_avg = []
-            # for i in range(100):
-            #     clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
-            #     clipper.score_pairwise_consistency(data1, data2, A_numerical)
-            #     consistency_avg = clipper.get_score_all_inital_u()
-            #     dbg_consistency_avg.append(consistency_avg)
-            # self.logger.info(f"dbg dbg_consistency_avg equal {all(element == dbg_consistency_avg[0] for element in dbg_consistency_avg)}")
-            ### ORIGINAL
             data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
             data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
+            self.logger.info(f"dbg merge A_categorical {A_categorical}")
             clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
-            ### END
+
             self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            if consistency_avg >= self.params["thresholds"]["global"]:
+            floor_elementwise_condition, floor_consistency_avg = self.assess_floor_consistency(data1, data2, A_numerical, merged_levels[1])
+            if consistency_avg >= self.params["thresholds"]["global"] and floor_elementwise_condition:
                 self.logger.info(f"dbg consistency_avg IN {consistency_avg}")
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
             # for consistent_combination in consistent_combinations:
@@ -963,13 +998,14 @@ class GraphMatcher():
                     entry_interlevel_scores = M_aux[len(wild_nodes_combination):,:len(wild_nodes_combination)]
                     self.logger.info(f"flag entry_interlevel_scores {entry_interlevel_scores}")
                     interlevel_scores = np.sum(entry_interlevel_scores, axis = 0) / (len(all_pairs_and_parent_numerical) - len(wild_nodes_combination))
+                    self.logger.info(f"dbg deviations interlevel_scores {interlevel_scores}")
                     good_pairs = interlevel_scores >= self.params["thresholds"]["global_intralevel_deviations"][f"{swept_levels[1]}"]
                     filtered_good_pairs_score = interlevel_scores[good_pairs]
                     filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_and_parent_numerical[:len(wild_nodes_combination)][good_pairs], wild_nodes1, wild_odes2))
                     self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
-                        # self.logger.info(f"flag including DEVIATION of pair {filtered_good_pair_categorical}")
+                        self.logger.info(f"dbg including DEVIATION of pair {filtered_good_pair_categorical}")
                         MG_ws_node_attrs["match"].update(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_match"].append(set([filtered_good_pair_categorical]))
                         MG_ws_node_attrs["split_scores"].append(filtered_good_pairs_score[i])
@@ -986,3 +1022,82 @@ class GraphMatcher():
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                 "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
         match_graph.draw(name, options = options, show = self.params["verbose"])
+
+
+    def plot_geometry_set(self, title, datatype, data, ax = None, color = "red"):  
+        if not ax:
+            fig = plt.figure(figsize=(10, 7))
+            ax = fig.add_subplot(111, projection='3d')
+        points = np.array(data)[:, :3]
+        if datatype == "points&normal":
+            normals = np.array(data)[:,3:]
+        
+        if datatype == "points":
+            # Plot the points
+            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points', s = 50, marker = "s")
+
+        # Plot the normals
+        elif datatype == "points&normal":
+            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points')
+            for point, normal in zip(points, normals):
+                ax.quiver(point[0], point[1], point[2], normal[0], normal[1], normal[2], length=0.3, arrow_length_ratio=0.1, color='red')
+
+        # Labels and title
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.set_title(title)
+        ax.legend()
+
+        return points
+
+    def plot_geometry_graphs(self, graphs, swept_levels):
+        all_points = np.empty((0, 3))
+        axs = []
+        colors = ["blue", "green"]
+        for i_graph, graph in enumerate(graphs):
+            plot_number = 100 + 10 * len(graphs) + i_graph + 1
+            ax = fig.add_subplot(plot_number, projection='3d')
+            axs.append(ax)
+            for swept_level in swept_levels:
+                attrs_all_lvl_nodes = graph.filter_graph_by_node_types(swept_level).get_attributes_of_all_nodes()
+                data = [attrs[1]["Geometric_info"] for attrs in attrs_all_lvl_nodes]
+                points = self.plot_geometry_set(graph.name, self.params["levels"]["datatype"][swept_level], data, ax, colors[i_graph])
+                all_points = np.vstack((all_points, points))
+
+        # all_points = np.vstack((points1, points2))
+        x_limits = (all_points[:, 0].min(), all_points[:, 0].max())
+        y_limits = (all_points[:, 1].min(), all_points[:, 1].max())
+        z_limits = (all_points[:, 2].min(), all_points[:, 2].max())
+
+        for ax in axs:
+            ax.set_xlim(x_limits)
+            ax.set_ylim(y_limits)
+            ax.set_zlim(z_limits)
+
+        plt.show()
+
+    def plot_geometry_setlist(self, set_list, datatype):
+        fig = plt.figure("plot_geometry_setlist", figsize=(10, 7))
+        all_points = np.empty((0, 3))
+        axs = []
+        colors = ["blue", "green"]
+        for i_set_list, data in enumerate(set_list):
+            plot_number = 100 + 10 * len(set_list) + i_set_list + 1
+            ax = fig.add_subplot(plot_number, projection='3d')
+            axs.append(ax)
+            points = self.plot_geometry_set(str(i_set_list), datatype, data, ax, colors[i_set_list])
+            self.logger.info(f"dbg plot_geometry_setlist {points}")
+            all_points = np.vstack((all_points, points))
+
+        # all_points = np.vstack((points1, points2))
+        x_limits = (all_points[:, 0].min(), all_points[:, 0].max())
+        y_limits = (all_points[:, 1].min(), all_points[:, 1].max())
+        z_limits = (all_points[:, 2].min(), all_points[:, 2].max())
+
+        for ax in axs:
+            ax.set_xlim(x_limits)
+            ax.set_ylim(y_limits)
+            ax.set_zlim(z_limits)
+
+        plt.show()
