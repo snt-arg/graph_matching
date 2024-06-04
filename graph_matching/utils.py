@@ -10,16 +10,11 @@ def plane_4_params_to_6_params(plane):
     point = -distance*np.array(normal)
     return(np.concatenate((point, normal)))
 
-
 def plane_6_params_to_4_params(point_and_normal):
     point = np.array(point_and_normal[:3])
     normal = np.array(point_and_normal[3:6])
-    ### OLD
-    # distance = - np.dot(point, normal)
-    ### NEW
     closest_point = closest_point_on_line(point, np.array([0,0,0]), normal)
     distance = -1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
-    ### end
     return(np.concatenate((normal, [distance])))
 
 def closest_point_on_line(point, line_origin, line_normal):
@@ -33,11 +28,11 @@ def transform_plane_definition(points_and_normals, translation, rotation, logger
     translated_points_and_normals = []
     for point_and_normal in points_and_normals:
         normal_and_distance = plane_6_params_to_4_params(point_and_normal)
-        print(normal_and_distance)
+        # print(normal_and_distance)
         translated_normal_and_distance = transform_normal_and_distance(normal_and_distance, translation, rotation, logger)
-        print(translated_normal_and_distance)
+        # print(translated_normal_and_distance)
         translated_point_and_normal = plane_4_params_to_6_params(translated_normal_and_distance)
-        print(translated_point_and_normal)
+        # print(translated_point_and_normal)
         translated_points_and_normals.append(translated_point_and_normal)
     return np.array(translated_points_and_normals)
 
@@ -55,11 +50,11 @@ def transform_normal_and_distance(original, translation, rotation, logger = None
     transformed = np.transpose(np.matmul(full_transformation_matrix,original))
     # logger.info("transformed - {}".format(transformed))
     # transformed = np.array([2,0,0,6])
-    print("transformed", transformed)
+    # print("transformed", transformed)
     normalization = np.sqrt(np.power(transformed[:3],2).sum(axis=0))
     transformed_normalized = np.concatenate((transformed[:3] / normalization, [transformed[3] * normalization]))
     # transformed_normalized = transformed
-    print("transformed_normalized", transformed_normalized)
+    # print("transformed_normalized", transformed_normalized)
     # logger.info("transformed_normalized - {}".format(transformed_normalized))
     # logger.info("np.transpose(transformed_normalized) - {}".format(np.transpose(transformed_normalized)))
     # print("Elapsed time in geometry computes: {}".format(time.time() - start_time))
@@ -209,13 +204,13 @@ def segment_intersection(segment_1, segment_2):
     return (num / denom.astype(float))*db + b1
 
 
-translation = [1,0,0]
-normal = [0,1,0]
+# translation = [1,0,0]
+# normal = [0,1,0]
 
-theta = np.arctan2(normal[1], normal[0])
-rotation= eul.euler2mat(0, 0, theta, axes='sxyz')
+# theta = np.arctan2(normal[1], normal[0])
+# rotation= eul.euler2mat(0, 0, theta, axes='sxyz')
 
-#rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
-translated = np.matmul(rotation,translation)
-print(rotation)
-print(translated)
+# #rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
+# translated = np.matmul(rotation,translation)
+# # print(rotation)
+# # print(translated)

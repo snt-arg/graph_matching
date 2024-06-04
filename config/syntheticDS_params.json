@@ -10,22 +10,22 @@
         },
         "points&normal": {
             "0": {
-                "sigp": 0.1,
-                "epsp": 100.0,
-                "sign": 100,
-                "epsn": 100
+                "sigp": 0.5,
+                "epsp": 0.2,
+                "sign": 0.05,
+                "epsn": 0.1
             },
             "1": {
-                "sigp": 0.1,
+                "sigp": 0.5,
                 "epsp": 0.1,
-                "sign": 1000,
-                "epsn": 50
+                "sign": 0.05,
+                "epsn": 0.2
             },
             "floor": {
-                "sigp":  0.1,
-                "epsp": 100.0,
-                "sign": 100,
-                "epsn": 40
+                "sigp": 0.5,
+                "epsp": 0.1,
+                "sign": 0.05,
+                "epsn": 0.2
             }
         }
     },
@@ -38,10 +38,10 @@
             "Finite Room - Plane" : [0.2, 0.5]
         },
         "global_intralevel_deviations": {
-            "Plane" : 0.0,
-            "Finite Room" : 0.0
+            "Plane" : 0.3,
+            "Finite Room" : 0.2
         },
-        "global": [0.5]
+        "global": [0.8]
     },
     "dbscan": {
         "eps": 0.01,

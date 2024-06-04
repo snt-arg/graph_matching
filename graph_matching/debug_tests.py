@@ -2,6 +2,7 @@ from Clipper import Clipper
 import time
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 params = {
     "verbose" : True,
@@ -222,12 +223,61 @@ def angular_distance(P, Q):
 # A = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # Vectors aligned with the x, y, and z axes
 # B = np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]])  # Vectors aligned with the x, y, and z axes
 
-ai = [ 1.481     , -0.        , -0.        , -1.        ,  0.        ,     0.        ]
-aj = [-0.16100001,  9.50399971,  0.        ,  0.        ,  0.        ,       1.        ]
+ai = [ 0,1,0,0,-1,0]
+aj = [ 1,0,0,0,0,1]
+
+bi = [ 0,1,0,0,-1,0]
+bj = [ -1,0,0,0,0,1]
 
 
-bi = [ 1.47557577,  0.03195838, -0.03154225, -0.99953731, -0.02164822,         0.02136634]
-bj = [-0.15145878,  0.29035914,  0.        ,  0.        ,  0.        ,     1.        ]
+def plot_geometry_set(title, datatype, data, ax = None, color = "red"):  
+    if not ax:
+        fig = plt.figure(figsize=(10, 7))
+        ax = fig.add_subplot(111, projection='3d')
+    points = np.array(data)[:, :3]
+    if datatype == "points&normal":
+        normals = np.array(data)[:,3:]
+    
+    if datatype == "points":
+        # Plot the points
+        ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points', s = 50, marker = "s")
+
+    # Plot the normals
+    elif datatype == "points&normal":
+        ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points')
+        for point, normal in zip(points, normals):
+            ax.quiver(point[0], point[1], point[2], normal[0], normal[1], normal[2], length=0.3, arrow_length_ratio=0.1, color='red')
+
+    # Labels and title
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title(title)
+    ax.legend()
+
+    return points
+
+def plot_geometry_setlist(figure_name, set_list, datatype):
+    fig = plt.figure(figure_name, figsize=(10, 7))
+    all_points = np.empty((0, 3))
+    axs = []
+    colors = ["blue", "green"]
+    for i_set_list, data in enumerate(set_list):
+        plot_number = 100 + 10 * len(set_list) + i_set_list + 1
+        ax = fig.add_subplot(plot_number, projection='3d')
+        axs.append(ax)
+        points = plot_geometry_set(str(i_set_list), datatype, data, ax, colors[i_set_list])
+        all_points = np.vstack((all_points, points))
+
+    # all_points = np.vstack((points1, points2))
+    x_limits = (all_points[:, 0].min(), all_points[:, 0].max())
+    y_limits = (all_points[:, 1].min(), all_points[:, 1].max())
+    z_limits = (all_points[:, 2].min(), all_points[:, 2].max())
+
+    for ax in axs:
+        ax.set_xlim(x_limits)
+        ax.set_ylim(y_limits)
+        ax.set_zlim(z_limits)
 
 
 ak = np.array(aj[:3]) - np.array(ai[:3])
@@ -284,8 +334,10 @@ print("sp :", sp, " dn", sn, " score", score)
 print("CLPPER CALL")
 data1 = np.array([ai,aj], dtype=np.float64) ### S GRAPHS
 data2 = np.array([bi,bj], dtype=np.float64) ### A GRAPHS
+plot_geometry_setlist("", [data1,data2], "points&normal")
 clipper = Clipper("points&normal", "floor", params, None)
 A = np.array([[0,0],[1,1]], dtype=np.int32)
 clipper.score_pairwise_consistency(data1, data2, A)
 M, _ = clipper.get_M_C_matrices()
 print(M)
+plt.show()

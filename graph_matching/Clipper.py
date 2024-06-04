@@ -133,7 +133,7 @@ class Clipper():
 
     def get_score_all_inital_u(self):
         M = self.get_affinity_matrix()
-        self.logger.info(f"dbg get_score_all_inital_u M {M}")
+        # self.logger.info(f"dbg get_score_all_inital_u M {M}")
         len_u = M.shape[0]
         # self.logger.info("M {}".format(M))
         u = np.ones(len_u)
@@ -143,7 +143,10 @@ class Clipper():
         # self.logger.info("consistency {}".format(consistency))
         n_non_diagonal_entries = len_u*(len_u -1 )
         # n_non_diagonal_entries = len_u
-        consistency_avg = consistency / n_non_diagonal_entries
+        if n_non_diagonal_entries:
+            consistency_avg = consistency / n_non_diagonal_entries
+        else:
+            consistency_avg = [0.0]
         # self.logger.info("consistency_avg {}".format(consistency_avg))
         return consistency_avg
 
