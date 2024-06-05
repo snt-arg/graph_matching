@@ -1,12 +1,16 @@
 import numpy as np
-from GraphMatcher import GraphMatcher
-from utils import plane_4_params_to_6_params
+import graph_matching
+from graph_matching.GraphMatcher import GraphMatcher
+from graph_matching.utils import plane_4_params_to_6_params
 import os, json
 import pandas as pd
 import itertools
 import copy
 import time
 from tqdm import tqdm
+from skopt import gp_minimize
+from skopt.space import Real, Integer, Categorical
+from joblib import Parallel, delayed
 # from graph_wrapper.GraphWrapper import GraphWrapper
 
 class PrintLogger():
@@ -135,41 +139,15 @@ def one_experiment(exp_params, matching_params):
     
     return score
 
-    
-def experiments_stack(matching_params):
-    SEs = [1,2]
-    Ts = [0,1,2]
-    Rs = {1:2, 2:3}
-    I = 4
-    for se in SEs:
-        for t in Ts:
-            r = Rs[se]
-            scores = []
-            for i in range(I):
-                exp_params = {"SE": se, "T": t, "R": r, "i": i}
-                score = one_experiment(exp_params, matching_params)
-                scores.append(score)
-            # time.sleep(555)
-    return np.sum(scores)/len(scores)
-
-def grid_search():
+def match_params_update(matching_params_comb):
     json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
     with open(json_file_path) as json_file:
-        matching_params_original = json.load(json_file)
-    
-    parameter_grid = {
-    "inv_point_0_eps": [0.1, 0.25, 0.6],
-    "inv_pointnormal_0_eps": [0.1, 0.25, 0.6],
-    "inv_pointnormal_1_eps": [0.1, 0.25, 0.6],
-    "inv_pointnormal_floor_eps": [0.1, 0.25, 0.6],
-    "thr_locintra_room": [0.2, 0.5, 0.8],
-    "thr_locintra_plane": [0.2, 0.5, 0.8],
-    "thr_locinter_roomplane": [0.2, 0.5, 0.8],
-    "thr_global": [0.2, 0.5, 0.8],
-    "solver_iters": [5,10],
-    }
+        matching_params = json.load(json_file)
 
-    paramter_mapping = {
+    matching_params_comb_keys = ["inv_point_0_eps", "inv_pointnormal_0_eps", "inv_pointnormal_1_eps", "inv_pointnormal_1_eps", \
+                                 "thr_locintra_room","thr_locintra_plane", "thr_locinter_roomplane", "thr_global", "solver_iters"]
+
+    paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
     "inv_point_0_eps": ["invariants", "points", "0", "epsilon"],
     "inv_pointnormal_0_eps": ["invariants", "points&normal", "0", "epsp"],
     "inv_pointnormal_1_eps": ["invariants", "points&normal", "1", "epsp"],
@@ -179,47 +157,139 @@ def grid_search():
     "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
     "thr_global": ["thresholds", "global", 0],
     "solver_iters": ["solver_iterations"]
-
     }
 
-    param_combinations = list(itertools.product(*parameter_grid.values()))
-    # Prepare a list to store the results
-    results = []
+    for i, param_key in enumerate(matching_params_comb_keys):
+        mapping = paramter_mapping[param_key]
 
-    # Run grid search over each parameter combination
-    for param_combination in tqdm(param_combinations):
-        param_dict = dict(zip(parameter_grid.keys(), param_combination))
-        matching_params = copy.deepcopy(matching_params_original)
-        for param_key in param_dict.keys():
-            mapping = paramter_mapping[param_key]
+        def update_nested_dict(d, keys, value):
+            for key in keys[:-1]:
+                d = d.setdefault(key, {})
+            d[keys[-1]] = value
 
-            def update_nested_dict(d, keys, value):
-                for key in keys[:-1]:
-                    d = d.setdefault(key, {})
-                d[keys[-1]] = value
+        update_nested_dict(matching_params, mapping, matching_params_comb[i])
 
-            # update_nested_dict(matching_params, mapping, param_dict[param_key])
+    return matching_params
+    
+def experiments_stack(matching_params_comb):
+    matching_params_comb.append(10)
+    matching_params = match_params_update(matching_params_comb)
 
-        score = experiments_stack(matching_params)
+    SEs = [1,2]
+    Ts = [0]
+    Rs = {1:2, 2:3}
+    I = 4
+    exp_params_stack = []
+    for se in SEs:
+        for t in Ts:
+            r = Rs[se]
+            scores = []
+            for i in range(I):
+                exp_params_stack.append({"SE": se, "T": t, "R": r, "i": i})
+    scores = Parallel(n_jobs=-1)(delayed(one_experiment)(exp_params, matching_params) for exp_params in exp_params_stack)
+    return np.mean(scores)
+
+
+# def grid_search():
+#     # matching_package_path = graph_matching.__file__
+#     # json_file_path = os.path.join(matching_package_path[:-11], "config/syntheticDS_params.json")
+#     json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
+#     with open(json_file_path) as json_file:
+#         matching_params_original = json.load(json_file)
+    
+#     parameter_grid = {
+#     "inv_point_0_eps": [0.1, 0.25, 0.6],
+#     "inv_pointnormal_0_eps": [0.1, 0.25, 0.6],
+#     "inv_pointnormal_1_eps": [0.1, 0.25, 0.6],
+#     "inv_pointnormal_floor_eps": [0.1, 0.25, 0.6],
+#     "thr_locintra_room": [0.2, 0.5, 0.8],
+#     "thr_locintra_plane": [0.2, 0.5, 0.8],
+#     "thr_locinter_roomplane": [0.2, 0.5, 0.8],
+#     "thr_global": [0.2, 0.5, 0.8],
+#     "solver_iters": [7],
+#     }
+
+#     paramter_mapping = {
+#     "inv_point_0_eps": ["invariants", "points", "0", "epsilon"],
+#     "inv_pointnormal_0_eps": ["invariants", "points&normal", "0", "epsp"],
+#     "inv_pointnormal_1_eps": ["invariants", "points&normal", "1", "epsp"],
+#     "inv_pointnormal_floor_eps": ["invariants", "points&normal", "floor", "epsp"],
+#     "thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
+#     "thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
+#     "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
+#     "thr_global": ["thresholds", "global", 0],
+#     "solver_iters": ["solver_iterations"]
+#     }
+
+#     param_combinations = list(itertools.product(*parameter_grid.values()))
+#     # Prepare a list to store the results
+#     results = []
+
+#     # Run grid search over each parameter combination
+#     for param_combination in tqdm(param_combinations):
+#         param_dict = dict(zip(parameter_grid.keys(), param_combination))
+#         matching_params = copy.deepcopy(matching_params_original)
+#         for param_key in param_dict.keys():
+#             mapping = paramter_mapping[param_key]
+
+#             def update_nested_dict(d, keys, value):
+#                 for key in keys[:-1]:
+#                     d = d.setdefault(key, {})
+#                 d[keys[-1]] = value
+
+#             update_nested_dict(matching_params, mapping, param_dict[param_key])
+
+#         score = experiments_stack(matching_params)
         
-        # Store the results
-        result = {**param_dict, "score": score}
-        results.append(result)
+#         # Store the results
+#         result = {**param_dict, "score": score}
+#         results.append(result)
 
-    # Convert results to a pandas DataFrame
-    results_df = pd.DataFrame(results)
+#     # Convert results to a pandas DataFrame
+#     results_df = pd.DataFrame(results)
 
-    # Identify the parameter combination with the highest score
-    best_result = results_df.loc[results_df['score'].idxmax()]
+#     # Identify the parameter combination with the highest score
+#     best_result = results_df.loc[results_df['score'].idxmax()]
 
-    # Save the DataFrame to a file
-    results_df.to_csv("grid_search_results.csv", index=False)
-    best_result.to_frame().T.to_csv("best_result.csv", index=False)
+#     # Save the DataFrame to a file
+#     results_df.to_csv("grid_search_results.csv", index=False)
+#     best_result.to_frame().T.to_csv("best_result.csv", index=False)
 
-    # Display the DataFrame
-    print("Grid Search Results:")
-    print(results_df)
-    print("\nBest Result:")
-    print(best_result.to_frame().T)
+#     # Display the DataFrame
+#     print("Grid Search Results:")
+#     print(results_df)
+#     print("\nBest Result:")
+#     print(best_result.to_frame().T)
 
-grid_search()
+def bayesian_optimization():
+    def objective(matching_params_comb):
+        return -experiments_stack(matching_params_comb)  # Negative score for minimization
+    
+    param_space = [
+        # Real(7, 7, name='solver_iters'),
+        Integer(0.1, 0.5, name='inv_point_0_eps'),
+        Integer(0.1, 0.5, name='inv_pointnormal_0_eps'),
+        Integer(0.1, 0.5, name='inv_pointnormal_1_eps'),
+        Integer(0.1, 0.5, name='inv_pointnormal_floor_eps'),
+        Integer(0.1, 0.85, name='thr_locintra_room'),
+        Integer(0.1, 0.85, name='thr_locintra_plane'),
+        Integer(0.1, 0.85, name='thr_locinter_roomplane'),
+        Integer(0.1, 0.85, name='thr_global')
+    ]
+
+    # Run Bayesian optimization
+    result = gp_minimize(
+        func=objective,
+        dimensions=param_space,
+        n_calls=100,  # Number of iterations
+        random_state=42
+    )
+
+    # Best parameters and score
+    best_params = result.x
+    best_score = -result.fun  # Convert back to positive score
+
+    print("Best Parameters:", best_params)
+    print("Best Score:", best_score)
+
+bayesian_optimization()

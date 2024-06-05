@@ -12,8 +12,8 @@ import transforms3d.euler as eul
 
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
-from Clipper import Clipper
-from utils import transform_plane_definition, multilist_combinations
+from graph_matching.Clipper import Clipper
+from graph_matching.utils import transform_plane_definition, multilist_combinations
 
 graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper")
 sys.path.append(graph_wrapper_dir)
