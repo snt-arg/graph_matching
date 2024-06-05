@@ -172,8 +172,9 @@ def match_params_update(matching_params_comb):
     return matching_params
     
 def experiments_stack(matching_params_comb):
-    matching_params_comb.append(10)
-    matching_params = match_params_update(matching_params_comb)
+    matching_params_comb_cp = copy.deepcopy(matching_params_comb)
+    matching_params_comb_cp.append(10)
+    matching_params = match_params_update(matching_params_comb_cp)
 
     SEs = [1,2]
     Ts = [0]
@@ -264,25 +265,29 @@ def experiments_stack(matching_params_comb):
 def bayesian_optimization():
     def objective(matching_params_comb):
         return -experiments_stack(matching_params_comb)  # Negative score for minimization
+    def print_iteration(res):
+        n_iter = len(res.func_vals)
+        print(f"Iteration {n_iter} - Best Score: {-res.fun}")
     
     param_space = [
-        # Real(7, 7, name='solver_iters'),
-        Integer(0.1, 0.5, name='inv_point_0_eps'),
-        Integer(0.1, 0.5, name='inv_pointnormal_0_eps'),
-        Integer(0.1, 0.5, name='inv_pointnormal_1_eps'),
-        Integer(0.1, 0.5, name='inv_pointnormal_floor_eps'),
-        Integer(0.1, 0.85, name='thr_locintra_room'),
-        Integer(0.1, 0.85, name='thr_locintra_plane'),
-        Integer(0.1, 0.85, name='thr_locinter_roomplane'),
-        Integer(0.1, 0.85, name='thr_global')
+        # Integer(7, 7, name='solver_iters'),
+        Real(0.1, 0.5, name='inv_point_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
+        Real(0.1, 0.85, name='thr_locintra_room'),
+        Real(0.1, 0.85, name='thr_locintra_plane'),
+        Real(0.1, 0.85, name='thr_locinter_roomplane'),
+        Real(0.1, 0.85, name='thr_global')
     ]
 
     # Run Bayesian optimization
     result = gp_minimize(
         func=objective,
         dimensions=param_space,
-        n_calls=100,  # Number of iterations
-        random_state=42
+        n_calls=1000,  # Number of iterations
+        random_state=42,
+        callback=[print_iteration]
     )
 
     # Best parameters and score
