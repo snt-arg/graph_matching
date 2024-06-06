@@ -5,12 +5,13 @@ from graph_matching.utils import plane_4_params_to_6_params
 import os, json
 import pandas as pd
 import itertools
-import copy
+import copy, random
 import time
 from tqdm import tqdm
 from skopt import gp_minimize
 from skopt.space import Real, Integer, Categorical
 from joblib import Parallel, delayed
+import matplotlib.pyplot as plt
 # from graph_wrapper.GraphWrapper import GraphWrapper
 
 class PrintLogger():
@@ -111,7 +112,6 @@ def score_estimated_match(estimated_match, gt_match):
     if len(estimated_match) == 1:
         gt_match_pairs = set([tuple(pair) for pair in gt_match['not_deviated']['Finite Room']] + [tuple(pair) for pair in gt_match['not_deviated']['Plane']])
         estimated_match_pairs = set([(pair['origin_node'], pair['target_node']) for pair in estimated_match[0]])
-        # set_gt_match_pairs = set(gt_match_pairs)
         common_tuples = [t for t in estimated_match_pairs if t in gt_match_pairs]
         score = len(common_tuples)/len(gt_match_pairs) - (len(estimated_match_pairs) - len(common_tuples))/len(gt_match_pairs)
     else:
@@ -158,14 +158,13 @@ def match_params_update(matching_params_comb):
     "solver_iters": ["solver_iterations"]
     }
 
+    def update_nested_dict(d, keys, value):
+        for key in keys[:-1]:
+            d = d.setdefault(key, {})
+        d[keys[-1]] = value
+
     for i, param_key in enumerate(matching_params_comb_keys):
         mapping = paramter_mapping[param_key]
-
-        def update_nested_dict(d, keys, value):
-            for key in keys[:-1]:
-                d = d.setdefault(key, {})
-            d[keys[-1]] = value
-
         update_nested_dict(matching_params, mapping, matching_params_comb[i])
 
     return matching_params
@@ -176,7 +175,7 @@ def experiments_stack(matching_params_comb):
     matching_params = match_params_update(matching_params_comb_cp)
 
     SEs = [1,2]
-    Ts = [0,1,2,4,5]
+    Ts = [0,1,2]
     Rs = {1:2, 2:3}
     I = 4
     exp_params_stack = []
@@ -190,37 +189,47 @@ def experiments_stack(matching_params_comb):
     return np.mean(scores)
 
 
-
-def bayesian_optimization(random_state):
+def bayesian_optimization(random_state, iter_num):
+    n_calls = 500
     def objective(matching_params_comb):
         return -experiments_stack(matching_params_comb)  # Negative score for minimization
     
-    def print_iteration(res):
-        n_iter = len(res.func_vals)
-        best_score_index = np.argmin(res.func_vals)
-        best_score = -res.func_vals[best_score_index]  # Convert back to positive score
-        tqdm.write(f"Iteration {n_iter} - Best Score: {best_score:.4f}")
+    with tqdm(total= n_calls, desc=f"Run ", position=1, leave=False) as pbar_inner:
+        def update_callback(res, scores, iter_num, line):
+            best_score_index = np.argmin(res.func_vals)
+            best_score = -res.func_vals[best_score_index]  # Convert back to positive score
+            pbar_inner.set_description(f"Best Score: {best_score:.4f}")
+            pbar_inner.update(1)
+            scores.append(best_score)
+            line.set_data(range(1, len(scores) + 1), scores)
+            ax.relim()  # Recompute the limits
+            ax.autoscale_view()  # Update the view
+            plt.draw()
+            plt.pause(0.01)
 
-    param_space = [
-        # Integer(7, 7, name='solver_iters'),
-        Real(0.1, 0.5, name='inv_point_0_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
-        Real(0.1, 0.85, name='thr_locintra_room'),
-        Real(0.1, 0.85, name='thr_locintra_plane'),
-        Real(0.1, 0.85, name='thr_locinter_roomplane'),
-        Real(0.1, 0.85, name='thr_global')
-    ]
+        param_space = [
+            # Integer(7, 7, name='solver_iters'),
+            Real(0.1, 0.5, name='inv_point_0_eps'),
+            Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
+            Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
+            Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
+            Real(0.1, 0.85, name='thr_locintra_room'),
+            Real(0.1, 0.85, name='thr_locintra_plane'),
+            Real(0.1, 0.85, name='thr_locinter_roomplane'),
+            Real(0.1, 0.85, name='thr_global')
+        ]
 
-    # Run Bayesian optimization
-    result = gp_minimize(
-        func=objective,
-        dimensions=param_space,
-        n_calls=10,  # Number of iterations
-        random_state=random_state,
-        callback=[print_iteration]
-    )
+        scores = []
+        line, = ax.plot([], [], label=f'Run {iter_num}')
+        ax.legend()  # Update legend after each run
+        # Run Bayesian optimization
+        result = gp_minimize(
+            func=objective,
+            dimensions=param_space,
+            n_calls=n_calls,  # Number of iterations
+            random_state=random_state,
+            callback=[lambda res: update_callback(res, scores, iter_num, line)]
+        )
 
     # Best parameters and score
     best_params = result.x
@@ -234,13 +243,13 @@ def bayesian_optimization(random_state):
 def optimize():
     best_overall_params = None
     best_overall_score = -np.inf
+    n_opimizations = 10
 
-    with tqdm(total=10, desc="Optimization runs", unit="run") as pbar_outer:
-        for i in range(10):
-            random_state = i  # Different random state for each run
-            print(f"Starting optimization run {i + 1} with random state {random_state}")
-            params, score = bayesian_optimization(random_state)
-            print(f"Run {i + 1} - Best Score: {score:.4f}")
+    with tqdm(total=n_opimizations, desc="Optimization runs", unit="run") as pbar_outer:
+        random_state = random.randint(0, 10000)
+        for i in range(n_opimizations):
+            random_state += i + random_state + random.randint(0, 100)  # Different random state for each run
+            params, score = bayesian_optimization(random_state, i + 1)
             if score > best_overall_score:
                 best_overall_params = params
                 best_overall_score = score
@@ -319,4 +328,15 @@ def optimize():
 #     print(results_df)
 #     print("\nBest Result:")
 #     print(best_result.to_frame().T)
+
+# Set up the plot
+plt.ion()
+fig, ax = plt.subplots()
+ax.set_xlabel('Iteration')
+ax.set_ylabel('Best Score')
+ax.set_title('Bayesian Optimization Progress')
+
 optimize()
+
+plt.ioff()
+plt.show()
