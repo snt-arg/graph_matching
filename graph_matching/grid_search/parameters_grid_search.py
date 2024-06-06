@@ -109,12 +109,11 @@ def parse_full_graph(name, folder_path):
 
 def score_estimated_match(estimated_match, gt_match):
     if len(estimated_match) == 1:
-        gt_match_pairs = [tuple(pair) for pair in gt_match['not_deviated']['Finite Room']] + [tuple(pair) for pair in gt_match['not_deviated']['Plane']]
-        estimated_match_pairs = [(pair['origin_node'], pair['target_node']) for pair in estimated_match[0]]
+        gt_match_pairs = set([tuple(pair) for pair in gt_match['not_deviated']['Finite Room']] + [tuple(pair) for pair in gt_match['not_deviated']['Plane']])
+        estimated_match_pairs = set([(pair['origin_node'], pair['target_node']) for pair in estimated_match[0]])
         # set_gt_match_pairs = set(gt_match_pairs)
-        common_tuples = [t for t in set(estimated_match_pairs) if t in set(gt_match_pairs)]
-        score = len(common_tuples)/len(estimated_match_pairs)
-
+        common_tuples = [t for t in estimated_match_pairs if t in gt_match_pairs]
+        score = len(common_tuples)/len(gt_match_pairs) - (len(estimated_match_pairs) - len(common_tuples))/len(gt_match_pairs)
     else:
         score = 0.0
     
@@ -177,7 +176,7 @@ def experiments_stack(matching_params_comb):
     matching_params = match_params_update(matching_params_comb_cp)
 
     SEs = [1,2]
-    Ts = [0]
+    Ts = [0,1,2,4,5]
     Rs = {1:2, 2:3}
     I = 4
     exp_params_stack = []
@@ -190,6 +189,65 @@ def experiments_stack(matching_params_comb):
     scores = Parallel(n_jobs=-1)(delayed(one_experiment)(exp_params, matching_params) for exp_params in exp_params_stack)
     return np.mean(scores)
 
+
+
+def bayesian_optimization(random_state):
+    def objective(matching_params_comb):
+        return -experiments_stack(matching_params_comb)  # Negative score for minimization
+    
+    def print_iteration(res):
+        n_iter = len(res.func_vals)
+        best_score_index = np.argmin(res.func_vals)
+        best_score = -res.func_vals[best_score_index]  # Convert back to positive score
+        tqdm.write(f"Iteration {n_iter} - Best Score: {best_score:.4f}")
+
+    param_space = [
+        # Integer(7, 7, name='solver_iters'),
+        Real(0.1, 0.5, name='inv_point_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
+        Real(0.1, 0.85, name='thr_locintra_room'),
+        Real(0.1, 0.85, name='thr_locintra_plane'),
+        Real(0.1, 0.85, name='thr_locinter_roomplane'),
+        Real(0.1, 0.85, name='thr_global')
+    ]
+
+    # Run Bayesian optimization
+    result = gp_minimize(
+        func=objective,
+        dimensions=param_space,
+        n_calls=10,  # Number of iterations
+        random_state=random_state,
+        callback=[print_iteration]
+    )
+
+    # Best parameters and score
+    best_params = result.x
+    best_score = -result.fun  # Convert back to positive score
+
+    # print("Best Parameters:", best_params)
+    # print("Best Score:", best_score)
+
+    return best_params, best_score
+
+def optimize():
+    best_overall_params = None
+    best_overall_score = -np.inf
+
+    with tqdm(total=10, desc="Optimization runs", unit="run") as pbar_outer:
+        for i in range(10):
+            random_state = i  # Different random state for each run
+            print(f"Starting optimization run {i + 1} with random state {random_state}")
+            params, score = bayesian_optimization(random_state)
+            print(f"Run {i + 1} - Best Score: {score:.4f}")
+            if score > best_overall_score:
+                best_overall_params = params
+                best_overall_score = score
+            pbar_outer.update(1)  # Update the outer progress bar
+
+    print("Best Parameters from all runs:", best_overall_params)
+    print("Best Score from all runs:", best_overall_score)
 
 # def grid_search():
 #     # matching_package_path = graph_matching.__file__
@@ -261,40 +319,4 @@ def experiments_stack(matching_params_comb):
 #     print(results_df)
 #     print("\nBest Result:")
 #     print(best_result.to_frame().T)
-
-def bayesian_optimization():
-    def objective(matching_params_comb):
-        return -experiments_stack(matching_params_comb)  # Negative score for minimization
-    def print_iteration(res):
-        n_iter = len(res.func_vals)
-        print(f"Iteration {n_iter} - Best Score: {-res.fun}")
-    
-    param_space = [
-        # Integer(7, 7, name='solver_iters'),
-        Real(0.1, 0.5, name='inv_point_0_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
-        Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
-        Real(0.1, 0.85, name='thr_locintra_room'),
-        Real(0.1, 0.85, name='thr_locintra_plane'),
-        Real(0.1, 0.85, name='thr_locinter_roomplane'),
-        Real(0.1, 0.85, name='thr_global')
-    ]
-
-    # Run Bayesian optimization
-    result = gp_minimize(
-        func=objective,
-        dimensions=param_space,
-        n_calls=1000,  # Number of iterations
-        random_state=42,
-        callback=[print_iteration]
-    )
-
-    # Best parameters and score
-    best_params = result.x
-    best_score = -result.fun  # Convert back to positive score
-
-    print("Best Parameters:", best_params)
-    print("Best Score:", best_score)
-
-bayesian_optimization()
+optimize()
