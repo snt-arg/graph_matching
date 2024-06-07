@@ -12,6 +12,7 @@ from skopt import gp_minimize
 from skopt.space import Real, Integer, Categorical
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
+import timeout_decorator
 # from graph_wrapper.GraphWrapper import GraphWrapper
 
 class PrintLogger():
@@ -139,24 +140,6 @@ def one_experiment(exp_params, matching_params):
     return score
 
 def match_params_update(matching_params_comb):
-    json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
-    with open(json_file_path) as json_file:
-        matching_params = json.load(json_file)
-
-    matching_params_comb_keys = ["inv_point_0_eps", "inv_pointnormal_0_eps", "inv_pointnormal_1_eps", "inv_pointnormal_1_eps", \
-                                 "thr_locintra_room","thr_locintra_plane", "thr_locinter_roomplane", "thr_global", "solver_iters"]
-
-    paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
-    "inv_point_0_eps": ["invariants", "points", "0", "epsilon"],
-    "inv_pointnormal_0_eps": ["invariants", "points&normal", "0", "epsp"],
-    "inv_pointnormal_1_eps": ["invariants", "points&normal", "1", "epsp"],
-    "inv_pointnormal_floor_eps": ["invariants", "points&normal", "floor", "epsp"],
-    "thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
-    "thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
-    "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
-    "thr_global": ["thresholds", "global", 0],
-    "solver_iters": ["solver_iterations"]
-    }
 
     def update_nested_dict(d, keys, value):
         for key in keys[:-1]:
@@ -169,15 +152,16 @@ def match_params_update(matching_params_comb):
 
     return matching_params
     
+@timeout_decorator.timeout(10)  # Set the timeout to 300 seconds (5 minutes)
 def experiments_stack(matching_params_comb):
     matching_params_comb_cp = copy.deepcopy(matching_params_comb)
     matching_params_comb_cp.append(10)
     matching_params = match_params_update(matching_params_comb_cp)
 
-    SEs = [1,2]
-    Ts = [0,1,2]
+    SEs = [1]
+    Ts = [0,1,2,3,4,5]
     Rs = {1:2, 2:3}
-    I = 4
+    I = 1
     exp_params_stack = []
     for se in SEs:
         for t in Ts:
@@ -186,14 +170,39 @@ def experiments_stack(matching_params_comb):
             for i in range(I):
                 exp_params_stack.append({"SE": se, "T": t, "R": r, "i": i})
     scores = Parallel(n_jobs=-1)(delayed(one_experiment)(exp_params, matching_params) for exp_params in exp_params_stack)
+    print(scores)
+    if len(ax1.lines) == 0:
+        for i, score in enumerate(scores):
+            line1, = ax1.plot([], [], label=f'Datset {i}')
+            line1.set_data([1], [score])
+    else:
+        for i, line1 in enumerate(ax1.lines):
+            dataset_scores = line1.get_data()[1]
+            dataset_scores.append(scores[i])
+            line1.set_data(range(1, len(dataset_scores) + 1), dataset_scores)
+        ax1.legend()  # Update legend after each run
+
     return np.mean(scores)
 
 
-def bayesian_optimization(random_state, iter_num):
+def bayesian_optimization(random_state, iter_num, param_space):
     n_calls = 500
     def objective(matching_params_comb):
-        return -experiments_stack(matching_params_comb)  # Negative score for minimization
+        try:
+            return -experiments_stack(matching_params_comb)  # Negative score for minimization
+        except timeout_decorator.TimeoutError:
+            return 0.0  # Return a very high score if the evaluation times out
+        
+    def get_nesteddict_value(d, keys):
+        for key in keys[:-1]:
+            d = d.setdefault(key, {})
+        return d[keys[-1]]
     
+    initial_values = []
+    for param_key in matching_params_comb_keys[:-1]:
+        mapping = paramter_mapping[param_key]
+        initial_values.append(get_nesteddict_value(matching_params, mapping))
+
     with tqdm(total= n_calls, desc=f"Run ", position=1, leave=False) as pbar_inner:
         def update_callback(res, scores, iter_num, line):
             best_score_index = np.argmin(res.func_vals)
@@ -204,20 +213,10 @@ def bayesian_optimization(random_state, iter_num):
             line.set_data(range(1, len(scores) + 1), scores)
             ax.relim()  # Recompute the limits
             ax.autoscale_view()  # Update the view
+            ax1.relim()  # Recompute the limits
+            ax1.autoscale_view()  # Update the view
             plt.draw()
             plt.pause(0.01)
-
-        param_space = [
-            # Integer(7, 7, name='solver_iters'),
-            Real(0.1, 0.5, name='inv_point_0_eps'),
-            Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
-            Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
-            Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
-            Real(0.1, 0.85, name='thr_locintra_room'),
-            Real(0.1, 0.85, name='thr_locintra_plane'),
-            Real(0.1, 0.85, name='thr_locinter_roomplane'),
-            Real(0.1, 0.85, name='thr_global')
-        ]
 
         scores = []
         line, = ax.plot([], [], label=f'Run {iter_num}')
@@ -228,6 +227,7 @@ def bayesian_optimization(random_state, iter_num):
             dimensions=param_space,
             n_calls=n_calls,  # Number of iterations
             random_state=random_state,
+            x0=initial_values,
             callback=[lambda res: update_callback(res, scores, iter_num, line)]
         )
 
@@ -245,11 +245,22 @@ def optimize():
     best_overall_score = -np.inf
     n_opimizations = 10
 
+    param_space = [
+        # Integer(7, 7, name='solver_iters'),
+        Real(0.1, 0.5, name='inv_point_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_0_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_1_eps'),
+        Real(0.1, 0.5, name='inv_pointnormal_floor_eps'),
+        Real(0.1, 0.85, name='thr_locintra_room'),
+        Real(0.1, 0.85, name='thr_locintra_plane'),
+        Real(0.1, 0.85, name='thr_locinter_roomplane'),
+        Real(0.1, 0.85, name='thr_global')
+    ]
+
     with tqdm(total=n_opimizations, desc="Optimization runs", unit="run") as pbar_outer:
-        random_state = random.randint(0, 10000)
         for i in range(n_opimizations):
-            random_state += i + random_state + random.randint(0, 100)  # Different random state for each run
-            params, score = bayesian_optimization(random_state, i + 1)
+            random_state = random.randint(0, 10000)
+            params, score = bayesian_optimization(random_state, i + 1, param_space)
             if score > best_overall_score:
                 best_overall_params = params
                 best_overall_score = score
@@ -257,6 +268,22 @@ def optimize():
 
     print("Best Parameters from all runs:", best_overall_params)
     print("Best Score from all runs:", best_overall_score)
+
+    # Save the best parameters and score to disk
+    best_params_dict = {dim.name: best_overall_params[i] for i,dim in enumerate(param_space)}
+
+    with open('best_params_and_score.json', 'w') as f:
+        json.dump({
+            'best_params': best_params_dict,
+            'best_score': best_overall_score
+        }, f)
+
+    # Save the plot as an image file
+    plt.ioff()
+    plt.savefig('optimization_progress.png')
+    plt.show()
+
+
 
 # def grid_search():
 #     # matching_package_path = graph_matching.__file__
@@ -329,12 +356,37 @@ def optimize():
 #     print("\nBest Result:")
 #     print(best_result.to_frame().T)
 
+
+paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
+"inv_point_0_eps": ["invariants", "points", "0", "epsilon"],
+"inv_pointnormal_0_eps": ["invariants", "points&normal", "0", "epsp"],
+"inv_pointnormal_1_eps": ["invariants", "points&normal", "1", "epsp"],
+"inv_pointnormal_floor_eps": ["invariants", "points&normal", "floor", "epsp"],
+"thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
+"thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
+"thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
+"thr_global": ["thresholds", "global", 0],
+"solver_iters": ["solver_iterations"]
+}
+
+matching_params_comb_keys = ["inv_point_0_eps", "inv_pointnormal_0_eps", "inv_pointnormal_1_eps", "inv_pointnormal_1_eps", \
+                                "thr_locintra_room","thr_locintra_plane", "thr_locinter_roomplane", "thr_global", "solver_iters"]
+
+json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
+with open(json_file_path) as json_file:
+    matching_params = json.load(json_file)
+
+
 # Set up the plot
 plt.ion()
 fig, ax = plt.subplots()
 ax.set_xlabel('Iteration')
 ax.set_ylabel('Best Score')
-ax.set_title('Bayesian Optimization Progress')
+ax.set_title('Bayesian Optimization Progress - Runs')
+fig1, ax1 = plt.subplots()
+ax1.set_xlabel('Iteration')
+ax1.set_ylabel('Best Score')
+ax1.set_title('Bayesian Optimization Progress - Datasets')
 
 optimize()
 
