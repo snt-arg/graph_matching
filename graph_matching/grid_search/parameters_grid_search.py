@@ -121,7 +121,7 @@ def score_estimated_match(estimated_match, gt_match):
     return score
 
 def one_experiment(exp_params, matching_params):
-    gm = GraphMatcher(PrintLogger(), log_level=2)
+    gm = GraphMatcher(PrintLogger(), log_level=0)
     gm.set_parameters(matching_params)
     graph_dict_prior = parse_full_graph("Prior",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{exp_params['SE']}/A-Graphs/T{exp_params['T']}")
     graph_dict_online = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{exp_params['SE']}/S-Graphs/R{exp_params['R']}")
@@ -131,14 +131,14 @@ def one_experiment(exp_params, matching_params):
     gt_matches = json.load(f)
     success, matches, matches_full, matches_dev = gm.match("Prior", "Online")
     if matches:
-        for i, match in enumerate(matches):
-            print(F"dbg match {i}")
-            for pair in match:
-                print(f"dbg [{pair['origin_node']} , {pair['target_node']}] {pair['origin_node_attrs']['type']}")
+        # for i, match in enumerate(matches):
+            # print(F"dbg match {i}")
+            # for pair in match:
+            #     print(f"dbg [{pair['origin_node']} , {pair['target_node']}] {pair['origin_node_attrs']['type']}")
         score = score_estimated_match(matches, gt_matches)
     else:
         score = 0.0
-    time.sleep(200)
+    # time.sleep(200)
     
     return score
 

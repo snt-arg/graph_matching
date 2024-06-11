@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 import transforms3d.euler as eul
+import keyboard
 
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
@@ -49,9 +50,9 @@ class GraphMatcher():
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
 
-        # if self.log_level > 1:
-        #     self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
-        #     time.sleep(999)
+        if self.log_level > 9:
+            self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
+            time.sleep(999)
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
         ###  Create a deep copy of the stored_match_graph to store the matching results.
@@ -119,8 +120,6 @@ class GraphMatcher():
                 #         all_pairs_and_parent_numerical = copy.deepcopy(all_pairs_numerical)
                 #     data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_and_parent_numerical, best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"])
                 #     origin_nodes_attrs = [best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"]]
-                # self.logger.info(f"dbg assess_floor_consistency data1 {len(data1[0]), data1}")
-                # self.logger.info(f"dbg assess_floor_consistency data2 {len(data1[0]), data2}")
                 data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], origin_nodes_attrs[0]))
                 data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1]))
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
@@ -225,9 +224,10 @@ class GraphMatcher():
                 #         score = 0.
                 ### END
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
-                # self.logger.info(f"flag score {score}")
-                # self.logger.info(f"flag clipper_match_categorical {clipper_match_categorical, len(clipper_match_categorical)}")
-                if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches:
+                # floor_condition = self.assess_floor_consistency(data1, data2, swept_levels[lvl])
+                floor_condition = True
+
+                if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches and floor_condition:
                     filter1_scores.append(score)
                     filter1_matches.append(clipper_match_categorical)
                     filter1_lengths.append(len(clipper_match_categorical))
@@ -436,89 +436,69 @@ class GraphMatcher():
         data2 = np.concatenate(([ data2, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent, floor_pair_numerical)
     
-    def assess_floor_consistency(self, data1, data2, A_numerical, A_categorical, merged_level):
+    def assess_floor_consistency(self, data1, data2, merged_level):
         def compute_transformation(points_a, normals_a, points_b, normals_b):
-            # Calculate translation vector (assuming points_a[0] should align with points_b[0])
-            translation = points_b[0] - points_a[0]
+            # Compute the centroids of both sets
+            centroid_a = np.mean(points_a, axis=0)
+            centroid_b = np.mean(points_b, axis=0)
 
-            # Normalize the normals
-            normals_a = normals_a / np.linalg.norm(normals_a, axis=1)[:, np.newaxis]
-            normals_b = normals_b / np.linalg.norm(normals_b, axis=1)[:, np.newaxis]
+            # Translate points to align centroids with the origin
+            points_a_centered = points_a - centroid_a
+            points_b_centered = points_b - centroid_b
 
-            # Check if any normal in set A is the inverse of the corresponding normal in set B
+            # Compute the optimal rotation matrix using Singular Value Decomposition (SVD)
+            H = np.dot(points_a_centered.T, points_b_centered)
+            U, S, Vt = np.linalg.svd(H)
+            rotation_matrix = np.dot(Vt.T, U.T)
+
+            # Ensure the rotation matrix is proper (det(rotation) should be 1)
+            if np.linalg.det(rotation_matrix) < 0:
+                Vt[2, :] *= -1
+                rotation_matrix = np.dot(Vt.T, U.T)
+
+            # Apply the rotation matrix to the normals as well
+            normals_a_transformed = np.dot(normals_a, rotation_matrix.T)
+
+            # Check for reflection by comparing normals
             reflection_needed = False
-            for normal_a, normal_b in zip(normals_a, normals_b):
-                if np.allclose(normal_a, -normal_b):
+            for normal_a_transformed, normal_b in zip(normals_a_transformed, normals_b):
+                if np.dot(normal_a_transformed, normal_b) < 0:
                     reflection_needed = True
                     break
 
-            # If reflection is needed, include a reflection matrix
-            reflection_matrix = np.diag([1, 1, -1]) if reflection_needed else np.eye(3)
+            # If reflection is needed, apply it to the rotation matrix
+            if reflection_needed:
+                reflection_matrix = np.diag([1, 1, -1])
+                rotation_matrix = np.dot(rotation_matrix, reflection_matrix)
+                normals_a_transformed = np.dot(normals_a, rotation_matrix.T)
 
-            # Calculate rotation matrix (aligning normals of the first point)
-            normal_a = normals_a[0]
-            normal_b = normals_b[0]
+            # Compute the translation vector
+            translation_vector = centroid_b - np.dot(centroid_a, rotation_matrix.T)
 
-            rotation_axis = np.cross(normal_a, normal_b)
-            rotation_axis_norm = np.linalg.norm(rotation_axis)
-            
-            if rotation_axis_norm < 1e-6:  # Norm is close to zero
-                rotation_matrix = np.eye(3)  # No rotation needed
-            else:
-                rotation_axis = rotation_axis / rotation_axis_norm
-                angle = np.arccos(np.dot(normal_a, normal_b))
-                
-                # Using Rodrigues' rotation formula to get the rotation matrix
-                K = np.array([[0, -rotation_axis[2], rotation_axis[1]],
-                            [rotation_axis[2], 0, -rotation_axis[0]],
-                            [-rotation_axis[1], rotation_axis[0], 0]])
-                
-                rotation_matrix = np.eye(3) + np.sin(angle) * K + (1 - np.cos(angle)) * np.dot(K, K)
+            return translation_vector, rotation_matrix, reflection_needed
 
-            # Combine rotation and reflection
-            final_matrix = np.dot(rotation_matrix, reflection_matrix)
 
-            return translation, final_matrix, reflection_needed
-
-        def transform_set(points_a, normals_a, translation, final_matrix):
-            # Apply translation and rotation to each point and normal
-            transformed_points = []
-            transformed_normals = []
-            
-            for point, normal in zip(points_a, normals_a):
-                transformed_point = np.dot(final_matrix, point) + translation
-                transformed_normal = np.dot(final_matrix, normal)
-                transformed_points.append(transformed_point)
-                transformed_normals.append(transformed_normal)
-            
-            return np.array(transformed_points), np.array(transformed_normals)
-
+        if merged_level == "Finite Room":
+            data1 = np.concatenate(([ data1, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
+            data2 = np.concatenate(([ data2, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
         a_all = np.concatenate(([ data1, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
         b_all = np.concatenate(([ data2, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
-        if self.log_level > 1:
-            self.plot_geometry_setlist("floor detection", [a_all, b_all], self.params["levels"]["datatype"][merged_level])
 
         points_a, normals_a = a_all[:, :3], a_all[:, -3:]
         points_b, normals_b = b_all[:, :3], b_all[:, -3:]
         translation, final_matrix, reflection_needed = compute_transformation(points_a, normals_a, points_b, normals_b)
         rotation_cond = final_matrix[0,0] > 0.8 and final_matrix[1,1] > 0.8 and abs(final_matrix[0,1]) < 0.2
         final_cond = not(reflection_needed) and rotation_cond
-        return final_cond
+        if self.log_level > 4:
+            self.plot_geometry_setlist("floor detection", [a_all, b_all], self.params["levels"]["datatype"][merged_level])
+            plt.draw()
+            plt.pause(0.001)
+            # print(f"dbg floor_cond {final_cond}")
+            # print("Press any key to continue...")
+            # key = keyboard.wait()
+            # print(f"You pressed {key}")
 
-    def assess_floor_consistency_old(self, data1, data2, A_numerical, merged_level):
-        ### ASSUMING BOTH DEFFINITIONS ARE CENTERED
-        floor_pair_numerical = [data1.shape[0], data2.shape[0]]
-        floor_points = [[0,0,0,0,0,1]],[[0,0,0,0,0,1]]
-        A_numerical_with_parent = np.concatenate((A_numerical, [floor_pair_numerical]), axis= 0, dtype = np.int32)
-        data1 = np.concatenate(([ data1, floor_points[0]]), axis= 0, dtype = np.float64)
-        data2 = np.concatenate(([ data2, floor_points[1]]), axis= 0, dtype = np.float64)
-        clipper = Clipper(self.params["levels"]["datatype"][merged_level], "floor", self.params, self.logger)
-        clipper.score_pairwise_consistency(data1, data2, A_numerical_with_parent)
-        M, _ = clipper.get_M_C_matrices()
-        avg_score = np.sum(M[-1,:])/(M.shape[0]-1)
-        elemnt_condition = (M[-1,:-1] > 0.8).all()
-        # self.logger.info(f"dbg assess_floor_consistency M[-1,:] {M[-1,:-1], elemnt_condition}")
-        return(elemnt_condition, avg_score)
+        return final_cond
 
     
     # def delete_floor_data(self, data1, data2, A_numerical):
@@ -811,13 +791,13 @@ class GraphMatcher():
         higher_level_group_nodes = list(match_graph.filter_graph_by_node_types(merged_levels[0])\
                                                     .filter_graph_by_node_attributes({"combination_type" : "group"})\
                                                     .get_nodes_ids())
-        # self.logger.info(f"dbg len(higher_level_group_nodes) {len(higher_level_group_nodes)}")
+
         consistent_combinations = []
         for node in higher_level_group_nodes:
             new_consistent_combinations = self.merge_lower_level_groups(match_graph, G1_full, G2_full, node, merged_levels)
             if new_consistent_combinations:
                 consistent_combinations += new_consistent_combinations
-        
+
         # ### DEBUGGING
         # def make_hashable(value):
         #     """Recursively make the value hashable."""
@@ -854,13 +834,14 @@ class GraphMatcher():
         # self.logger.info(f"dbg len(lower_level_group_nodes) {lower_level_group_nodes}")
 
         combinations = multilist_combinations(lower_level_group_nodes)
-        # self.logger.info(f"dbg len(combinations) {len(combinations)}")
         
         # self.logger.info(f"flag downstream scores {[match_graph.get_attributes_of_node(i).get('downstream_score') for i in higher_level_single_pairs_nodes]}")
+        
+        dbg_room_match = match_graph.get_attributes_of_node(working_node_ID).get('match')
         best_parent_index = np.argmax([match_graph.get_attributes_of_node(i).get('downstream_score') for i in higher_level_single_pairs_nodes])
-
+        
         parent_node_attrs = match_graph.get_attributes_of_node(higher_level_single_pairs_nodes[best_parent_index])
-        print(f"dbg parent_node_attrs {parent_node_attrs['match']}")
+        
         # parent1_data = self.change_pos_dt(G1_full, [parent_node_attrs["match"][0]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         # parent2_data = self.change_pos_dt(G2_full, [parent_node_attrs["match"][1]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         consistent_combinations = []
@@ -888,10 +869,9 @@ class GraphMatcher():
             clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
-
             # self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            floor_condition = self.assess_floor_consistency(data1, data2, A_numerical, A_categorical, merged_levels[1])
-            # floor_condition = True
+            floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1])
+
             if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
                 # self.logger.info(f"dbg consistency_avg IN {consistency_avg}")
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
@@ -1130,7 +1110,7 @@ class GraphMatcher():
         # all_points = np.vstack((points1, points2))
         x_limits = (all_points[:, 0].min(), all_points[:, 0].max())
         y_limits = (all_points[:, 1].min(), all_points[:, 1].max())
-        z_limits = (all_points[:, 2].min(), all_points[:, 2].max())
+        z_limits = (1, -1)
 
         for ax in axs:
             ax.set_xlim(x_limits)
@@ -1154,7 +1134,7 @@ class GraphMatcher():
         # all_points = np.vstack((points1, points2))
         x_limits = (all_points[:, 0].min(), all_points[:, 0].max())
         y_limits = (all_points[:, 1].min(), all_points[:, 1].max())
-        z_limits = (all_points[:, 2].min(), all_points[:, 2].max())
+        z_limits = (1, -1)
 
         for ax in axs:
             ax.set_xlim(x_limits)
