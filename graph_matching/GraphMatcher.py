@@ -13,7 +13,7 @@ import transforms3d.euler as eul
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
 from graph_matching.Clipper import Clipper
-from graph_matching.utils import transform_plane_definition, multilist_combinations
+from graph_matching.utils import transform_plane_definition, multilist_combinations, flatten_graph
 
 graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper")
 sys.path.append(graph_wrapper_dir)
@@ -33,14 +33,14 @@ class GraphMatcher():
         self.params = params
 
     def set_graph_from_dict(self, graph_def, graph_name):
-        self.graphs[graph_name] = GraphWrapper(graph_def = graph_def)
+        self.graphs[graph_name] = flatten_graph(GraphWrapper(graph_def = graph_def))
 
     def set_graph_from_wrapper(self, graph_wrapper, graph_name):
         self.graphs[graph_name] = graph_wrapper
 
 ###  The match function performs a detailed, multi-level graph matching operation between two graphs.
     def match(self, G1_name, G2_name):
-        # self.logger.info("beginning match")
+        self.logger.info("beginning match")
 
         start_time = time.time()
         ### Retrieve the levels to be processed from the parameters.
@@ -49,8 +49,9 @@ class GraphMatcher():
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
 
-        # self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
-        # time.sleep(999)
+        # if self.log_level > 1:
+        #     self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
+        #     time.sleep(999)
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
         ###  Create a deep copy of the stored_match_graph to store the matching results.
@@ -363,7 +364,7 @@ class GraphMatcher():
                 # self.logger.info("{} symmetries detected. Scores - {}".format(len(final_combinations), [match[0]["score"] for match in final_combinations]))
 
             if self.log_level > 0:
-                self.subplots_match(G1_name, G2_name, final_combinations[0])
+                self.subplots_match(G1_name, G2_name, final_combinations)
 
         else:
             success = False
@@ -436,27 +437,73 @@ class GraphMatcher():
         return(data1, data2, A_numerical_with_parent, floor_pair_numerical)
     
     def assess_floor_consistency(self, data1, data2, A_numerical, A_categorical, merged_level):
-        floor_pair_numerical = [[i + data1.shape[0], j + data2.shape[0]] for i,j in A_numerical]
-        original_M_shape = [data1.shape[0], data2.shape[0]]
-        data1_floor_points = [ [data_point[0], data_point[1], data_point[2], 0,0,1] for data_point in data1]
-        data2_floor_points = [ [data_point[0], data_point[1], data_point[2], 0,0,1] for data_point in data2]
-        A_numerical_with_parent = np.concatenate((A_numerical, floor_pair_numerical), axis= 0, dtype = np.int32)
-        data1 = np.concatenate(([ data1, data1_floor_points]), axis= 0, dtype = np.float64)
-        data2 = np.concatenate(([ data2, data2_floor_points]), axis= 0, dtype = np.float64)
-        # self.plot_geometry_setlist(str(A_categorical), [data1,data2],"points&normal")
-        # time.sleep(999)
-        clipper = Clipper(self.params["levels"]["datatype"][merged_level], "floor", self.params, self.logger)
-        clipper.score_pairwise_consistency(data1, data2, A_numerical_with_parent)
-        M, _ = clipper.get_M_C_matrices()
-        M_crossed_area = M[:original_M_shape[0], original_M_shape[1]:]
-        # avg_score = np.sum(M[-1,:])/(M.shape[0]-1) ### need to be changed to M_crossed_area
-        avg_score = None
-        elemnt_condition = (M_crossed_area > 0.8).all()
-        # self.logger.info(f"dbg assess_floor_consistency data1.shape {data1.shape}")
-        # self.logger.info(f"dbg assess_floor_consistency M.shape {M.shape}")
-        # self.logger.info(f"dbg assess_floor_consistency M_crossed_area {M_crossed_area}")
-        # self.logger.info(f"dbg assess_floor_consistency elemnt_condition {elemnt_condition}")
-        return(elemnt_condition, avg_score)
+        def compute_transformation(points_a, normals_a, points_b, normals_b):
+            # Calculate translation vector (assuming points_a[0] should align with points_b[0])
+            translation = points_b[0] - points_a[0]
+
+            # Normalize the normals
+            normals_a = normals_a / np.linalg.norm(normals_a, axis=1)[:, np.newaxis]
+            normals_b = normals_b / np.linalg.norm(normals_b, axis=1)[:, np.newaxis]
+
+            # Check if any normal in set A is the inverse of the corresponding normal in set B
+            reflection_needed = False
+            for normal_a, normal_b in zip(normals_a, normals_b):
+                if np.allclose(normal_a, -normal_b):
+                    reflection_needed = True
+                    break
+
+            # If reflection is needed, include a reflection matrix
+            reflection_matrix = np.diag([1, 1, -1]) if reflection_needed else np.eye(3)
+
+            # Calculate rotation matrix (aligning normals of the first point)
+            normal_a = normals_a[0]
+            normal_b = normals_b[0]
+
+            rotation_axis = np.cross(normal_a, normal_b)
+            rotation_axis_norm = np.linalg.norm(rotation_axis)
+            
+            if rotation_axis_norm < 1e-6:  # Norm is close to zero
+                rotation_matrix = np.eye(3)  # No rotation needed
+            else:
+                rotation_axis = rotation_axis / rotation_axis_norm
+                angle = np.arccos(np.dot(normal_a, normal_b))
+                
+                # Using Rodrigues' rotation formula to get the rotation matrix
+                K = np.array([[0, -rotation_axis[2], rotation_axis[1]],
+                            [rotation_axis[2], 0, -rotation_axis[0]],
+                            [-rotation_axis[1], rotation_axis[0], 0]])
+                
+                rotation_matrix = np.eye(3) + np.sin(angle) * K + (1 - np.cos(angle)) * np.dot(K, K)
+
+            # Combine rotation and reflection
+            final_matrix = np.dot(rotation_matrix, reflection_matrix)
+
+            return translation, final_matrix, reflection_needed
+
+        def transform_set(points_a, normals_a, translation, final_matrix):
+            # Apply translation and rotation to each point and normal
+            transformed_points = []
+            transformed_normals = []
+            
+            for point, normal in zip(points_a, normals_a):
+                transformed_point = np.dot(final_matrix, point) + translation
+                transformed_normal = np.dot(final_matrix, normal)
+                transformed_points.append(transformed_point)
+                transformed_normals.append(transformed_normal)
+            
+            return np.array(transformed_points), np.array(transformed_normals)
+
+        a_all = np.concatenate(([ data1, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
+        b_all = np.concatenate(([ data2, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
+        if self.log_level > 1:
+            self.plot_geometry_setlist("floor detection", [a_all, b_all], self.params["levels"]["datatype"][merged_level])
+
+        points_a, normals_a = a_all[:, :3], a_all[:, -3:]
+        points_b, normals_b = b_all[:, :3], b_all[:, -3:]
+        translation, final_matrix, reflection_needed = compute_transformation(points_a, normals_a, points_b, normals_b)
+        rotation_cond = final_matrix[0,0] > 0.8 and final_matrix[1,1] > 0.8 and abs(final_matrix[0,1]) < 0.2
+        final_cond = not(reflection_needed) and rotation_cond
+        return final_cond
 
     def assess_floor_consistency_old(self, data1, data2, A_numerical, merged_level):
         ### ASSUMING BOTH DEFFINITIONS ARE CENTERED
@@ -501,62 +548,64 @@ class GraphMatcher():
         return transformed
 
 
-    def subplots_match(self, g1_name, g2_name, match):
-        fig, axs = plt.subplots(nrows=2, ncols=2, num="match")
-        plt.clf()
-        fig.suptitle('Match between {} and {} graphs'.format(g1_name, g2_name))
+    def subplots_match(self, g1_name, g2_name, matches):
+        for candidate_i, match in enumerate(matches):
+            fig, axs = plt.subplots(nrows=3, ncols=2, num='Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
+            plt.clf()
+            fig.suptitle('Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i))
 
-        ### Plot base graph
-        plt.axes(axs[0,0])
-        axs[0,0].clear()
-        axs[0, 0].set_title('Base graph - {}'.format(g1_name))
-        options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.graphs[g1_name].draw(None, options_base, True)
+            ### Plot base graph
+            plt.axes(axs[0,0])
+            axs[0,0].clear()
+            axs[0, 0].set_title('Base graph - {}'.format(g1_name))
+            options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+            self.graphs[g1_name].draw(None, options_base, True)
 
-        ### Plot target graph
-        plt.axes(axs[0, 1])
-        axs[0, 1].clear()
-        axs[0, 1].set_title('Target graph - {}'.format(g2_name))
-        options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        self.graphs[g2_name].draw(None, options_target, True)
+            ### Plot target graph
+            plt.axes(axs[0, 1])
+            axs[0, 1].clear()
+            axs[0, 1].set_title('Target graph - {}'.format(g2_name))
+            options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+            self.graphs[g2_name].draw(None, options_target, True)
 
-        ### Plot base graph with match
-        plt.axes(axs[1,0])
-        axs[1,0].clear()
-        axs[1,0].set_title('Base graph match - {}'.format(g1_name))
-        nodes_base = [pair["origin_node"] for pair in match]
-        options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "black")
-        self.graphs[g1_name].draw(None, options_base_matched, True)
+            ### Plot base graph with match
+            plt.axes(axs[1,0])
+            axs[1,0].clear()
+            axs[1,0].set_title('Base graph match - {}'.format(g1_name))
+            nodes_base = [pair["origin_node"] for pair in match]
+            options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "grey")
+            self.graphs[g1_name].draw(None, options_base_matched, True)
 
-        ### Plot target graph with match
-        plt.axes(axs[1,1])
-        axs[1,1].clear()
-        axs[1,1].set_title('Target graph match - {}'.format(g2_name))
-        nodes_target = [pair["target_node"] for pair in match]
-        options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "black")
-        self.graphs[g2_name].draw(None, options_target_matched, True)
-        plt.show(block=False)
-        # plt.pause(0.2)
+            ### Plot target graph with match
+            plt.axes(axs[1,1])
+            axs[1,1].clear()
+            axs[1,1].set_title('Target graph match - {}'.format(g2_name))
+            nodes_target = [pair["target_node"] for pair in match]
+            options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "grey")
+            self.graphs[g2_name].draw(None, options_target_matched, True)
+            plt.show(block=False)
+            # plt.pause(0.2)
 
-        ### Combined match
-        plt.clf()
-        fig.suptitle('Combined graph match. {} - {}'.format(g1_name, g2_name))
-        match_zip = np.stack([[str(pair["origin_node"]), str(pair["target_node"])] for pair in match])
-        g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:,0])
-        g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:,1])
-        mapping = {}
-        node_id_diff = 100
-        for last_id in list(g2_filtered.get_nodes_ids()):
-            mapping[str(last_id)] = str(int(last_id) + int(node_id_diff))
-        g2_filtered.relabel_nodes(mapping = mapping, copy = True)
-        g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
+            ### Combined match
+            # plt.clf()
+            # fig = plt.figure('Combined graph match. {} - {}. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
+            plt.subplot(313)
+            match_zip = np.stack([[str(pair["origin_node"]), str(pair["target_node"])] for pair in match])
+            g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:,0])
+            g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:,1])
+            mapping = {}
+            node_id_diff = 100
+            for last_id in list(g2_filtered.get_nodes_ids()):
+                mapping[str(last_id)] = str(int(last_id) + int(node_id_diff))
+            g2_filtered.relabel_nodes(mapping = mapping, copy = True)
+            g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
 
-        combined_graph = g1_filtered.merge_graph(g2_filtered)
-        match_edges_attr = []
-        for pair in match:
-            match_edges_attr.append((str(pair["origin_node"]), mapping[str(pair["target_node"])], {"color" : 'r'}))
-        combined_graph.add_subgraph([], match_edges_attr)
-        combined_graph.draw(None, None, True)
+            combined_graph = g1_filtered.merge_graph(g2_filtered)
+            match_edges_attr = []
+            for pair in match:
+                match_edges_attr.append((str(pair["origin_node"]), mapping[str(pair["target_node"])], {"color" : 'r'}))
+            combined_graph.add_subgraph([], match_edges_attr)
+            combined_graph.draw(None, None, True)
 
 
     def filter_matches_by_node_type(self, g1, matches, node_type):
@@ -811,7 +860,7 @@ class GraphMatcher():
         best_parent_index = np.argmax([match_graph.get_attributes_of_node(i).get('downstream_score') for i in higher_level_single_pairs_nodes])
 
         parent_node_attrs = match_graph.get_attributes_of_node(higher_level_single_pairs_nodes[best_parent_index])
-        parent_centers = [G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"]]
+        print(f"dbg parent_node_attrs {parent_node_attrs['match']}")
         # parent1_data = self.change_pos_dt(G1_full, [parent_node_attrs["match"][0]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         # parent2_data = self.change_pos_dt(G2_full, [parent_node_attrs["match"][1]], self.params["levels"]["datatype"][merged_levels[0]], self.params["levels"]["datatype"][merged_levels[1]])
         consistent_combinations = []
@@ -841,8 +890,9 @@ class GraphMatcher():
             consistency_avg = clipper.get_score_all_inital_u()
 
             # self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            # floor_elementwise_condition, floor_consistency_avg = self.assess_floor_consistency(data1, data2, A_numerical, A_categorical, merged_levels[1])
-            if consistency_avg >= self.params["thresholds"]["global"] and True:
+            floor_condition = self.assess_floor_consistency(data1, data2, A_numerical, A_categorical, merged_levels[1])
+            # floor_condition = True
+            if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
                 # self.logger.info(f"dbg consistency_avg IN {consistency_avg}")
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
             # for consistent_combination in consistent_combinations:
@@ -1026,7 +1076,7 @@ class GraphMatcher():
         match_graph.draw(name, options = options, show = self.params["verbose"])
 
 
-    def plot_geometry_set(self, title, datatype, data, ax = None, color = "red"):  
+    def plot_geometry_set(self, title, datatype, data, ax = None, color = "red", tags = None):  
         if not ax:
             fig = plt.figure(figsize=(10, 7))
             ax = fig.add_subplot(111, projection='3d')
@@ -1036,14 +1086,22 @@ class GraphMatcher():
         
         if datatype == "points":
             # Plot the points
-            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points', s = 50, marker = "s")
+            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Rooms', s = 50, marker = "s")
 
         # Plot the normals
         elif datatype == "points&normal":
-            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Points')
+            ax.scatter(points[:, 0], points[:, 1], points[:, 2], color=color, label='Planes')
             for point, normal in zip(points, normals):
                 ax.quiver(point[0], point[1], point[2], normal[0], normal[1], normal[2], length=0.3, arrow_length_ratio=0.1, color='red')
-
+        
+        # Plot point labels
+        for i in range(len(points)):
+            if tags:
+                tag = str(tags[i])
+            else:
+                tag = str(i)
+            ax.text(points[i, 0], points[i, 1], points[i, 2], tag, color = "black")
+            
         # Labels and title
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
@@ -1054,7 +1112,7 @@ class GraphMatcher():
         return points
 
     def plot_geometry_graphs(self, graphs, swept_levels):
-        fig = plt.figure("plot_geometry_graphs", figsize=(10, 7))
+        fig = plt.figure("plot_geometry_graphs", figsize=(20, 14))
         all_points = np.empty((0, 3))
         axs = []
         colors = ["blue", "green"]
@@ -1065,7 +1123,8 @@ class GraphMatcher():
             for swept_level in swept_levels:
                 attrs_all_lvl_nodes = graph.filter_graph_by_node_types(swept_level).get_attributes_of_all_nodes()
                 data = [attrs[1]["Geometric_info"] for attrs in attrs_all_lvl_nodes]
-                points = self.plot_geometry_set(graph.name, self.params["levels"]["datatype"][swept_level], data, ax, colors[i_graph])
+                node_ids = [pair[0] for pair in attrs_all_lvl_nodes]
+                points = self.plot_geometry_set(graph.name, self.params["levels"]["datatype"][swept_level], data, ax, colors[i_graph], node_ids)
                 all_points = np.vstack((all_points, points))
 
         # all_points = np.vstack((points1, points2))
@@ -1081,7 +1140,7 @@ class GraphMatcher():
         plt.show()
 
     def plot_geometry_setlist(self, figure_name, set_list, datatype):
-        fig = plt.figure(figure_name, figsize=(10, 7))
+        fig = plt.figure(figure_name, figsize=(20, 14))
         all_points = np.empty((0, 3))
         axs = []
         colors = ["blue", "green"]
@@ -1090,7 +1149,6 @@ class GraphMatcher():
             ax = fig.add_subplot(plot_number, projection='3d')
             axs.append(ax)
             points = self.plot_geometry_set(str(i_set_list), datatype, data, ax, colors[i_set_list])
-            self.logger.info(f"dbg plot_geometry_setlist {points}")
             all_points = np.vstack((all_points, points))
 
         # all_points = np.vstack((points1, points2))

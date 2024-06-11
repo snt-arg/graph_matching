@@ -285,10 +285,24 @@ bk = np.array(bj[:3]) - np.array(bi[:3])
 euclidean_diff = abs(np.linalg.norm(ak) - np.linalg.norm(bk))
 
 A = np.array([ai[-3:], aj[-3:], ak])
-B = np.array([bi[-3:], bj[-3:], bk])   
+B = np.array([bi[-3:], bj[-3:], bk])
+
+A = np.array([[0,0,10],
+              [1,0,0],
+              [-1,0,0],
+              [0,1,0],
+              [0,-1,0]])
+
+B = np.array([[0,0,-10],
+              [1,0,0],
+              [-1,0,0],
+              [0,1,0],
+              [0,-1,0]])
+
 A, B = normalize_matric(A), normalize_matric(B)
 # Find the optimal rotation matrix
 R = kabsch_algorithm(A, B)
+print(f"dbg R {R}")
 
 # Apply the rotation to the first set of vectors
 A_rotated = np.dot(A, R)
@@ -304,40 +318,40 @@ mean_angular_distance = np.mean(angles)
 # print("Angular distances (in degrees):", angles)
 # print("Mean angular distance (in degrees):", mean_angular_distance)
 
-sigp = 0.5
-epsp = 0.2
-sign = 10
-epsn = 100
-params = {
-    "verbose" : True,
-    "invariants": {
-        "points&normal": {
-            "floor": {
-                "sigp": 1000,
-                "epsp": 100,
-                "sign": 10,
-                "epsn": 100
-            }
-        }
-    }
-}
+# sigp = 0.5
+# epsp = 0.2
+# sign = 10
+# epsn = 100
+# params = {
+#     "verbose" : True,
+#     "invariants": {
+#         "points&normal": {
+#             "floor": {
+#                 "sigp": 1000,
+#                 "epsp": 100,
+#                 "sign": 10,
+#                 "epsn": 100
+#             }
+#         }
+#     }
+# }
 
-# mean_angular_distance = 10.
-sp = math.exp(-0.5 * euclidean_diff * euclidean_diff / (sigp * sigp))
-sp = sp if euclidean_diff < epsp else 0.
-sn = math.exp(-0.5 * mean_angular_distance * mean_angular_distance / (sign * sign))
-sn = sn if euclidean_diff < epsn else 0.
-score = sp * sn
-print("sp :", sp, " dn", sn, " score", score)
+# # mean_angular_distance = 10.
+# sp = math.exp(-0.5 * euclidean_diff * euclidean_diff / (sigp * sigp))
+# sp = sp if euclidean_diff < epsp else 0.
+# sn = math.exp(-0.5 * mean_angular_distance * mean_angular_distance / (sign * sign))
+# sn = sn if euclidean_diff < epsn else 0.
+# score = sp * sn
+# print("sp :", sp, " dn", sn, " score", score)
 
 
-print("CLPPER CALL")
-data1 = np.array([ai,aj], dtype=np.float64) ### S GRAPHS
-data2 = np.array([bi,bj], dtype=np.float64) ### A GRAPHS
-plot_geometry_setlist("", [data1,data2], "points&normal")
-clipper = Clipper("points&normal", "floor", params, None)
-A = np.array([[0,0],[1,1]], dtype=np.int32)
-clipper.score_pairwise_consistency(data1, data2, A)
-M, _ = clipper.get_M_C_matrices()
-print(M)
+# print("CLPPER CALL")
+# data1 = np.array([ai,aj], dtype=np.float64) ### S GRAPHS
+# data2 = np.array([bi,bj], dtype=np.float64) ### A GRAPHS
+# plot_geometry_setlist("", [A,B], "points&normal")
+# clipper = Clipper("points&normal", "floor", params, None)
+# A = np.array([[0,0],[1,1]], dtype=np.int32)
+# clipper.score_pairwise_consistency(data1, data2, A)
+# M, _ = clipper.get_M_C_matrices()
+# print(M)
 plt.show()

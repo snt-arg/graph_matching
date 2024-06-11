@@ -204,13 +204,12 @@ def segment_intersection(segment_1, segment_2):
     return (num / denom.astype(float))*db + b1
 
 
-# translation = [1,0,0]
-# normal = [0,1,0]
+def flatten_graph(graph):
+    for node_id, node_attrs in graph.get_attributes_of_all_nodes():
+        if len(node_attrs["Geometric_info"]) == 3:
+            node_attrs["Geometric_info"][2] = 0.
+        elif len(node_attrs["Geometric_info"]) == 6:
+            node_attrs["Geometric_info"][2] = 0.
+            node_attrs["Geometric_info"][5] = 0.
 
-# theta = np.arctan2(normal[1], normal[0])
-# rotation= eul.euler2mat(0, 0, theta, axes='sxyz')
-
-# #rotation = np.array([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.]])
-# translated = np.matmul(rotation,translation)
-# # print(rotation)
-# # print(translated)
+    return graph
