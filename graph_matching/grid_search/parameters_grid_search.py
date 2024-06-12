@@ -13,7 +13,8 @@ from skopt.space import Real, Integer, Categorical
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 import timeout_decorator
-# from graph_wrapper.GraphWrapper import GraphWrapper
+
+from graph_wrapper.GraphWrapper import GraphWrapper
 
 class PrintLogger():
     def __init__(self):
@@ -120,21 +121,19 @@ def score_estimated_match(estimated_match, gt_match):
     
     return score
 
-def one_experiment(exp_params, matching_params):
+def one_experiment(deviated_graphs_dict, matching_params):
     gm = GraphMatcher(PrintLogger(), log_level=0)
     gm.set_parameters(matching_params)
-    graph_dict_prior = parse_full_graph("Prior",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{exp_params['SE']}/A-Graphs/T{exp_params['T']}")
-    graph_dict_online = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{exp_params['SE']}/S-Graphs/R{exp_params['R']}")
-    gm.set_graph_from_dict(graph_dict_prior, graph_dict_prior["name"])
-    gm.set_graph_from_dict(graph_dict_online, graph_dict_online["name"])
-    f = open(f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{exp_params['SE']}/A-Graphs/T{exp_params['T']}/ground_truth.json")
-    gt_matches = json.load(f)
+    gm.set_graph_from_wrapper(deviated_graphs_dict["Prior"],"Prior")
+    gm.set_graph_from_wrapper(deviated_graphs_dict["Online"],"Online")
+    gt_matches = deviated_graphs_dict["GT"]
+
     success, matches, matches_full, matches_dev = gm.match("Prior", "Online")
     if matches:
         # for i, match in enumerate(matches):
-            # print(F"dbg match {i}")
-            # for pair in match:
-            #     print(f"dbg [{pair['origin_node']} , {pair['target_node']}] {pair['origin_node_attrs']['type']}")
+        #     print(F"dbg match {i}")
+        #     for pair in match:
+        #         print(f"dbg [{pair['origin_node']} , {pair['target_node']}] {pair['origin_node_attrs']['type']}")
         score = score_estimated_match(matches, gt_matches)
     else:
         score = 0.0
@@ -150,51 +149,92 @@ def match_params_update(matching_params_comb):
         d[keys[-1]] = value
 
     matching_params = copy.deepcopy(matching_params_original)
-    print(len(matching_params_comb_keys), len(matching_params_comb))
     for i, param_key in enumerate(matching_params_comb_keys):
         mapping = paramter_mapping[param_key]
         update_nested_dict(matching_params, mapping, matching_params_comb[i])
 
     return matching_params
+
+def create_deviated_graphs(SEs, Rs, Ps, Ds, I):
+    dev_dicts_stack = []
+    for se in SEs:
+        graph_dict_prior_original = parse_full_graph("Prior",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/A-Graphs/T0")
+        graph_dict_online_original = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/S-Graphs/R2")
+        prior_graph_original = GraphWrapper(graph_def = graph_dict_prior_original)
+        online_graph_original = GraphWrapper(graph_def = graph_dict_online_original)
+        f = open(f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/A-Graphs/T{0}/ground_truth.json")
+        gt_matches_original = json.load(f)
+
+        for i in range(I):
+            prior_graph = copy.deepcopy(prior_graph_original)
+            online_graph = copy.deepcopy(online_graph_original)
+            gt_matches = copy.deepcopy(gt_matches_original)
+            for r in Rs:
+                gt_nd_rooms_match = gt_matches_original["not_deviated"]["Finite Room"]
+                gt_selected_rooms_match = np.array(gt_nd_rooms_match)[np.random.choice(len(gt_nd_rooms_match), r, replace= False),:]
+                P = np.random.choice(Ps, 1, replace= False)[0]
+                for p in range(P):
+                    gt_selected_rooms_match = gt_selected_rooms_match[np.random.choice(len(gt_selected_rooms_match), 1, replace= False)]
+                    neighbour_planes_prior_id = prior_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[0][0])).find_nodes_by_attrs({"type": "Plane"})
+                    selected_plane_prior_id = np.array(neighbour_planes_prior_id)[np.random.choice(len(neighbour_planes_prior_id), 1, replace= False)][0]
+                    
+                    geo_info = prior_graph.get_attributes_of_node(str(selected_plane_prior_id))["Geometric_info"]
+                    point, normal = geo_info[:3], geo_info[3:]
+                    d = np.random.uniform(Ds[0], Ds[1]) * random.choice([-1,1])
+                    new_point = point + normal*d
+                    geo_info = np.concatenate(([ new_point, normal]), axis= 0, dtype = np.float64)
+                    geo_info = prior_graph.set_node_attributes("Geometric_info", {str(selected_plane_prior_id):geo_info})
+
+                    deviated_pair_idxes = np.argwhere(np.array(gt_matches["not_deviated"]["Plane"])[:,0] == np.int64(selected_plane_prior_id))
+                    if len(deviated_pair_idxes) == 2:
+                        candidates_dev_plane_online_id = np.array(gt_matches["not_deviated"]["Plane"])[deviated_pair_idxes,1]
+                        neigh_planes_online_ids = online_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[0][1])).find_nodes_by_attrs({"type": "Plane"})
+                        dev_plane_online_id = candidates_dev_plane_online_id[np.where([i in np.array(neigh_planes_online_ids, dtype=np.int32) for i in np.array(candidates_dev_plane_online_id, dtype=np.int32)])[0][0]][0]
+                        moving_pair = [int(selected_plane_prior_id), int(dev_plane_online_id)]
+                        gt_matches["deviated"]["Plane"].append(moving_pair)
+                        gt_matches["not_deviated"]["Plane"].remove(moving_pair)
+                    else:
+                        gt_matches["deviated"]["Plane"].append(gt_matches["not_deviated"]["Plane"][deviated_pair_idxes[0][0]])
+                        gt_matches["not_deviated"]["Plane"].pop(deviated_pair_idxes[0][0])
+
+            dev_dicts_stack.append({"Prior": prior_graph, "Online": online_graph, "GT": gt_matches})
+
+    return dev_dicts_stack
+
     
-@timeout_decorator.timeout(200)  # Set the timeout to 300 seconds (5 minutes)
-def experiments_stack(matching_params_comb):
+@timeout_decorator.timeout(15)  # Set the timeout to 300 seconds (5 minutes)
+def experiments_stack(dev_dataset,matching_params_comb):
     matching_params_comb_cp = copy.deepcopy(matching_params_comb)
     matching_params_comb_cp.append(10)
     matching_params = match_params_update(matching_params_comb_cp)
 
-    SEs = [2]
-    Ts = [0]
-    Rs = {1:2, 2:2, 5:2}
-    I = 1
-    exp_params_stack = []
-    for se in SEs:
-        for t in Ts:
-            r = Rs[se]
-            scores = []
-            for i in range(I):
-                exp_params_stack.append({"SE": se, "T": t, "R": r, "i": i})
-    scores = Parallel(n_jobs=-1)(delayed(one_experiment)(exp_params, matching_params) for exp_params in exp_params_stack)
+    scores = Parallel(n_jobs=-1)(delayed(one_experiment)(deviated_graph_dict, matching_params) for deviated_graph_dict in dev_dataset)
 
-    if len(ax1.lines) == 0:
-        for i, score in enumerate(scores):
-            line1, = ax1.plot([], [], label=f'Datset {i}')
-            line1.set_data([1], [score])
-    else:
-        for i, line1 in enumerate(ax1.lines):
-            dataset_scores = line1.get_data()[1]
-            dataset_scores.append(scores[i])
-            line1.set_data(range(1, len(dataset_scores) + 1), dataset_scores)
-        ax1.legend()  # Update legend after each run
+    # if len(ax1.lines) == 0:
+    #     for i, score in enumerate(scores):
+    #         line1, = ax1.plot([], [], label=f'Datset {i}')
+    #         line1.set_data([1], [score])
+    # else:
+    #     for i, line1 in enumerate(ax1.lines):
+    #         dataset_scores = line1.get_data()[1]
+    #         dataset_scores.append(scores[i])
+    #         line1.set_data(range(1, len(dataset_scores) + 1), dataset_scores)
+        # ax1.legend()  # Update legend after each run
 
     return np.mean(scores)
 
 
 def bayesian_optimization(random_state, iter_num, param_space):
     n_calls = 500
+    SEs = [1,2,5]
+    Rs = [2]
+    Ps = [1]
+    Ds = [0.05,0.15]
+    I = 100
+    deviated_graphs =  create_deviated_graphs(SEs, Rs, Ps, Ds, I)
     def objective(matching_params_comb):
         try:
-            return -experiments_stack(matching_params_comb)  # Negative score for minimization
+            return -experiments_stack(deviated_graphs, matching_params_comb)  # Negative score for minimization
         except timeout_decorator.TimeoutError:
             return 0.0  # Return a very high score if the evaluation times out
         
@@ -217,16 +257,16 @@ def bayesian_optimization(random_state, iter_num, param_space):
             pbar_inner.update(1)
             scores.append(best_score)
             line.set_data(range(1, len(scores) + 1), scores)
-            ax.relim()  # Recompute the limits
-            ax.autoscale_view()  # Update the view
-            ax1.relim()  # Recompute the limits
-            ax1.autoscale_view()  # Update the view
+            ax_opt.relim()  # Recompute the limits
+            ax_opt.autoscale_view()  # Update the view
+            # ax1.relim()  # Recompute the limits
+            # ax1.autoscale_view()  # Update the view
             plt.draw()
             plt.pause(0.01)
 
         scores = []
-        line, = ax.plot([], [], label=f'Run {iter_num}')
-        ax.legend()  # Update legend after each run
+        line, = ax_opt.plot([], [], label=f'Run {iter_num}')
+        ax_opt.legend()  # Update legend after each run
         # Run Bayesian optimization
         result = gp_minimize(
             func=objective,
@@ -300,6 +340,8 @@ def optimize():
     plt.ioff()
     plt.savefig('optimization_progress.png')
     plt.show()
+
+    
 
 
 
@@ -406,14 +448,14 @@ with open(json_file_path) as json_file:
 
 # Set up the plot
 plt.ion()
-fig, ax = plt.subplots()
-ax.set_xlabel('Iteration')
-ax.set_ylabel('Best Average Score')
-ax.set_title('Bayesian Optimization Progress - Runs')
-fig1, ax1 = plt.subplots()
-ax1.set_xlabel('Iteration')
-ax1.set_ylabel('Dataset Scores')
-ax1.set_title('Bayesian Optimization Progress - Datasets')
+fig_opt, ax_opt = plt.subplots()
+ax_opt.set_xlabel('Iteration')
+ax_opt.set_ylabel('Best Average Score')
+ax_opt.set_title('Bayesian Optimization Progress - Runs')
+# fig1, ax1 = plt.subplots()
+# ax1.set_xlabel('Iteration')
+# ax1.set_ylabel('Dataset Scores')
+# ax1.set_title('Bayesian Optimization Progress - Datasets')
 
 
 optimize()

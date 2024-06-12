@@ -41,7 +41,8 @@ class GraphMatcher():
 
 ###  The match function performs a detailed, multi-level graph matching operation between two graphs.
     def match(self, G1_name, G2_name):
-        self.logger.info("beginning match")
+        if self.log_level > 0:
+            self.logger.info("BENNINGING match")
 
         start_time = time.time()
         ### Retrieve the levels to be processed from the parameters.
