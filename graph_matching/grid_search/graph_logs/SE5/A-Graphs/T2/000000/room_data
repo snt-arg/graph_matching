@@ -1,0 +1,56 @@
+id
+29
+plane_x1 
+     1.0
+     0.0
+     0.0
+-5.069
+plane_x2 
+   -1.0
+    0.0
+    0.0
+8.014
+plane_y1 
+     0.0
+     1.0
+     0.0
+-7.294
+plane_y2 
+    0.0
+   -1.0
+    0.0
+9.755
+plane_x1_id 
+20
+plane_x2_id 
+4
+plane_y1_id 
+25
+plane_y2_id 
+7
+plane_x1_node 
+     1.0
+     0.0
+     0.0
+-5.069
+plane_x2_node 
+   -1.0
+    0.0
+    0.0
+8.014
+plane_y1_node 
+     0.0
+     1.0
+     0.0
+-7.294
+plane_y2_node 
+    0.0
+   -1.0
+    0.0
+9.755
+room_node 
+     1      0      0 6.5415
+     0      1      0 8.5245
+     0      0      1      0
+     0      0      0      1
+room_keyframes_ids
