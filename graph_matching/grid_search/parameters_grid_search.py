@@ -1,7 +1,7 @@
 import numpy as np
 import graph_matching
 from graph_matching.GraphMatcher import GraphMatcher
-from graph_matching.utils import plane_4_params_to_6_params
+from graph_matching.utils import plane_4_params_to_6_params, compute_room_center
 import os, json
 import pandas as pd
 import itertools
@@ -111,11 +111,15 @@ def parse_full_graph(name, folder_path):
     return graph_dict
 
 def score_estimated_match(estimated_match, gt_match):
+    FP_penalization = 0
+    FN_penalization = 1
     if len(estimated_match) == 1:
         gt_match_pairs = set([tuple(pair) for pair in gt_match['not_deviated']['Finite Room']] + [tuple(pair) for pair in gt_match['not_deviated']['Plane']])
         estimated_match_pairs = set([(pair['origin_node'], pair['target_node']) for pair in estimated_match[0]])
-        common_tuples = [t for t in estimated_match_pairs if t in gt_match_pairs]
-        score = len(common_tuples)/len(gt_match_pairs) - (len(estimated_match_pairs) - len(common_tuples))/len(gt_match_pairs)
+        true_positives = len([t for t in estimated_match_pairs if t in gt_match_pairs])
+        false_positives = len(estimated_match_pairs) - true_positives
+        false_negatives = len(gt_match_pairs) - true_positives
+        score = (true_positives - FP_penalization*false_positives - FN_penalization*false_negatives)/len(gt_match_pairs)
     else:
         score = 0.0
     
@@ -129,6 +133,10 @@ def one_experiment(deviated_graphs_dict, matching_params):
     gt_matches = deviated_graphs_dict["GT"]
 
     success, matches, matches_full, matches_dev = gm.match("Prior", "Online")
+    # print(f"dbg matches {len(matches)}")
+    # if len(matches) > 0:
+    #     print(f"dbg matches {len(matches[0])}")
+    # print(f"dbg matches dev {len(matches_dev)} {matches_dev}")
     if matches:
         # for i, match in enumerate(matches):
         #     print(F"dbg match {i}")
@@ -141,72 +149,156 @@ def one_experiment(deviated_graphs_dict, matching_params):
     
     return score
 
-def match_params_update(matching_params_comb):
+def match_params_update(matching_params_comb, base_matching_params,param_space):
 
     def update_nested_dict(d, keys, value):
         for key in keys[:-1]:
             d = d.setdefault(key, {})
         d[keys[-1]] = value
 
-    matching_params = copy.deepcopy(matching_params_original)
-    for i, param_key in enumerate(matching_params_comb_keys):
-        mapping = paramter_mapping[param_key]
+    matching_params = copy.deepcopy(base_matching_params)
+    for i, param in enumerate(param_space):
+        mapping = paramter_mapping[param.name]
         update_nested_dict(matching_params, mapping, matching_params_comb[i])
 
     return matching_params
 
+def divide_shared_planes(agraph, sgraph, GT):
+    ### A GRAPH
+    agraph_rooms_ids = copy.deepcopy(agraph.filter_graph_by_node_types(["Finite Room"]).get_nodes_ids())
+    rooms_in_gt_agraph = [str(a) for a in np.array(GT["Finite Room"])[:,0]]
+    rooms_filter_agraph = [room for room in agraph_rooms_ids if room not in rooms_in_gt_agraph]
+    agraph.remove_nodes(rooms_filter_agraph)
+    agraph.filterout_unparented_nodes()
+
+    agraph_planes_ids = copy.deepcopy(agraph.filter_graph_by_node_types(["Plane"]).get_nodes_ids())
+
+    a_graph_mapping = {}
+
+    for node_id in agraph_planes_ids:
+        plane_connections = list(agraph.edges_of_node(node_id))
+        for plane_connection in plane_connections[:-1]:
+            max_agraph_node_id = max([int(j) for j in agraph.get_nodes_ids()])
+            new_node_id = str(max_agraph_node_id + 1)
+            a_graph_mapping.update({node_id: new_node_id})
+
+            agraph_room_id = plane_connection[1]
+            sgraph_gt_room_id = np.array(GT["Finite Room"])[np.array(GT["Finite Room"])[:,0] == int(agraph_room_id)][0][1]
+            sgraph_plane_candidates = list(sgraph.get_neighbourhood_graph(str(sgraph_gt_room_id)).filter_graph_by_node_types(["Plane"]).get_nodes_ids())
+            sgraph_gt_planes = np.array(GT["Plane"])[np.array(GT["Plane"])[:,0] == int(node_id)][:,1]
+            sgraph_gt_planes = [str(k) for k in sgraph_gt_planes]
+            sgraph_gt_plane_id = list(set(sgraph_gt_planes).intersection(set(sgraph_plane_candidates)))[0]
+            
+            agraph.remove_edges([(str(node_id), str(agraph_room_id))])
+            agraph.add_nodes([(str(new_node_id), agraph.get_attributes_of_node(node_id))])
+            agraph.add_edges([(str(new_node_id), str(agraph_room_id), {})])
+
+            GT["Plane"].remove([int(node_id), int(sgraph_gt_plane_id)])
+            GT["Plane"] = GT["Plane"] + [[int(new_node_id), int(sgraph_gt_plane_id)]]
+
+
+    ### S GRAPH
+    sgraph_planes_ids = copy.deepcopy(sgraph.filter_graph_by_node_types(["Plane"]).get_nodes_ids())
+    s_graph_mapping = {}
+
+    for node_id in sgraph_planes_ids:
+        plane_connections = list(sgraph.edges_of_node(node_id))
+        
+        for plane_connection in plane_connections[:-1]:
+            max_sgraph_node_id = max([int(i) for i in sgraph.get_nodes_ids()])
+            new_node_id = str(max_sgraph_node_id + 1)
+            s_graph_mapping.update({node_id: new_node_id})
+
+            sgraph_room_id = plane_connection[1]
+            agraph_gt_room_id = np.array(GT["Finite Room"])[np.array(GT["Finite Room"])[:,1] == int(sgraph_room_id)][0][0]
+            agraph_plane_candidates = list(agraph.get_neighbourhood_graph(str(agraph_gt_room_id)).filter_graph_by_node_types(["Plane"]).get_nodes_ids())
+            agraph_gt_planes = np.array(GT["Plane"])[np.array(GT["Plane"])[:,1] == int(node_id)][:,0]
+            agraph_gt_planes = [str(k) for k in agraph_gt_planes]
+            agraph_gt_plane_id = list(set(agraph_gt_planes).intersection(set(agraph_plane_candidates)))[0]
+            
+            sgraph.remove_edges([(str(node_id), str(sgraph_room_id))])
+            sgraph.add_nodes([(str(new_node_id), sgraph.get_attributes_of_node(node_id))])
+            sgraph.add_edges([(str(new_node_id), str(sgraph_room_id), {})])
+            GT["Plane"].remove([int(agraph_gt_plane_id), int(node_id)])
+            GT["Plane"] = GT["Plane"] + [[int(agraph_gt_plane_id), int(new_node_id)]]
+
+    return agraph, sgraph, GT
+
+
 def create_deviated_graphs(SEs, Rs, Ps, Ds, I):
     dev_dicts_stack = []
     for se in SEs:
+        print(f"dbg se {se}")
         graph_dict_prior_original = parse_full_graph("Prior",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/A-Graphs/T0")
-        graph_dict_online_original = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/S-Graphs/R2")
+        graph_dict_online_original = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/S-Graphs/RAll")
         prior_graph_original = GraphWrapper(graph_def = graph_dict_prior_original)
         online_graph_original = GraphWrapper(graph_def = graph_dict_online_original)
         f = open(f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/A-Graphs/T{0}/ground_truth.json")
         gt_matches_original = json.load(f)
 
+        prior_graph_splitted, online_graph_splitted, GT_nd_splitted = divide_shared_planes(prior_graph_original, online_graph_original, gt_matches_original["not_deviated"])
+        gt_matches_original["not_deviated"] = GT_nd_splitted
+
         for i in range(I):
-            prior_graph = copy.deepcopy(prior_graph_original)
-            online_graph = copy.deepcopy(online_graph_original)
-            gt_matches = copy.deepcopy(gt_matches_original)
             for r in Rs:
-                gt_nd_rooms_match = gt_matches_original["not_deviated"]["Finite Room"]
-                gt_selected_rooms_match = np.array(gt_nd_rooms_match)[np.random.choice(len(gt_nd_rooms_match), r, replace= False),:]
-                P = np.random.choice(Ps, 1, replace= False)[0]
-                for p in range(P):
-                    gt_selected_rooms_match = gt_selected_rooms_match[np.random.choice(len(gt_selected_rooms_match), 1, replace= False)]
-                    neighbour_planes_prior_id = prior_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[0][0])).find_nodes_by_attrs({"type": "Plane"})
-                    selected_plane_prior_id = np.array(neighbour_planes_prior_id)[np.random.choice(len(neighbour_planes_prior_id), 1, replace= False)][0]
-                    
-                    geo_info = prior_graph.get_attributes_of_node(str(selected_plane_prior_id))["Geometric_info"]
-                    point, normal = geo_info[:3], geo_info[3:]
-                    d = np.random.uniform(Ds[0], Ds[1]) * random.choice([-1,1])
-                    new_point = point + normal*d
-                    geo_info = np.concatenate(([ new_point, normal]), axis= 0, dtype = np.float64)
-                    geo_info = prior_graph.set_node_attributes("Geometric_info", {str(selected_plane_prior_id):geo_info})
+                for P in Ps:
+                    online_graph = copy.deepcopy(online_graph_splitted)
+                    gt_matches = copy.deepcopy(gt_matches_original)
+                    online_graph_all_rooms = list(online_graph.filter_graph_by_node_types(["Finite Room"]).get_nodes_ids())
+                    online_graph_selected_rooms = np.random.choice(online_graph_all_rooms, r, replace= False)
+                    # online_graph_selected_rooms = ["78", "71"]
+                    online_graph.remove_nodes(list(set(online_graph_all_rooms)^set(online_graph_selected_rooms)))
+                    online_graph.filterout_unparented_nodes()
+                    prior_graph = copy.deepcopy(prior_graph_splitted)
+                    online_graph_selected_planes = list(online_graph.filter_graph_by_node_types(["Plane"]).get_nodes_ids())
+                    gt_nd_rooms_match = gt_matches["not_deviated"]["Finite Room"]
+                    gt_nd_planes_match = gt_matches["not_deviated"]["Plane"]
+                    gt_nd_rooms_match = [pair for pair in gt_nd_rooms_match if str(pair[1]) in online_graph_selected_rooms]
+                    gt_nd_planes_match = [pair for pair in gt_nd_planes_match if str(pair[1]) in online_graph_selected_planes]
+                    gt_matches["not_deviated"]["Finite Room"] = gt_nd_rooms_match
+                    gt_matches["not_deviated"]["Plane"] = gt_nd_planes_match
 
-                    deviated_pair_idxes = np.argwhere(np.array(gt_matches["not_deviated"]["Plane"])[:,0] == np.int64(selected_plane_prior_id))
-                    if len(deviated_pair_idxes) == 2:
-                        candidates_dev_plane_online_id = np.array(gt_matches["not_deviated"]["Plane"])[deviated_pair_idxes,1]
-                        neigh_planes_online_ids = online_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[0][1])).find_nodes_by_attrs({"type": "Plane"})
-                        dev_plane_online_id = candidates_dev_plane_online_id[np.where([i in np.array(neigh_planes_online_ids, dtype=np.int32) for i in np.array(candidates_dev_plane_online_id, dtype=np.int32)])[0][0]][0]
-                        moving_pair = [int(selected_plane_prior_id), int(dev_plane_online_id)]
-                        gt_matches["deviated"]["Plane"].append(moving_pair)
-                        gt_matches["not_deviated"]["Plane"].remove(moving_pair)
-                    else:
-                        gt_matches["deviated"]["Plane"].append(gt_matches["not_deviated"]["Plane"][deviated_pair_idxes[0][0]])
-                        gt_matches["not_deviated"]["Plane"].pop(deviated_pair_idxes[0][0])
+                    for p in range(P):
+                        gt_selected_rooms_match = gt_nd_rooms_match[np.random.choice(len(gt_nd_rooms_match), 1, replace= False)[0]]
+                        neighbour_planes_prior_id = prior_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[0])).find_nodes_by_attrs({"type": "Plane"})
+                        available_planes_prior_id = list(set(np.array(neighbour_planes_prior_id, dtype=np.int32)) & set(np.array(gt_nd_planes_match, dtype=np.int32)[:,0]))
+                        selected_plane_prior_id = np.array(available_planes_prior_id)[np.random.choice(len(available_planes_prior_id), 1, replace= False)][0]
+                        geo_info = prior_graph.get_attributes_of_node(str(selected_plane_prior_id))["Geometric_info"]
+                        point, normal = geo_info[:3], geo_info[3:]
+                        d = np.random.uniform(Ds[0], Ds[1]) * random.choice([-1,1])
+                        new_point = point + normal*d
+                        geo_info = np.concatenate(([ new_point, normal]), axis= 0, dtype = np.float64)
+                        prior_graph.set_node_attributes("Geometric_info", {str(selected_plane_prior_id):geo_info})
 
-            dev_dicts_stack.append({"Prior": prior_graph, "Online": online_graph, "GT": gt_matches})
+                        prior_planes_centers = np.stack([prior_graph.get_attributes_of_node(node_id)["Geometric_info"] for node_id in neighbour_planes_prior_id])
+                        new_room_center = compute_room_center(prior_planes_centers)
+                        prior_graph.set_node_attributes("Geometric_info", {str(gt_selected_rooms_match[0]):new_room_center})
+
+                        deviated_pair_idxes = np.argwhere(np.array(gt_matches["not_deviated"]["Plane"])[:,0] == np.int64(selected_plane_prior_id))
+                        if len(deviated_pair_idxes) == 2:
+                            candidates_dev_plane_online_id = np.array(gt_matches["not_deviated"]["Plane"])[deviated_pair_idxes,1]
+                            neigh_planes_online_ids = online_graph.get_neighbourhood_graph(str(gt_selected_rooms_match[1])).find_nodes_by_attrs({"type": "Plane"})
+                            dev_plane_online_id = candidates_dev_plane_online_id[np.where([i in np.array(neigh_planes_online_ids, dtype=np.int32) for i in np.array(candidates_dev_plane_online_id, dtype=np.int32)])[0][0]][0]
+                            moving_pair = [int(selected_plane_prior_id), int(dev_plane_online_id)]
+                            gt_matches["deviated"]["Plane"].append(moving_pair)
+                            gt_matches["not_deviated"]["Plane"].remove(moving_pair)
+                        else:
+                            gt_matches["deviated"]["Plane"].append(gt_matches["not_deviated"]["Plane"][deviated_pair_idxes[0][0]])
+                            gt_matches["not_deviated"]["Plane"].pop(deviated_pair_idxes[0][0])
+
+                    dev_dicts_stack.append({"Prior": prior_graph, "Online": online_graph, "GT": gt_matches})
 
     return dev_dicts_stack
 
-    
-@timeout_decorator.timeout(15)  # Set the timeout to 300 seconds (5 minutes)
-def experiments_stack(dev_dataset,matching_params_comb):
-    matching_params_comb_cp = copy.deepcopy(matching_params_comb)
-    matching_params_comb_cp.append(10)
-    matching_params = match_params_update(matching_params_comb_cp)
+
+@timeout_decorator.timeout(200)  # Set the timeout to 300 seconds (5 minutes)
+def experiments_stack(dev_dataset,matching_params_comb, base_matching_params, param_space):
+    if matching_params_comb:
+        matching_params_comb_cp = copy.deepcopy(matching_params_comb)
+        base_matching_params_cp = copy.deepcopy(base_matching_params)
+        matching_params = match_params_update(matching_params_comb_cp, base_matching_params_cp, param_space)
+    else:
+        matching_params = copy.deepcopy(base_matching_params)
 
     scores = Parallel(n_jobs=-1)(delayed(one_experiment)(deviated_graph_dict, matching_params) for deviated_graph_dict in dev_dataset)
 
@@ -225,27 +317,28 @@ def experiments_stack(dev_dataset,matching_params_comb):
 
 
 def bayesian_optimization(random_state, iter_num, param_space):
-    n_calls = 500
-    SEs = [1,2,5]
+    n_calls = 100
+    SEs = [1,2]
     Rs = [2]
-    Ps = [1]
-    Ds = [0.05,0.15]
+    Ps = [1,2]
+    Ds = [0.5,0.15]
     I = 100
     deviated_graphs =  create_deviated_graphs(SEs, Rs, Ps, Ds, I)
     def objective(matching_params_comb):
         try:
-            return -experiments_stack(deviated_graphs, matching_params_comb)  # Negative score for minimization
+            return -experiments_stack(deviated_graphs, matching_params_comb, matching_params_original, param_space)  # Negative score for minimization
         except timeout_decorator.TimeoutError:
             return 0.0  # Return a very high score if the evaluation times out
-        
+    
     def get_nesteddict_value(d, keys):
         for key in keys[:-1]:
             d = d.setdefault(key, {})
         return d[keys[-1]]
     
     initial_values = []
-    for param_key in matching_params_comb_keys[:-1]:
-        mapping = paramter_mapping[param_key]
+
+    for param_i in param_space:
+        mapping = paramter_mapping[param_i.name]
         initial_values.append(get_nesteddict_value(copy.deepcopy(matching_params_original), mapping))
     # initial_values = [0.19639775545292656, 0.3302660870283677, 0.17722970027511514, 0.4435165737690735, 0.6592836339795224, 0.553410484295661, 0.6622208134086656, 0.6027381635820919]
 
@@ -273,7 +366,7 @@ def bayesian_optimization(random_state, iter_num, param_space):
             dimensions=param_space,
             n_calls=n_calls,  # Number of iterations
             random_state=random_state,
-            x0=initial_values,
+            # x0=initial_values,
             callback=[lambda res: update_callback(res, scores, iter_num, line)]
         )
 
@@ -284,33 +377,17 @@ def bayesian_optimization(random_state, iter_num, param_space):
     print("Best Parameters:", best_params)
     print("Best Score:", best_score)
 
-    best_params_full = match_params_update(best_params + [10])
+    best_params_full = match_params_update(best_params, matching_params_original)
 
     return best_params, best_score, best_params_full
 
-def optimize():
+def optimize(target = "unique"):
     best_overall_params = None
     best_overall_score = -np.inf
-    n_opimizations = 10
+    n_opimizations = 5
 
-    param_space = [
-        # Integer(7, 7, name='solver_iters'),
-        Real(0.01, 0.9, name='inv_point_0_eps'),
-        Real(0.01, 0.9, name='inv_point_0_sig'),
-        Real(0.01, 0.9, name='inv_pointnormal_0_sigp'),
-        Real(0.01, 0.9, name='inv_pointnormal_0_epsp'),
-        Real(0.01, 0.9, name='inv_pointnormal_0_sign'),
-        Real(0.01, 0.9, name='inv_pointnormal_0_epsn'),
-        Real(0.01, 0.9, name='inv_pointnormal_1_sigp'),
-        Real(0.01, 0.9, name='inv_pointnormal_1_epsp'),
-        Real(0.01, 0.9, name='inv_pointnormal_1_epsn'),
-        Real(0.01, 0.9, name='inv_pointnormal_1_epsn'),
-        Real(0.01, 0.9, name='inv_pointnormal_floor_eps'),
-        Real(0.01, 0.9, name='thr_locintra_room'),
-        Real(0.01, 0.9, name='thr_locintra_plane'),
-        Real(0.01, 0.9, name='thr_locinter_roomplane'),
-        Real(0.01, 0.9, name='thr_global')
-    ]
+    if target == 'unique':
+        param_space = unique_param_space
 
     with tqdm(total=n_opimizations, desc="Optimization runs", unit="run") as pbar_outer:
         for i in range(n_opimizations):
@@ -320,101 +397,67 @@ def optimize():
                 best_overall_params = params
                 best_overall_score = score
             pbar_outer.update(1)  # Update the outer progress bar
+            plt.savefig(f'{target}_optimization_progress.png')
+            # Save the best parameters and score to disk
+            best_params_dict = {dim.name: best_overall_params[i] for i,dim in enumerate(param_space)}
+
+            with open(f'best_{target}_params_and_score.json', 'w') as f:
+                json.dump({
+                    'best_params': best_params_dict,
+                    'best_score': best_overall_score
+                }, f)
+
+            with open(f'best_{target}_params.json', 'w') as f:
+                json.dump(params_full, f)
+
 
     print("Best Parameters from all runs:", best_overall_params)
     print("Best Score from all runs:", best_overall_score)
 
-    # Save the best parameters and score to disk
-    best_params_dict = {dim.name: best_overall_params[i] for i,dim in enumerate(param_space)}
-
-    with open('best_params_and_score.json', 'w') as f:
-        json.dump({
-            'best_params': best_params_dict,
-            'best_score': best_overall_score
-        }, f)
-
-    with open('best_params.json', 'w') as f:
-        json.dump(params_full, f)
 
     # Save the plot as an image file
     plt.ioff()
-    plt.savefig('optimization_progress.png')
     plt.show()
 
-    
+def evaluate(target = "unique"):
+    fig_eval, ax_eval = plt.subplots()
+    ax_eval.set_xlabel('Deviation length')
+    ax_eval.set_ylabel('Score')
+    ax_eval.set_title('Evaluation over deviation complexity')
+
+    json_file_path = f"best_{target}_params.json"
+    with open(json_file_path) as json_file:
+        best_matching_params = json.load(json_file)
+
+    if target == 'unique':
+        param_space = unique_param_space
+
+    # R_range = np.arange(0.1,0.4,0.05)
+    P_range = np.arange(1,5,1)
+    maxD_range = np.arange(0.0,0.8,0.05)
+    for p in P_range:
+        line, = ax_eval.plot([], [], label=f'{p} dev planes')
+        ax_eval.legend()  # Update legend after each run
+        scores = []
+        xs = []
+        for maxd in maxD_range:
+            SEs = [1,2,5]
+            Rs = [2]
+            Ps = [p]
+            Ds = [0.05,maxd]
+            I = 50
+            deviated_graphs =  create_deviated_graphs(SEs, Rs, Ps, Ds, I)
+            score = experiments_stack(deviated_graphs, None, best_matching_params, param_space)
+            scores.append(score)
+            xs.append(maxd)
+            line.set_data(xs, scores)
+            ax_eval.relim()  # Recompute the limits
+            ax_eval.autoscale_view()  # Update the view
+            plt.draw()
+            plt.pause(0.01)
+            plt.savefig(f'evaluation_{target}_progress.png')
 
 
-
-# def grid_search():
-#     # matching_package_path = graph_matching.__file__
-#     # json_file_path = os.path.join(matching_package_path[:-11], "config/syntheticDS_params.json")
-#     json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
-#     with open(json_file_path) as json_file:
-#         matching_params_original = json.load(json_file)
-    
-#     parameter_grid = {
-#     "inv_point_0_eps": [0.1, 0.25, 0.6],
-#     "inv_pointnormal_0_eps": [0.1, 0.25, 0.6],
-#     "inv_pointnormal_1_eps": [0.1, 0.25, 0.6],
-#     "inv_pointnormal_floor_eps": [0.1, 0.25, 0.6],
-#     "thr_locintra_room": [0.2, 0.5, 0.8],
-#     "thr_locintra_plane": [0.2, 0.5, 0.8],
-#     "thr_locinter_roomplane": [0.2, 0.5, 0.8],
-#     "thr_global": [0.2, 0.5, 0.8],
-#     "solver_iters": [7],
-#     }
-
-#     paramter_mapping = {
-#     "inv_point_0_eps": ["invariants", "points", "0", "epsilon"],
-#     "inv_pointnormal_0_eps": ["invariants", "points&normal", "0", "epsp"],
-#     "inv_pointnormal_1_eps": ["invariants", "points&normal", "1", "epsp"],
-#     "inv_pointnormal_floor_eps": ["invariants", "points&normal", "floor", "epsp"],
-#     "thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
-#     "thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
-#     "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
-#     "thr_global": ["thresholds", "global", 0],
-#     "solver_iters": ["solver_iterations"]
-#     }
-
-#     param_combinations = list(itertools.product(*parameter_grid.values()))
-#     # Prepare a list to store the results
-#     results = []
-
-#     # Run grid search over each parameter combination
-#     for param_combination in tqdm(param_combinations):
-#         param_dict = dict(zip(parameter_grid.keys(), param_combination))
-#         matching_params = copy.deepcopy(matching_params_original)
-#         for param_key in param_dict.keys():
-#             mapping = paramter_mapping[param_key]
-
-#             def update_nested_dict(d, keys, value):
-#                 for key in keys[:-1]:
-#                     d = d.setdefault(key, {})
-#                 d[keys[-1]] = value
-
-#             update_nested_dict(matching_params, mapping, param_dict[param_key])
-
-#         score = experiments_stack(matching_params)
-        
-#         # Store the results
-#         result = {**param_dict, "score": score}
-#         results.append(result)
-
-#     # Convert results to a pandas DataFrame
-#     results_df = pd.DataFrame(results)
-
-#     # Identify the parameter combination with the highest score
-#     best_result = results_df.loc[results_df['score'].idxmax()]
-
-#     # Save the DataFrame to a file
-#     results_df.to_csv("grid_search_results.csv", index=False)
-#     best_result.to_frame().T.to_csv("best_result.csv", index=False)
-
-#     # Display the DataFrame
-#     print("Grid Search Results:")
-#     print(results_df)
-#     print("\nBest Result:")
-#     print(best_result.to_frame().T)
 
 
 paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
@@ -432,14 +475,26 @@ paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
 "thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
 "thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
 "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
-"thr_global": ["thresholds", "global", 0],
-"solver_iters": ["solver_iterations"]
+"thr_global": ["thresholds", "global", 0]
 }
 
-matching_params_comb_keys = ["inv_point_0_eps", "inv_point_0_sig","inv_pointnormal_0_sigp", "inv_pointnormal_0_epsp", \
-                             "inv_pointnormal_0_sign", "inv_pointnormal_0_epsn", "inv_pointnormal_1_sigp", "inv_pointnormal_1_epsp", \
-                             "inv_pointnormal_1_sign", "inv_pointnormal_1_epsn", "inv_pointnormal_floor_eps", "thr_locintra_room",\
-                             "thr_locintra_plane", "thr_locinter_roomplane", "thr_global", "solver_iters"]
+unique_param_space = [
+    # Integer(7, 7, name='solver_iters'),
+    Real(0.01, 0.9, name='inv_point_0_eps'),
+    Real(0.01, 0.9, name='inv_pointnormal_0_epsp'),
+    Real(0.01, 0.9, name='inv_pointnormal_0_epsn'),
+    Real(0.01, 0.9, name='inv_pointnormal_1_epsp'),
+    Real(0.01, 0.9, name='inv_pointnormal_1_epsn'),
+    Real(0.01, 0.9, name='thr_locintra_room'),
+    Real(0.01, 0.9, name='thr_locintra_plane'),
+    Real(0.01, 0.9, name='thr_locinter_roomplane'),
+    Real(0.01, 0.9, name='thr_global')
+]
+
+# matching_params_comb_keys = ["inv_point_0_eps", "inv_point_0_sig","inv_pointnormal_0_sigp", "inv_pointnormal_0_epsp", \
+#                              "inv_pointnormal_0_sign", "inv_pointnormal_0_epsn", "inv_pointnormal_1_sigp", "inv_pointnormal_1_epsp", \
+#                              "inv_pointnormal_1_sign", "inv_pointnormal_1_epsn", "inv_pointnormal_floor_eps", "thr_locintra_room",\
+#                              "thr_locintra_plane", "thr_locinter_roomplane", "thr_global"]
                              
 json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
 with open(json_file_path) as json_file:
@@ -459,6 +514,7 @@ ax_opt.set_title('Bayesian Optimization Progress - Runs')
 
 
 optimize()
+# evaluate()
 
 plt.ioff()
 plt.show()

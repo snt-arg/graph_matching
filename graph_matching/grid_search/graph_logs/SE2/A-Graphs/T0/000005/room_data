@@ -11,23 +11,23 @@ plane_x2
     0.0
 1.481
 plane_y1 
-     0.0
-     1.0
-     0.0
--5.464
+    0.0
+    1.0
+    0.0
+2.075
 plane_y2 
     0.0
    -1.0
     0.0
-7.884
+2.584
 plane_x1_id 
 13
 plane_x2_id 
-10
+4
 plane_y1_id 
-19
+15
 plane_y2_id 
-5
+9
 plane_x1_node 
     1.0
     0.0
@@ -39,18 +39,18 @@ plane_x2_node
     0.0
 1.481
 plane_y1_node 
-     0.0
-     1.0
-     0.0
--5.464
+    0.0
+    1.0
+    0.0
+2.075
 plane_y2_node 
     0.0
    -1.0
     0.0
-7.884
+2.584
 room_node 
      1      0      0 -0.161
-     0      1      0  6.674
+     0      1      0 0.2545
      0      0      1      0
      0      0      0      1
 room_keyframes_ids

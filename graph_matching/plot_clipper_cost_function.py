@@ -28,10 +28,10 @@ def plot_clipper_cost_function(sig, eps, name):
     plt.show()
 
 
-sigp = 0.3
+sigp = 0.2
 epsp = 1.0
-plot_clipper_cost_function(sigp, epsp, "Points")
+# plot_clipper_cost_function(sigp, epsp, "Points")
 
-sign = 5.0
-epsn = 15.
+sign = 0.1
+epsn = 0.3
 plot_clipper_cost_function(sign, epsn, "Normals")

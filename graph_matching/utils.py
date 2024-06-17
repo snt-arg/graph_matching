@@ -3,6 +3,7 @@ import time
 import math
 import transforms3d.euler as eul
 import itertools
+import copy
 
 def plane_4_params_to_6_params(plane):
     normal = plane[:3]
@@ -213,3 +214,77 @@ def flatten_graph(graph):
             node_attrs["Geometric_info"][5] = 0.
 
     return graph
+
+
+class Plane4():
+    def __init__(self,params):
+        self.nx = params[0]
+        self.ny = params[1]
+        self.nz = params[2]
+        self.d = params[3]
+    
+def compute_room_center(all_planes_inp):
+    all_planes_inp_4 = [Plane4(plane_6_params_to_4_params(plane_6)) for plane_6 in all_planes_inp]
+    x_planes_inp, y_planes_inp = [], []
+    for plane_ing in all_planes_inp_4:
+        if plane_ing.nx > 0.95 or plane_ing.nx < -0.95:
+            x_planes_inp.append(plane_ing)
+        elif plane_ing.ny > 0.95 or plane_ing.ny < -0.95:
+            y_planes_inp.append(plane_ing)
+
+    x_planes = copy.deepcopy(x_planes_inp)
+    y_planes = copy.deepcopy(y_planes_inp)
+    x_plane1 = x_planes[0]
+    x_plane2 = x_planes[1]
+    
+    y_plane1 = y_planes[0]
+    y_plane2 = y_planes[1]
+
+    x_plane1 = correct_plane_direction(x_plane1)        
+    x_plane2 = correct_plane_direction(x_plane2)
+    y_plane1 = correct_plane_direction(y_plane1)        
+    y_plane2 = correct_plane_direction(y_plane2)              
+
+    vec_x, vec_y = [], []
+
+    if(math.fabs(x_plane1.d) > math.fabs(x_plane2.d)):
+        vec_x = (0.5 * (math.fabs(x_plane1.d) * np.array([x_plane1.nx, x_plane1.ny, x_plane1.nz]) - math.fabs(x_plane2.d) * np.array([x_plane2.nx, x_plane2.ny, x_plane2.nz]))) + math.fabs(x_plane2.d) * np.array([x_plane2.nx, x_plane2.ny, x_plane2.nz])
+    else:
+        vec_x = (0.5 * (math.fabs(x_plane2.d) * np.array([x_plane2.nx, x_plane2.ny, x_plane2.nz]) - math.fabs(x_plane1.d) * np.array([x_plane1.nx, x_plane1.ny, x_plane1.nz]))) + math.fabs(x_plane1.d) * np.array([x_plane1.nx, x_plane1.ny, x_plane1.nz])
+
+    if(math.fabs(y_plane1.d) > math.fabs(y_plane2.d)):
+        vec_y = (0.5 * (math.fabs(y_plane1.d) * np.array([y_plane1.nx, y_plane1.ny, y_plane1.nz]) - math.fabs(y_plane2.d) * np.array([y_plane2.nx, y_plane2.ny, y_plane2.nz]))) + math.fabs(y_plane2.d) * np.array([y_plane2.nx, y_plane2.ny, x_plane2.nz])
+    else:
+        vec_y = (0.5 * (math.fabs(y_plane2.d) * np.array([y_plane2.nx, y_plane2.ny, y_plane2.nz]) - math.fabs(y_plane1.d) * np.array([y_plane1.nx, y_plane1.ny, y_plane1.nz]))) + math.fabs(y_plane1.d) * np.array([y_plane1.nx, y_plane1.ny, y_plane1.nz])
+
+    final_room_center = vec_x + vec_y
+
+    return final_room_center
+
+
+def compute_center(wall_point_inp, plane1_inp, plane2_inp):
+    wall_point = copy.deepcopy(wall_point_inp)
+    plane1 = copy.deepcopy(plane1_inp)
+    plane2 = copy.deepcopy(plane2_inp)
+    plane1 = correct_plane_direction(plane1)        
+    plane2 = correct_plane_direction(plane2)        
+    
+    if(math.fabs(plane1.d) > math.fabs(plane2.d)):
+        estimated_wall_center = (0.5 * (math.fabs(plane1.d) * np.array([plane1.nx, plane1.ny, plane1.nz]) - math.fabs(plane2.d) *  np.array([plane2.nx, plane2.ny, plane2.nz]))) + math.fabs(plane2.d) *  np.array([plane2.nx, plane2.ny, plane2.nz])
+    else:
+        estimated_wall_center = (0.5 * (math.fabs(plane2.d) * np.array([plane2.nx, plane2.ny, plane2.nz]) - math.fabs(plane1.d) * np.array([plane1.nx, plane1.ny, plane1.nz]))) + math.fabs(plane1.d) * np.array([plane1.nx, plane1.ny, plane1.nz])
+
+    estimated_wall_center_normalized = estimated_wall_center[:3] / np.linalg.norm(estimated_wall_center)
+    final_wall_center =  estimated_wall_center[:3] + (wall_point -  np.dot(wall_point, estimated_wall_center_normalized) * estimated_wall_center_normalized)
+
+    return final_wall_center       
+
+
+def correct_plane_direction(plane):
+    if(plane.d > 0):
+        plane.nx = -1 * plane.nx
+        plane.ny = -1 * plane.ny
+        plane.nz = -1 * plane.nz
+        plane.d = -1 * plane.d
+    
+    return plane 

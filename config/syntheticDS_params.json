@@ -3,7 +3,7 @@
     "invariants": {
         "points": {
             "0": {
-                "sigma": 0.5,
+                "sigma": 0.2,
                 "epsilon": 0.2,
                 "mindist": 0
             }
@@ -12,13 +12,13 @@
             "0": {
                 "sigp": 0.5,
                 "epsp": 0.2,
-                "sign": 0.05,
+                "sign": 0.1,
                 "epsn": 0.1
             },
             "1": {
                 "sigp": 0.5,
                 "epsp": 0.1,
-                "sign": 0.05,
+                "sign": 0.1,
                 "epsn": 0.2
             },
             "floor": {

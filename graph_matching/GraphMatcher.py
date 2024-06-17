@@ -40,7 +40,7 @@ class GraphMatcher():
         self.graphs[graph_name] = graph_wrapper
 
 ###  The match function performs a detailed, multi-level graph matching operation between two graphs.
-    def match(self, G1_name, G2_name):
+    def match(self, G1_name, G2_name, add_deviations = False):
         if self.log_level > 0:
             self.logger.info("BENNINGING match")
 
@@ -311,7 +311,8 @@ class GraphMatcher():
             if len(list(match_graph.get_nodes_ids())) != 0 and self.log_level > 0:
                 self.draw_as_match_graph(match_graph, "match graph")
 
-            # self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
+            if add_deviations:
+                self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
             final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
 
         else:
@@ -998,7 +999,7 @@ class GraphMatcher():
             MG_ws_node_attrs_dev = self.stored_match_graph_dev.get_attributes_of_node(0)
 
             MG_planes_match = MG_ws_node_attrs["match"]
-            self.logger.info(f"flag uniquely matched plane pairs {len(MG_planes_match), MG_planes_match}")
+            # self.logger.info(f"flag uniquely matched plane pairs {len(MG_planes_match), MG_planes_match}")
             MG1_planes_match_nodes = np.array(list(MG_planes_match))[:,0]
             MG2_planes_match_nodes = np.array(list(MG_planes_match))[:,1]
             all_walls_gi1, all_walls_gi2, all_walls_A_numerical, all_walls_nodes1, all_walls_nodes2 = self.generate_clipper_input(G1_full, G2_full, MG_ws_node_attrs["match"], "Geometric_info")
@@ -1010,13 +1011,13 @@ class GraphMatcher():
 
             for MG_room_match in MG_rooms_match:
                 G1_room_planes = G1_full.get_neighbourhood_graph(MG_room_match[0]).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
-                self.logger.info(f"flag G1_room_planes {len(G1_room_planes), G1_room_planes}")
+                # self.logger.info(f"flag G1_room_planes {len(G1_room_planes), G1_room_planes}")
                 G2_room_planes = G2_full.get_neighbourhood_graph(MG_room_match[1]).filter_graph_by_node_attributes({"type": swept_levels[1]}).get_nodes_ids()
-                self.logger.info(f"flag G2_room_planes {len(G2_room_planes), G2_room_planes}")
+                # self.logger.info(f"flag G2_room_planes {len(G2_room_planes), G2_room_planes}")
                 G1_unmatched_planes = list(set(G1_room_planes) - set(MG1_planes_match_nodes))
-                self.logger.info(f"flag G1_unmatched_planes {len(G1_unmatched_planes), G1_unmatched_planes}")
+                # self.logger.info(f"flag G1_unmatched_planes {len(G1_unmatched_planes), G1_unmatched_planes}")
                 G2_unmatched_planes = list(set(G2_room_planes) - set(MG2_planes_match_nodes))
-                self.logger.info(f"flag G2_unmatched_planes {len(G2_unmatched_planes), G2_unmatched_planes}")
+                # self.logger.info(f"flag G2_unmatched_planes {len(G2_unmatched_planes), G2_unmatched_planes}")
 
                 if len(G1_unmatched_planes) != 0 and len(G2_unmatched_planes) != 0:
                     ### Use clipper utility function to compute consistency
@@ -1035,7 +1036,7 @@ class GraphMatcher():
                     good_pairs = interlevel_scores >= self.params["thresholds"]["global_intralevel_deviations"][f"{swept_levels[1]}"]
                     filtered_good_pairs_score = interlevel_scores[good_pairs]
                     filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_and_parent_numerical[:len(wild_nodes_combination)][good_pairs], wild_nodes1, wild_odes2))
-                    self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
+                    # self.logger.info(f"flag good / all pairs {len(filtered_good_pairs_categorical)} {len(interlevel_scores)}")
 
                     for i, filtered_good_pair_categorical in enumerate(filtered_good_pairs_categorical):
                         # self.logger.info(f"dbg including DEVIATION of pair {filtered_good_pair_categorical}")
