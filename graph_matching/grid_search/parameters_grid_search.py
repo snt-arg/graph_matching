@@ -12,6 +12,7 @@ from skopt import gp_minimize
 from skopt.space import Real, Integer, Categorical
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import timeout_decorator
 
 from graph_wrapper.GraphWrapper import GraphWrapper
@@ -120,8 +121,12 @@ def score_estimated_match(estimated_match, gt_match):
         false_positives = len(estimated_match_pairs) - true_positives
         false_negatives = len(gt_match_pairs) - true_positives
         score = (true_positives - FP_penalization*false_positives - FN_penalization*false_negatives)/len(gt_match_pairs)
-    else:
+
+    elif len(estimated_match) == 1:
         score = 0.0
+
+    elif len(estimated_match) > 1:
+        score = None
     
     return score
 
@@ -228,7 +233,6 @@ def divide_shared_planes(agraph, sgraph, GT):
 def create_deviated_graphs(SEs, Rs, Ps, Ds, I):
     dev_dicts_stack = []
     for se in SEs:
-        print(f"dbg se {se}")
         graph_dict_prior_original = parse_full_graph("Prior",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/A-Graphs/T0")
         graph_dict_online_original = parse_full_graph("Online",f"/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/graph_logs/SE{se}/S-Graphs/RAll")
         prior_graph_original = GraphWrapper(graph_def = graph_dict_prior_original)
@@ -292,7 +296,7 @@ def create_deviated_graphs(SEs, Rs, Ps, Ds, I):
 
 
 @timeout_decorator.timeout(200)  # Set the timeout to 300 seconds (5 minutes)
-def experiments_stack(dev_dataset,matching_params_comb, base_matching_params, param_space):
+def experiments_stack(dev_dataset,matching_params_comb, base_matching_params, param_space, uniques, line_unique):
     if matching_params_comb:
         matching_params_comb_cp = copy.deepcopy(matching_params_comb)
         base_matching_params_cp = copy.deepcopy(base_matching_params)
@@ -301,32 +305,30 @@ def experiments_stack(dev_dataset,matching_params_comb, base_matching_params, pa
         matching_params = copy.deepcopy(base_matching_params)
 
     scores = Parallel(n_jobs=-1)(delayed(one_experiment)(deviated_graph_dict, matching_params) for deviated_graph_dict in dev_dataset)
-
-    # if len(ax1.lines) == 0:
-    #     for i, score in enumerate(scores):
-    #         line1, = ax1.plot([], [], label=f'Datset {i}')
-    #         line1.set_data([1], [score])
-    # else:
-    #     for i, line1 in enumerate(ax1.lines):
-    #         dataset_scores = line1.get_data()[1]
-    #         dataset_scores.append(scores[i])
-    #         line1.set_data(range(1, len(dataset_scores) + 1), dataset_scores)
-        # ax1.legend()  # Update legend after each run
-
-    return np.mean(scores)
+    not_null_scores = list(filter(lambda item: item is not None, scores))
+    score = np.mean(not_null_scores) * len(not_null_scores) / len(scores)
+    uniques.append(len(not_null_scores) / len(scores))
+    line_unique.set_data(range(1, len(uniques) + 1), uniques)
+    return score
 
 
 def bayesian_optimization(random_state, iter_num, param_space):
-    n_calls = 100
+    n_calls = 500
     SEs = [1,2]
     Rs = [2]
-    Ps = [1,2]
+    Ps = [1]
     Ds = [0.5,0.15]
     I = 100
-    deviated_graphs =  create_deviated_graphs(SEs, Rs, Ps, Ds, I)
+
+    color = random.choice(list(mcolors.CSS4_COLORS.keys()))
+    line_score, = ax_opt.plot([], [], label=f'Run {iter_num} - score', color = color)
+    line_unique, =ax_opt.plot([], [], label=f'Run {iter_num} - unique', linestyle='dashed', color = color)
+    uniques = []
+    
+    deviated_graphs = create_deviated_graphs(SEs, Rs, Ps, Ds, I)
     def objective(matching_params_comb):
         try:
-            return -experiments_stack(deviated_graphs, matching_params_comb, matching_params_original, param_space)  # Negative score for minimization
+            return -experiments_stack(deviated_graphs, matching_params_comb, matching_params_original, param_space, uniques, line_unique)  # Negative score for minimization
         except timeout_decorator.TimeoutError:
             return 0.0  # Return a very high score if the evaluation times out
     
@@ -343,13 +345,14 @@ def bayesian_optimization(random_state, iter_num, param_space):
     # initial_values = [0.19639775545292656, 0.3302660870283677, 0.17722970027511514, 0.4435165737690735, 0.6592836339795224, 0.553410484295661, 0.6622208134086656, 0.6027381635820919]
 
     with tqdm(total= n_calls, desc=f"Run ", position=1, leave=False) as pbar_inner:
-        def update_callback(res, scores, iter_num, line):
+        def update_callback(res, scores, iter_num, line_score):
             best_score_index = np.argmin(res.func_vals)
             best_score = -res.func_vals[best_score_index]  # Convert back to positive score
+            score = res.func_vals[-1]
             pbar_inner.set_description(f"Best Score: {best_score:.4f}")
             pbar_inner.update(1)
-            scores.append(best_score)
-            line.set_data(range(1, len(scores) + 1), scores)
+            scores.append(-score)
+            line_score.set_data(range(1, len(scores) + 1), scores)
             ax_opt.relim()  # Recompute the limits
             ax_opt.autoscale_view()  # Update the view
             # ax1.relim()  # Recompute the limits
@@ -358,7 +361,6 @@ def bayesian_optimization(random_state, iter_num, param_space):
             plt.pause(0.01)
 
         scores = []
-        line, = ax_opt.plot([], [], label=f'Run {iter_num}')
         ax_opt.legend()  # Update legend after each run
         # Run Bayesian optimization
         result = gp_minimize(
@@ -367,7 +369,7 @@ def bayesian_optimization(random_state, iter_num, param_space):
             n_calls=n_calls,  # Number of iterations
             random_state=random_state,
             # x0=initial_values,
-            callback=[lambda res: update_callback(res, scores, iter_num, line)]
+            callback=[lambda res: update_callback(res, scores, iter_num, line_score)]
         )
 
     # Best parameters and score
@@ -377,14 +379,14 @@ def bayesian_optimization(random_state, iter_num, param_space):
     print("Best Parameters:", best_params)
     print("Best Score:", best_score)
 
-    best_params_full = match_params_update(best_params, matching_params_original)
+    best_params_full = match_params_update(best_params, matching_params_original, param_space)
 
     return best_params, best_score, best_params_full
 
 def optimize(target = "unique"):
     best_overall_params = None
     best_overall_score = -np.inf
-    n_opimizations = 5
+    n_opimizations = 10
 
     if target == 'unique':
         param_space = unique_param_space
@@ -398,6 +400,7 @@ def optimize(target = "unique"):
                 best_overall_score = score
             pbar_outer.update(1)  # Update the outer progress bar
             plt.savefig(f'{target}_optimization_progress.png')
+            plt.savefig(f'./pics/{target}_optimization_progress_{i}.png')
             # Save the best parameters and score to disk
             best_params_dict = {dim.name: best_overall_params[i] for i,dim in enumerate(param_space)}
 
@@ -432,25 +435,30 @@ def evaluate(target = "unique"):
     if target == 'unique':
         param_space = unique_param_space
 
+
     # R_range = np.arange(0.1,0.4,0.05)
     P_range = np.arange(1,5,1)
     maxD_range = np.arange(0.0,0.8,0.05)
     for p in P_range:
-        line, = ax_eval.plot([], [], label=f'{p} dev planes')
+        color = random.choice(list(mcolors.CSS4_COLORS.keys()))
+        line_score, = ax_eval.plot([], [], label=f'{p} dev planes - score', color = color)
+        line_unique,= ax_eval.plot([], [], label=f'{p} dev planes - unique', linestyle='dashed', color = color)
+        uniques = []
         ax_eval.legend()  # Update legend after each run
         scores = []
         xs = []
         for maxd in maxD_range:
-            SEs = [1,2,5]
+            SEs = [1,2]
             Rs = [2]
             Ps = [p]
             Ds = [0.05,maxd]
             I = 50
-            deviated_graphs =  create_deviated_graphs(SEs, Rs, Ps, Ds, I)
-            score = experiments_stack(deviated_graphs, None, best_matching_params, param_space)
+            
+            deviated_graphs = create_deviated_graphs(SEs, Rs, Ps, Ds, I)
+            score = experiments_stack(deviated_graphs, None, best_matching_params, param_space, uniques, line_unique)
             scores.append(score)
             xs.append(maxd)
-            line.set_data(xs, scores)
+            line_score.set_data(xs, scores)
             ax_eval.relim()  # Recompute the limits
             ax_eval.autoscale_view()  # Update the view
             plt.draw()
@@ -475,20 +483,26 @@ paramter_mapping = { ### MUST MAINTAIN ORDER AS IN matching_params_comb
 "thr_locintra_room": ["thresholds", "local_intralevel", "Finite Room", 0],
 "thr_locintra_plane": ["thresholds", "local_intralevel", "Plane", 0],
 "thr_locinter_roomplane": ["thresholds", "local_interlevel", "Finite Room - Plane", 0],
-"thr_global": ["thresholds", "global", 0]
+"thr_global": ["thresholds", "global", 0],
+"db_eps": ["dbscan", "eps"]
 }
 
 unique_param_space = [
     # Integer(7, 7, name='solver_iters'),
     Real(0.01, 0.9, name='inv_point_0_eps'),
     Real(0.01, 0.9, name='inv_pointnormal_0_epsp'),
+    Real(0.01, 0.9, name='inv_pointnormal_0_sigp'),
     Real(0.01, 0.9, name='inv_pointnormal_0_epsn'),
+    Real(0.01, 0.9, name='inv_pointnormal_0_sign'),
     Real(0.01, 0.9, name='inv_pointnormal_1_epsp'),
+    Real(0.01, 0.9, name='inv_pointnormal_1_sigp'),
     Real(0.01, 0.9, name='inv_pointnormal_1_epsn'),
+    Real(0.01, 0.9, name='inv_pointnormal_1_sign'),
     Real(0.01, 0.9, name='thr_locintra_room'),
     Real(0.01, 0.9, name='thr_locintra_plane'),
     Real(0.01, 0.9, name='thr_locinter_roomplane'),
-    Real(0.01, 0.9, name='thr_global')
+    Real(0.01, 0.9, name='thr_global'),
+    Real(0.001, 0.1, name='db_eps')
 ]
 
 # matching_params_comb_keys = ["inv_point_0_eps", "inv_point_0_sig","inv_pointnormal_0_sigp", "inv_pointnormal_0_epsp", \
@@ -496,7 +510,7 @@ unique_param_space = [
 #                              "inv_pointnormal_1_sign", "inv_pointnormal_1_epsn", "inv_pointnormal_floor_eps", "thr_locintra_room",\
 #                              "thr_locintra_plane", "thr_locinter_roomplane", "thr_global"]
                              
-json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/config/syntheticDS_params.json"
+json_file_path = "/home/adminpc/workspaces/reasoning_ws/src/situational_graphs_matching/graph_matching/grid_search/best_unique_params.json"
 with open(json_file_path) as json_file:
     matching_params_original = json.load(json_file)
 
@@ -513,8 +527,8 @@ ax_opt.set_title('Bayesian Optimization Progress - Runs')
 # ax1.set_title('Bayesian Optimization Progress - Datasets')
 
 
-optimize()
-# evaluate()
+# optimize()
+evaluate()
 
 plt.ioff()
 plt.show()

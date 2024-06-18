@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 import transforms3d.euler as eul
-import keyboard
 
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
