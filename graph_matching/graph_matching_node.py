@@ -156,7 +156,7 @@ class GraphMatchingNode(Node):
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
-            success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online")
+            success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online", add_deviations=True)
             for match in matches:
                 self.get_logger().info(f"flag new consistent match")
                 for i in match:
@@ -174,7 +174,7 @@ class GraphMatchingNode(Node):
 
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
-                # self.unique_match_publisher.publish(unique_match_msg)
+                self.unique_match_publisher.publish(unique_match_msg)
                 unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
                 self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
                 unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])
