@@ -40,12 +40,12 @@ from builtin_interfaces.msg import Duration as DurationMsg
 from rclpy.parameter import Parameter
 from rclpy.parameter import ParameterType
 
-from reasoning_msgs.srv import SubgraphMatch as SubgraphMatchSrv
-from reasoning_msgs.msg import Graph as GraphMsg
-from reasoning_msgs.msg import Match as MatchMsg
-from reasoning_msgs.msg import Node as NodeMsg
-from reasoning_msgs.msg import Edge as EdgeMsg
-from reasoning_msgs.msg import Attribute as AttributeMsg
+from situational_graphs_reasoning_msgs.srv import SubgraphMatch as SubgraphMatchSrv
+from situational_graphs_reasoning_msgs.msg import Graph as GraphMsg
+from situational_graphs_reasoning_msgs.msg import Match as MatchMsg
+from situational_graphs_reasoning_msgs.msg import Node as NodeMsg
+from situational_graphs_reasoning_msgs.msg import Edge as EdgeMsg
+from situational_graphs_reasoning_msgs.msg import Attribute as AttributeMsg
 
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
@@ -199,14 +199,14 @@ class GraphMatchingNode(Node):
 
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
-                # self.unique_match_publisher.publish(unique_match_msg)
+                self.unique_match_publisher.publish(unique_match_msg)
                 unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
                 self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
                 unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
                 unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
-                time.sleep(999)
+                # time.sleep(999)
 
 
     def subgraph_match_srv_callback(self, request, response):

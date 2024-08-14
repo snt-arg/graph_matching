@@ -1,5 +1,5 @@
 {
-    "verbose" : true,
+    "verbose": true,
     "invariants": {
         "points": {
             "0": {
@@ -25,17 +25,27 @@
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.2, 0.25],
-            "Finite Room" : [0.2]
+            "Plane": [
+                0.2,
+                0.25
+            ],
+            "Finite Room": [
+                0.2
+            ]
         },
         "local_interlevel": {
-            "Finite Room - Plane" : [0.2, 0.5]
+            "Finite Room - Plane": [
+                0.2,
+                0.5
+            ]
         },
         "global_intralevel_deviations": {
-            "Plane" : 0.3,
-            "Finite Room" : 0.2
+            "Plane": 0.3,
+            "Finite Room": 0.2
         },
-        "global": [0.2]
+        "global": [
+            0.2
+        ]
     },
     "dbscan": {
         "eps": 0.01,
@@ -43,7 +53,8 @@
     },
     "levels": {
         "name": [
-            "Finite Room", "Plane"
+            "Finite Room",
+            "Plane"
         ],
         "datatype": {
             "floor": "points",

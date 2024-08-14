@@ -15,9 +15,9 @@ sys.path.append(graph_matching_dir)
 from .Clipper import Clipper
 from .utils import transform_plane_definition, multilist_combinations
 
-graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper")
+graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"situational_graphs_wrapper")
 sys.path.append(graph_wrapper_dir)
-from graph_wrapper.GraphWrapper import GraphWrapper
+from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 
 
 class GraphMatcher():
@@ -301,7 +301,7 @@ class GraphMatcher():
             if len(list(match_graph.get_nodes_ids())) != 0:
                 self.draw_as_match_graph(match_graph, "match graph")
 
-            # self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
+            self.add_deviated_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
             final_combinations = self.gather_final_combinations_from_match_graph(G1_full, G2_full, match_graph, swept_levels)
 
         else:
@@ -802,13 +802,21 @@ class GraphMatcher():
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
             ### END
+            consistency_avg = clipper.get_score_all_inital_u()
+            floor_condition = True
 
-            if consistency_avg >= self.params["thresholds"]["global"]:
+            if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
             # for consistent_combination in consistent_combinations:
             #     self.logger.info(f"flag consistent_combination 1 {consistent_combination['match']}")
 
-        return consistent_combinations
+        if consistent_combinations:
+            max_match_length = max([len(combination["match"]) for combination in consistent_combinations])
+            longest_consistent_combinations = [combination for combination in consistent_combinations if len(combination["match"]) == max_match_length]
+        else:
+            longest_consistent_combinations = []
+        
+        return longest_consistent_combinations
 
 
     def select_high_level_groups(self, match_graph, consistent_combinations, merged_levels):
@@ -983,3 +991,66 @@ class GraphMatcher():
         options = {'node_color': node_color, 'node_size': 50, 'width': 2, 'with_labels' : True,\
                 "node_size" : node_size, "linewidths" : linewidths, "edgecolors" : "black"}
         match_graph.draw(name, options = options, show = self.params["verbose"])
+    def assess_floor_consistency(self, data1, data2, merged_level):
+        def compute_transformation(points_a, normals_a, points_b, normals_b):
+            # Compute the centroids of both sets
+            centroid_a = np.mean(points_a, axis=0)
+            centroid_b = np.mean(points_b, axis=0)
+
+            # Translate points to align centroids with the origin
+            points_a_centered = points_a - centroid_a
+            points_b_centered = points_b - centroid_b
+
+            # Compute the optimal rotation matrix using Singular Value Decomposition (SVD)
+            H = np.dot(points_a_centered.T, points_b_centered)
+            U, S, Vt = np.linalg.svd(H)
+            rotation_matrix = np.dot(Vt.T, U.T)
+
+            # Ensure the rotation matrix is proper (det(rotation) should be 1)
+            if np.linalg.det(rotation_matrix) < 0:
+                Vt[2, :] *= -1
+                rotation_matrix = np.dot(Vt.T, U.T)
+
+            # Apply the rotation matrix to the normals as well
+            normals_a_transformed = np.dot(normals_a, rotation_matrix.T)
+
+            # Check for reflection by comparing normals
+            reflection_needed = False
+            for normal_a_transformed, normal_b in zip(normals_a_transformed, normals_b):
+                if np.dot(normal_a_transformed, normal_b) < 0:
+                    reflection_needed = True
+                    break
+
+            # If reflection is needed, apply it to the rotation matrix
+            if reflection_needed:
+                reflection_matrix = np.diag([1, 1, -1])
+                rotation_matrix = np.dot(rotation_matrix, reflection_matrix)
+                normals_a_transformed = np.dot(normals_a, rotation_matrix.T)
+
+            # Compute the translation vector
+            translation_vector = centroid_b - np.dot(centroid_a, rotation_matrix.T)
+
+            return translation_vector, rotation_matrix, reflection_needed
+
+
+        if merged_level == "Finite Room":
+            data1 = np.concatenate(([ data1, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
+            data2 = np.concatenate(([ data2, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
+        a_all = np.concatenate(([ data1, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
+        b_all = np.concatenate(([ data2, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
+
+        points_a, normals_a = a_all[:, :3], a_all[:, -3:]
+        points_b, normals_b = b_all[:, :3], b_all[:, -3:]
+        translation, final_matrix, reflection_needed = compute_transformation(points_a, normals_a, points_b, normals_b)
+        rotation_cond = final_matrix[0,0] > 0.7 and final_matrix[1,1] > 0.7 and abs(final_matrix[0,1]) < 0.2
+        final_cond = not(reflection_needed) and rotation_cond
+        # if self.log_level > 4:
+        #     self.plot_geometry_setlist("floor detection", [a_all, b_all], self.params["levels"]["datatype"][merged_level])
+        #     plt.draw()
+        #     plt.pause(0.001)
+            # print(f"dbg floor_cond {final_cond}")
+            # print("Press any key to continue...")
+            # key = keyboard.wait()
+            # print(f"You pressed {key}")
+
+        return final_cond
