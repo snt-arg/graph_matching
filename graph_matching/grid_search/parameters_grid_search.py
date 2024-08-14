@@ -527,8 +527,8 @@ ax_opt.set_title('Bayesian Optimization Progress - Runs')
 # ax1.set_title('Bayesian Optimization Progress - Datasets')
 
 
-# optimize()
-evaluate()
+optimize()
+# evaluate()
 
 plt.ioff()
 plt.show()

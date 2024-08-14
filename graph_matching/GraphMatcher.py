@@ -871,7 +871,8 @@ class GraphMatcher():
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
             # self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1])
+            # floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1])
+            floor_condition = True
 
             if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
                 # self.logger.info(f"dbg consistency_avg IN {consistency_avg}")

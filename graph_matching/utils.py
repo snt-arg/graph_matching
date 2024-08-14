@@ -288,3 +288,66 @@ def correct_plane_direction(plane):
         plane.d = -1 * plane.d
     
     return plane 
+
+def closest_point_on_segment(P, A, B):
+    """
+    Find the closest point on the segment AB to the point P.
+    
+    Parameters:
+    P (tuple or list): The point (x, y) for which we want to find the closest point on the segment.
+    A (tuple or list): The first endpoint (x, y) of the segment.
+    B (tuple or list): The second endpoint (x, y) of the segment.
+    
+    Returns:
+    tuple: The closest point (x, y) on the segment AB to the point P.
+    """
+    P = np.array(P)
+    A = np.array(A)
+    B = np.array(B)
+    
+    # Vector AB
+    AB = B - A
+    
+    # Vector AP
+    AP = P - A
+    
+    # Projection of vector AP onto AB (normalized by the length of AB squared)
+    t = np.dot(AP, AB) / np.dot(AB, AB)
+    
+    # Clamp t to the range [0, 1] to ensure the point lies on the segment
+    t = np.clip(t, 0, 1)
+    
+    # Compute the closest point on the segment
+    closest_point = A + t * AB
+    
+    return np.array(closest_point)
+
+def distance_between_points(P1, P2):
+    P1 = np.array(P1)
+    P2 = np.array(P2)
+    
+    distance = np.linalg.norm(P1 - P2)
+    
+    return distance
+
+def are_segments_collinear(segment1, segment2):
+    """
+    Check if two segments are collinear.
+
+    Parameters:
+    segment1 (tuple): ((x1, y1), (x2, y2)) coordinates of the first segment.
+    segment2 (tuple): ((x3, y3), (x4, y4)) coordinates of the second segment.
+
+    Returns:
+    bool: True if the segments are collinear, False otherwise.
+    """
+    
+    def is_collinear(p1, p2, p3):
+        # Calculate the determinant of the matrix formed by the vectors (p2-p1) and (p3-p1)
+        return np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0)
+    
+    p1, p2 = np.array(segment1[0][:2]), np.array(segment1[1][:2])
+    p3, p4 = np.array(segment2[0][:2]), np.array(segment2[1][:2])
+    
+    # Check if all points are collinear
+    return is_collinear(p1, p2, p3) and is_collinear(p1, p2, p4)
