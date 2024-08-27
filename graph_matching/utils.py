@@ -346,7 +346,7 @@ def are_segments_collinear(segment1, segment2):
         # Calculate the determinant of the matrix formed by the vectors (p2-p1) and (p3-p1)
         # print(f"dbg np.linalg.det(np.array([p2 - p1, p3 - p1])) {np.linalg.det(np.array([p2 - p1, p3 - p1]))}")
         # print(f"dbg np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 10.) {np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0, 2.)}")
-        return np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0, 0.1, 0.1)
+        return np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0, 0.01, 0.1)
     
     p1, p2 = np.array(segment1[0][:2]), np.array(segment1[1][:2])
     p3, p4 = np.array(segment2[0][:2]), np.array(segment2[1][:2])
