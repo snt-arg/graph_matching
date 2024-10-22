@@ -123,10 +123,43 @@ def multilist_combinations(lists):
 def relative_positions(ws_1_def, ws_2_def):
     center_1, center_2 = np.array(ws_1_def["center"]), np.array(ws_2_def["center"])
     rel_pos_1 = center_2 - center_1
-    rel_pos_2 = -rel_pos_1
+    return rel_pos_1
 
-    return rel_pos_1, rel_pos_2
+def relative_normals(ws_1_def, ws_2_def):
+    normal_1, normal_2 = np.array(ws_1_def["normal"]), np.array(ws_2_def["normal"])
+    dot_product = normal_1[0] * normal_2[0] + normal_1[1] * normal_2[1]
+    
+    # Calculate the magnitudes of the vectors
+    magnitude_v1 = math.sqrt(normal_1[0]**2 + normal_1[1]**2)
+    magnitude_v2 = math.sqrt(normal_2[0]**2 + normal_2[1]**2)
+    
+    # Calculate the cosine of the angle
+    cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
+    
+    # Compute the angle in radians and then convert to degrees
+    angle_radians = math.acos(cos_theta)
+    angle_degrees = math.degrees(angle_radians)
 
+    return angle_degrees
+
+def relative_geometry(ws_1_def, ws_2_def):
+    normal_1, normal_2 = np.array(ws_1_def["normal"]), np.array(ws_2_def["normal"])
+    normal_1 = normal_1 / np.linalg.norm(normal_1)
+    normal_2 = normal_2 / np.linalg.norm(normal_2)
+
+    rel_pos = relative_positions(ws_1_def, ws_2_def)
+    centroids_distance = np.linalg.norm(rel_pos)
+    rel_pos_normalized = rel_pos / centroids_distance
+    cos_centroid_normal = (normal_1[0] * rel_pos_normalized[0] + normal_1[1] * rel_pos_normalized[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(rel_pos_normalized[0]**2 + rel_pos_normalized[1]**2))
+    cos_centroid_normal = max(-1, min(1, cos_centroid_normal))
+    angle_centroid_degrees = math.degrees(math.acos(cos_centroid_normal)) + 90
+    cos_normals = (normal_1[0] * normal_2[0] + normal_1[1] * normal_2[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(normal_2[0]**2 + normal_2[1]**2))
+    cos_normals = max(-1, min(1, cos_normals))
+    angle_normals = math.degrees(math.acos(cos_normals)) 
+
+    geometry = [centroids_distance, angle_centroid_degrees, angle_normals]
+
+    return geometry
 
 
 def segments_distance(ws_1_def, ws_2_def):
@@ -346,7 +379,7 @@ def are_segments_collinear(segment1, segment2):
         # Calculate the determinant of the matrix formed by the vectors (p2-p1) and (p3-p1)
         # print(f"dbg np.linalg.det(np.array([p2 - p1, p3 - p1])) {np.linalg.det(np.array([p2 - p1, p3 - p1]))}")
         # print(f"dbg np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 10.) {np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0, 2.)}")
-        return np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0, 0.01, 0.2)
+        return np.isclose(np.linalg.det(np.array([p2 - p1, p3 - p1])), 0,  0.01, 0.1)
     
     p1, p2 = np.array(segment1[0][:2]), np.array(segment1[1][:2])
     p3, p4 = np.array(segment2[0][:2]), np.array(segment2[1][:2])
