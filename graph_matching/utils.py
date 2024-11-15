@@ -157,7 +157,7 @@ def relative_geometry(ws_1_def, ws_2_def):
     cos_normals = max(-1, min(1, cos_normals))
     angle_normals = math.degrees(math.acos(cos_normals)) 
 
-    geometry = [centroids_distance, angle_centroid_degrees, angle_normals]
+    geometry = [rel_pos, centroids_distance, angle_centroid_degrees, angle_normals]
 
     return geometry
 
