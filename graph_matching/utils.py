@@ -149,6 +149,8 @@ def relative_geometry(ws_1_def, ws_2_def):
 
     rel_pos = relative_positions(ws_1_def, ws_2_def)
     centroids_distance = np.linalg.norm(rel_pos)
+    if centroids_distance == 0:
+        print(f"Matching utlis: WARNING centroids_distance equal to 0.")
     rel_pos_normalized = rel_pos / centroids_distance
     cos_centroid_normal = (normal_1[0] * rel_pos_normalized[0] + normal_1[1] * rel_pos_normalized[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(rel_pos_normalized[0]**2 + rel_pos_normalized[1]**2))
     cos_centroid_normal = max(-1, min(1, cos_centroid_normal))
