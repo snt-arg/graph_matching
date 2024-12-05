@@ -152,12 +152,18 @@ def relative_geometry(ws_1_def, ws_2_def):
     if centroids_distance == 0:
         print(f"Matching utlis: WARNING centroids_distance equal to 0.")
     rel_pos_normalized = rel_pos / centroids_distance
-    cos_centroid_normal = (normal_1[0] * rel_pos_normalized[0] + normal_1[1] * rel_pos_normalized[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(rel_pos_normalized[0]**2 + rel_pos_normalized[1]**2))
-    cos_centroid_normal = max(-1, min(1, cos_centroid_normal))
-    angle_centroid_degrees = math.degrees(math.acos(cos_centroid_normal)) + 90
-    cos_normals = (normal_1[0] * normal_2[0] + normal_1[1] * normal_2[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(normal_2[0]**2 + normal_2[1]**2))
-    cos_normals = max(-1, min(1, cos_normals))
-    angle_normals = math.degrees(math.acos(cos_normals)) 
+    # cos_centroid_normal = (normal_1[0] * rel_pos_normalized[0] + normal_1[1] * rel_pos_normalized[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(rel_pos_normalized[0]**2 + rel_pos_normalized[1]**2))
+    # cos_centroid_normal = max(-1, min(1, cos_centroid_normal))
+    # angle_centroid_degrees = math.degrees(math.acos(cos_centroid_normal)) + 90
+    # cos_normals = (normal_1[0] * normal_2[0] + normal_1[1] * normal_2[1]) / (math.sqrt(normal_1[0]**2 + normal_1[1]**2) * math.sqrt(normal_2[0]**2 + normal_2[1]**2))
+    # cos_normals = max(-1, min(1, cos_normals))
+    # angle_normals = math.degrees(math.acos(cos_normals))
+    
+    ang_c2 = math.degrees(math.atan2(rel_pos_normalized[1],rel_pos_normalized[0]))
+    ang_n1 = math.degrees(math.atan2(normal_1[1],normal_1[0]))
+    ang_n2 = math.degrees(math.atan2(normal_2[1],normal_2[0]))
+    angle_centroid_degrees = (ang_c2 - ang_n1 + 90)%360
+    angle_normals = (ang_n2 - ang_n1)%360
 
     geometry = [rel_pos, centroids_distance, angle_centroid_degrees, angle_normals]
 
