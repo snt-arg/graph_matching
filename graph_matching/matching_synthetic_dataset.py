@@ -6,15 +6,15 @@ import time
 from GraphMatcher import GraphMatcher
 
 reasoning_msgs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-with open(os.path.join(reasoning_msgs,"config", "syntheticDS_params_synthetic.json")) as f:
+with open(os.path.join(reasoning_msgs,"graph_matching/config", "syntheticDS_params_synthetic.json")) as f:
     syntheticDS_params = json.load(f)
 
-synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_datasets", "graph_datasets")
+synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"situational_graphs_datasets/src", "graph_datasets")
 sys.path.append(synthetic_datset_dir)
+print(f"flag synthetic_datset_dir {synthetic_datset_dir}")
 from SyntheticDatasetGenerator import SyntheticDatasetGenerator
 from graph_visualizer import visualize_nxgraph
-
-with open(os.path.join(os.path.dirname(synthetic_datset_dir),"config", "graph_matching.json")) as f:
+with open(os.path.join(os.path.dirname(synthetic_datset_dir),"graph_datasets/config", "graph_matching.json")) as f:
     synteticdataset_settings = json.load(f)
 
 
