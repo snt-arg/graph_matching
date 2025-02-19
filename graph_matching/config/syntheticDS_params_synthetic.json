@@ -51,5 +51,6 @@
             "room": "0",
             "ws": "0"
         }
-    }
+    },
+    "solver_iterations": 3
 }
