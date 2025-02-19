@@ -9,27 +9,39 @@ reasoning_msgs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__
 with open(os.path.join(reasoning_msgs,"graph_matching/config", "syntheticDS_params_synthetic.json")) as f:
     syntheticDS_params = json.load(f)
 
-synthetic_datset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"situational_graphs_datasets/src", "graph_datasets")
-sys.path.append(synthetic_datset_dir)
+synthetic_dataset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"situational_graphs_datasets/src", "graph_datasets")
+sys.path.append(synthetic_dataset_dir)
 
 from SyntheticDatasetGenerator import SyntheticDatasetGenerator
-from graph_visualizer import visualize_nxgraph
-with open(os.path.join(os.path.dirname(synthetic_datset_dir),"graph_datasets/config", "graph_matching.json")) as f:
+from graph_visualizer import visualize_nxgraph, visualize_nxgraph_pair
+with open(os.path.join(os.path.dirname(synthetic_dataset_dir),"graph_datasets/config", "graph_matching.json")) as f:
     synteticdataset_settings = json.load(f)
 
 
 ### GENERATE DATASET
 
 mode = "matching"
+# dataset_generator = SyntheticDatasetGenerator(synteticdataset_settings)
+# dataset_generator.create_dataset()
+# # # room_clustering_dataset = dataset_generator.get_ws2room_clustering_datalodaer()
+# #filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
+# filtered_nxdataset = dataset_generator.graphs
+
+### IMPORT DATASET
 dataset_generator = SyntheticDatasetGenerator(synteticdataset_settings)
-dataset_generator.create_dataset()
-# # room_clustering_dataset = dataset_generator.get_ws2room_clustering_datalodaer()
-filtered_nxdataset = dataset_generator.get_filtered_datset(["room", "ws"],["ws_belongs_room"])
+dataset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"AS_Datasets","test")
+dataset_generator.deserialize_dataset(path=dataset_dir, number = 20)
+filtered_nxdataset = dataset_generator.graphs
+a_import = filtered_nxdataset["original"][4]
+s_import = filtered_nxdataset["original"][4]
+visualize_nxgraph_pair(a_import,s_import, "both", visualize_alone=True)
+
 
 ### A-GRAPH
 #### ORIGINAL
 if mode =="matching":
-    a_graph = copy.deepcopy(filtered_nxdataset["original"][0])
+    a_graph = copy.deepcopy(a_import)
+    s_graph = copy.deepcopy(s_import) 
 #### VIEW 1
 elif mode == "multiview":
     base_matrix = dataset_generator.generate_base_matrix()
@@ -39,7 +51,6 @@ elif mode == "multiview":
     a_graph = copy.deepcopy(filtered_nxdataset["views"][0].filter_graph_by_node_attributes_containted({"view" : 1}))
     visualize_nxgraph(filtered_nxdataset["original"][0], "original")
 ####
-visualize_nxgraph(a_graph, "a_graph")
 a_graph_nodes_ids = copy.deepcopy(a_graph.get_nodes_ids())
 a_graph.stringify_node_ids()
 a_graph.name = "A-Graph"
@@ -69,15 +80,17 @@ if mode == "matching":
         deviated_room_attrs["Geometric_info"] = deviated_room_center
         deviated_room_attrs["viz_data"] = deviated_room_center[:2]
 
-    # Select nodes to deviate
-    s_graph = copy.deepcopy(filtered_nxdataset["original"][0])
-    deviated_room_id = list(s_graph.filter_graph_by_node_attributes_containted({"type" : "room"}).get_nodes_ids())[0]
-    s_graph.get_neighbourhood_graph(deviated_room_id)
-    ws_of_deviated_room = list(s_graph.get_neighbourhood_graph(deviated_room_id).filter_graph_by_node_attributes_containted({"type" : "ws"}).get_nodes_ids())
-    deviated_ws_id = ws_of_deviated_room[0]
-    deviation = np.array([0,0.3,0])
-    deviate_plane(deviated_room_id, deviated_ws_id, deviation)
-
+#     # Select nodes to deviate
+#     s_graph = copy.deepcopy(filtered_nxdataset["noise"][0])
+#     visualize_nxgraph(s_graph, "s_graph", visualize_alone=True)
+#     deviated_room_id = list(s_graph.filter_graph_by_node_attributes_containted({"type" : "room"}).get_nodes_ids())[0]
+#     visualize_nxgraph(s_graph.filter_graph_by_node_attributes_containted({"type" : "room"}), "deviated_room", visualize_alone=True)
+#     s_graph.get_neighbourhood_graph(deviated_room_id)
+#     ws_of_deviated_room = list(s_graph.get_neighbourhood_graph(deviated_room_id).filter_graph_by_node_attributes_containted({"type" : "ws"}).get_nodes_ids())
+#     visualize_nxgraph(s_graph.get_neighbourhood_graph(deviated_room_id).filter_graph_by_node_attributes_containted({"type" : "ws"}), "ws_of_deviated_room", visualize_alone=True)
+#     deviated_ws_id = ws_of_deviated_room[0]
+#     deviation = np.array([0,0.3,0])
+#     deviate_plane(deviated_room_id, deviated_ws_id, deviation)
 
 #### VIEW 2
 elif mode == "multiview":
@@ -88,7 +101,6 @@ elif mode == "multiview":
 
 # mapping = dict(zip(s_graph.get_nodes_ids(), list(np.array(s_graph.get_nodes_ids()) + len(a_graph_nodes_ids) + 1)))
 # s_graph.relabel_nodes(mapping)
-visualize_nxgraph(s_graph, "s_graph")
 s_graph.stringify_node_ids()
 s_graph.name = "S-Graph"
 s_graph_plot = copy.deepcopy(s_graph)
@@ -100,6 +112,9 @@ for node_id in list(s_graph.get_nodes_ids()):
 as_graph = a_graph_plot
 as_graph.add_nodes(s_graph_plot.get_attributes_of_all_nodes())
 as_graph.add_edges(s_graph_plot.get_attributes_of_all_edges())
+
+visualize_nxgraph(a_graph_plot, "a_graph", visualize_alone=True)
+visualize_nxgraph(s_graph_plot, "s_graph", visualize_alone=True)
 
 ### CREATE GRAPH MATCHER
 
@@ -119,7 +134,7 @@ graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
 
 ### MATCH
 # time.sleep(99)
-success, final_combinations = graph_matcher.match("A-Graph", "S-Graph")
+success, final_combinations, final_combinations_full, final_combinations_dev = graph_matcher.match("A-Graph", "S-Graph")
 for final_combination in final_combinations:
     print(f"flag new final combination")
     for i in final_combination:
