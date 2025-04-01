@@ -7,7 +7,7 @@ import os
 import torch.nn.functional as F
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, normalize
-
+import functools
 
 
 synthetic_dataset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"situational_graphs_datasets/src", "graph_datasets")
@@ -20,16 +20,6 @@ with open(os.path.join(os.path.dirname(synthetic_dataset_dir),"graph_datasets/co
 
 # Set PyGmTool backend
 pygm.set_backend('pytorch')
-
-# Load pickle files
-dataset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"AS_Datasets","test")
-print(dataset_dir)
-dataset = SyntheticDatasetGenerator(synteticdataset_settings)
-dataset.deserialize_dataset(digraphs = True, path = dataset_dir, number = 10)
-
-# Load graph data
-graph1 = dataset.graphs["original"][1]
-graph2 = dataset.graphs["original"][1]
 
 # One-hot encoding for node types
 node_type_mapping = {"room": [1, 0, 0], "wall": [0, 1, 0], "ws": [0, 0, 1]}
@@ -129,6 +119,58 @@ def normalize_features(node_features, edge_features):
 
     return normalized_node_features, normalized_edge_features
 
+def compute_affinity_matrix(g1_node_feat, g2_node_feat, g1_edge_feat, g2_edge_feat):
+
+    # Suppose these are shape [n1, d] in NumPy. Add batch dim for PyTorch: [1, n1, d]
+    g1_node_feat_torch = torch.tensor(g1_node_feat, dtype=torch.float32).unsqueeze(0)
+    g2_node_feat_torch = torch.tensor(g2_node_feat, dtype=torch.float32).unsqueeze(0)
+
+    # Edge features: also add batch dim if needed
+    g1_edge_feat_torch = torch.tensor(g1_edge_feat, dtype=torch.float32).unsqueeze(0)
+    g2_edge_feat_torch = torch.tensor(g2_edge_feat, dtype=torch.float32).unsqueeze(0)
+
+    # Convert to sparse format (batch mode)
+    # Check doc: some versions of pygm.utils.dense_to_sparse support batch; 
+    # others require manual looping. If not, do it unbatched (depends on PyGMTools version).
+    conn1, edge1 = pygm.utils.dense_to_sparse(g1_edge_feat_torch)  # shape [1, 2, E], [1, E]
+    conn2, edge2 = pygm.utils.dense_to_sparse(g2_edge_feat_torch)
+
+    # Now pass 1D n1, n2 => batch=1
+    n1 = torch.tensor([g1_node_feat.shape[0]])  # e.g. [16]
+    n2 = torch.tensor([g2_node_feat.shape[0]])  # e.g. [12]
+
+    def node_aff_fn(X, Y):
+        """
+        X, Y: shape [B, n, d], [B, m, d]
+        We want [B, n, m].
+        """
+        # Use batched matmul: shape [B, n, m]
+        return torch.bmm(X, Y.transpose(1, 2))
+
+    # Edge affinity
+    gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=1.0)
+
+    # Build the (batched) affinity matrix
+    K = pygm.utils.build_aff_mat(
+        g1_node_feat_torch, edge1, conn1,
+        g2_node_feat_torch, edge2, conn2,
+        n1, n2,  # shape [1], matches batch=1
+        edge_aff_fn=gaussian_aff,
+        node_aff_fn=node_aff_fn
+    )
+
+    print("K shape:", K.shape)  # [1, (n1*n2), (n1*n2)] for batch=1
+    return K
+
+# Load pickle files
+dataset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"AS_Datasets","test")
+print(dataset_dir)
+dataset = SyntheticDatasetGenerator(synteticdataset_settings)
+dataset.deserialize_dataset(digraphs = True, path = dataset_dir, number = 10)
+
+# Load graph data
+graph1 = dataset.graphs["original"][0]
+graph2 = dataset.graphs["noise"][0]
 
 # Extract features
 g1_node_feat, g1_edge_feat = extract_features(graph1)
@@ -149,6 +191,7 @@ print(g1_node_feat)
 print("Edge Features:")
 print(g1_edge_feat)
 
+# K = compute_affinity_matrix(g1_node_feat, g2_node_feat, g1_edge_feat, g2_edge_feat)
 
 # Create adjacency matrices, it ignores edge attributes
 adj1 = np.zeros((len(graph1.nodes), len(graph1.nodes)))
@@ -171,14 +214,16 @@ desired_dim = 1024
 g1_node_feat_padded = F.pad(g1_node_feat, (0, desired_dim - g1_node_feat.shape[1]))
 g2_node_feat_padded = F.pad(g2_node_feat, (0, desired_dim - g2_node_feat.shape[1]))
 
-# 
 # Apply PCA-GM model for graph matching
-match_result = pygm.pca_gm(
+match_result = pygm.ipca_gm(
     A1=adj1.to(torch.float32), A2=adj2.to(torch.float32),
     feat1=g1_node_feat_padded, feat2=g2_node_feat_padded,
-    pretrain='voc',
-    backend='pytorch'
+    pretrain='voc'
 )
+
+# X, net = pygm.ngm(K, return_network=True)
+
+# match_result = X
 
 # Convert to a DataFrame for better readability
 df_match = pd.DataFrame(match_result.detach().numpy())
@@ -187,11 +232,11 @@ matched = pygm.hungarian(match_result)
 df_matched = pd.DataFrame(matched)
 
 
-# Display the DataFrame in the terminal
-print("Graph Matching Matrix:")
-print(df_match.to_string(index=True, header=True))
-print("Hungarian:")
-print(df_matched.to_string(index=True, header=True))
+# # Display the DataFrame in the terminal
+# print("Graph Matching Matrix:")
+# print(df_match.to_string(index=True, header=True))
+# print("Hungarian:")
+# print(df_matched.to_string(index=True, header=True))
 
 gv.draw_graphs(graph1,graph2)
 gv.draw_graph_matching(graph1, graph2, matched, np.eye(len(graph1.nodes)))
