@@ -15,7 +15,7 @@ def plane_6_params_to_4_params(point_and_normal):
     point = np.array(point_and_normal[:3])
     normal = np.array(point_and_normal[3:6])
     closest_point = closest_point_on_line(point, np.array([0,0,0]), normal)
-    distance = -1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
+    distance = 1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
     return(np.concatenate((normal, [distance])))
 
 def closest_point_on_line(point, line_origin, line_normal):
@@ -394,3 +394,8 @@ def are_segments_collinear(segment1, segment2):
     
     # Check if all points are collinear
     return is_collinear(p1, p2, p3) and is_collinear(p1, p2, p4)
+
+# a = plane_6_params_to_4_params(np.array([1,1,0,-1,0,0]))
+# print(a)
+
+# print([a[0]*a[3],a[1]*a[3]])
