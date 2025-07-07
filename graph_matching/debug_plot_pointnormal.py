@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+
 # Example set of points and normals in 3D for the first set
 points1 = np.array([
     [0, 0, 0],
