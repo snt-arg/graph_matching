@@ -8,9 +8,9 @@ from sympy import false
 from GraphMatcher import GraphMatcher
 
 
-# reasoning_msgs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# with open(os.path.join(reasoning_msgs,"config", "syntheticDS_params_synthetic.json")) as f:
-#     syntheticDS_params = json.load(f)
+gnn_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"GNN_Notebooks","graph_matching")
+sys.path.append(gnn_dir)
+from PGM_class import PartialGraphMatching
 
 syntheticDS_params_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "syntheticDS_params_synthetic.json")
 with open(syntheticDS_params_path) as f:
@@ -23,6 +23,8 @@ from graph_datasets.graph_visualizer import visualize_nxgraph_3d
 
 from graph_datasets.config import get_config as get_datasets_config
 synteticdataset_settings = get_datasets_config("graph_matching")
+
+matching_solver = "gnn" ### "gnn" or "classical"
 
 class FakeLogger(object):
     def __init__(self) -> None:
@@ -86,22 +88,22 @@ for i in range(len(s_dataset)):
 
 
     ### CREATE GRAPH MATCHER
+    if matching_solver == "gnn":
+        graph_matcher = GraphMatcherGNN(fake_logger, log_level = 10)
+    else:
+        graph_matcher = GraphMatcher(fake_logger, log_level = 10)
+        graph_matcher.set_parameters(syntheticDS_params)
+        graph_matcher.set_graph_from_wrapper(a_graph, "A-Graph")
+        graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
 
-    graph_matcher = GraphMatcher(fake_logger, log_level = 10)
-    graph_matcher.set_parameters(syntheticDS_params)
-    graph_matcher.set_graph_from_wrapper(a_graph, "A-Graph")
-    graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
+        ### MATCH
+        # time.sleep(99)
+        success, matches, matches_full, matches_dev = graph_matcher.match("A-Graph", "S-Graph")
 
-    # visualize_nxgraph(as_graph, "as_graph")
-
-    ### MATCH
-    # time.sleep(99)
-    success, matches, matches_full, matches_dev = graph_matcher.match("A-Graph", "S-Graph")
-
-    print(f"dbg success: {success}")
-    print(f"dbg len(matches): {len(matches)}")
-    print(f"dbg len(matches_full): {len(matches_full)}")
-    print(f"dbg matches_dev: {matches_dev}")
+        print(f"dbg success: {success}")
+        print(f"dbg len(matches): {len(matches)}")
+        print(f"dbg len(matches_full): {len(matches_full)}")
+        print(f"dbg matches_dev: {matches_dev}")
 
     # for final_combination in matches_full:
     #     print(f"flag new final combination")
