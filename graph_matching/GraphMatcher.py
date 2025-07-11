@@ -52,7 +52,7 @@ class GraphMatcher():
 
         if self.log_level > 9:
             self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
-            time.sleep(999)
+
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
         ###  Create a deep copy of the stored_match_graph to store the matching results.
@@ -579,7 +579,7 @@ class GraphMatcher():
             for last_id in list(g2_filtered.get_nodes_ids()):
                 mapping[str(last_id)] = str(int(last_id) + int(node_id_diff))
             g2_filtered.relabel_nodes(mapping = mapping, copy = True)
-            g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
+            # g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
 
             combined_graph = g1_filtered.merge_graph(g2_filtered)
             match_edges_attr = []
@@ -1062,6 +1062,7 @@ class GraphMatcher():
         if not ax:
             fig = plt.figure(figsize=(10, 7))
             ax = fig.add_subplot(111, projection='3d')
+
         points = np.array(data)[:, :3]
         if datatype == "points&normal":
             normals = np.array(data)[:,3:]
