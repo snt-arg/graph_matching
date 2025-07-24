@@ -26,7 +26,7 @@ class GraphMatcher():
         self.logger = logger
         self.log_level = log_level
         self.stored_match_graph = None
-        self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "Plane", "merge_lvl": 0, "score_intralevel": 0})], "edges":[], "name": "deviations"})
+        self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "ws", "merge_lvl": 0, "score_intralevel": 0})], "edges":[], "name": "deviations"})
         self.stored_consistent_combinations = []
 
     def set_parameters(self, params):
@@ -224,8 +224,10 @@ class GraphMatcher():
                 #         score = 0.
                 ### END
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
-                # floor_condition = self.assess_floor_consistency(data1, data2, swept_levels[lvl])
-                floor_condition = True
+                if working_node_ID:
+                    floor_condition = self.assess_floor_consistency(data1, data2, swept_levels[lvl], A_numerical)
+                else:
+                    floor_condition = True
 
                 if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches and floor_condition:
                     filter1_scores.append(score)
@@ -437,7 +439,7 @@ class GraphMatcher():
         data2 = np.concatenate(([ data2, [[floor_points[0][0],floor_points[0][1],floor_points[0][2],0,0,1]]]), axis= 0, dtype = np.float64)
         return(data1, data2, A_numerical_with_parent, floor_pair_numerical)
     
-    def assess_floor_consistency(self, data1, data2, merged_level):
+    def assess_floor_consistency(self, data1, data2, merged_level, A_numerical):
         def compute_transformation(points_a, normals_a, points_b, normals_b):
             # Compute the centroids of both sets
             centroid_a = np.mean(points_a, axis=0)
@@ -482,8 +484,17 @@ class GraphMatcher():
         if merged_level == "Finite Room":
             data1 = np.concatenate(([ data1, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
             data2 = np.concatenate(([ data2, np.tile([0,0,1], (data1.shape[0], 1))]), axis= 1, dtype = np.float64)
-        a_all = np.concatenate(([ data1, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
-        b_all = np.concatenate(([ data2, [[0,0,0,0,0,1]]]), axis= 0, dtype = np.float64)
+
+        a_all = copy.deepcopy(data1)
+        b_all = copy.deepcopy(data2)
+        for a_all_i in copy.deepcopy(data1):
+            new_row = [[a_all_i[0],a_all_i[1],a_all_i[2],0,0,1]]
+            a_all = np.concatenate(([ a_all, new_row]), axis= 0, dtype = np.float64)
+        for b_all_i in copy.deepcopy(data2):
+            new_row = [[b_all_i[0],b_all_i[1],b_all_i[2],0,0,1]]
+            b_all = np.concatenate(([ b_all, new_row]), axis= 0, dtype = np.float64)
+
+
 
         points_a, normals_a = a_all[:, :3], a_all[:, -3:]
         points_b, normals_b = b_all[:, :3], b_all[:, -3:]
@@ -498,6 +509,23 @@ class GraphMatcher():
             # print("Press any key to continue...")
             # key = keyboard.wait()
             # print(f"You pressed {key}")
+
+        A_numerical_add = copy.deepcopy(A_numerical)
+        A_numerical_add[:, 0] = A_numerical_add[:, 0] + (max(A_numerical_add[:, 0])+1) * np.ones(len(A_numerical_add[:, 0]))
+        A_numerical_add[:, 1] = A_numerical_add[:, 1] + (max(A_numerical_add[:, 1])+1) * np.ones(len(A_numerical_add[:, 1]))
+        A_numerical_all = np.concatenate((A_numerical, A_numerical_add),axis=0)
+        initial_A_numerical_all_lenght = A_numerical_all.shape[0]
+        # print(f'dbg A_numerical_all {A_numerical_all}')
+        print(f"dbg a_all {a_all}")
+        clipper = Clipper(self.params["levels"]["datatype"][merged_level], self.params["levels"]["clipper_invariants"][merged_level], self.params, self.logger)
+        clipper.score_pairwise_consistency(a_all, b_all, A_numerical_all)
+        clipper_match_numerical, score = clipper.solve_clipper()
+        match_numerical_lenght = clipper_match_numerical.shape[0]
+        # consistency_avg = clipper.get_score_all_inital_u()
+        print(f'dbg initial_A_numerical_all_lenght {initial_A_numerical_all_lenght} match_numerical_lenght {match_numerical_lenght} cond {match_numerical_lenght == initial_A_numerical_all_lenght}')
+        # print(f'dbg consistency_avg {clipper_match_numerical.shape}')
+        # print(f'dbg score {score}')
+        final_cond = match_numerical_lenght == initial_A_numerical_all_lenght
 
         return final_cond
 
@@ -871,7 +899,7 @@ class GraphMatcher():
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
             # self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            # floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1])
+            # floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1], G1_full, G2_full, parent_node_attrs= parent_node_attrs)
             floor_condition = True
 
             if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
