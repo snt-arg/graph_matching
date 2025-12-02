@@ -17,7 +17,7 @@ from graph_matching.utils import transform_plane_definition, multilist_combinati
 
 graph_wrapper_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_wrapper")
 sys.path.append(graph_wrapper_dir)
-from graph_wrapper.GraphWrapper import GraphWrapper
+from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 
 
 class GraphMatcher():
