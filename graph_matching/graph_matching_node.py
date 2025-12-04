@@ -17,6 +17,8 @@ import time
 import copy
 import numpy as np
 import json
+import networkx as nx
+import matplotlib.pyplot as plt
 
 from rclpy.node import Node
 from .utils import *
@@ -46,6 +48,8 @@ from situational_graphs_reasoning_msgs.msg import Match as MatchMsg
 from situational_graphs_reasoning_msgs.msg import Node as NodeMsg
 from situational_graphs_reasoning_msgs.msg import Edge as EdgeMsg
 from situational_graphs_reasoning_msgs.msg import Attribute as AttributeMsg
+from situational_graphs_wrapper.GraphWrapper import GraphWrapper
+
 
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
@@ -86,9 +90,9 @@ class GraphMatchingNode(Node):
         graph = {"name" : msg.name}
         self.gm.set_parameters(self.params)
         nodes = []
-        num_rooms = 0
         for node_msg in msg.nodes:
-            node = [str(node_msg.id), {}]
+            node_id = str(node_msg.id)
+            node = [node_id, {}]
             attributes = {}
             for attrib_msg in node_msg.attributes:
                 if attrib_msg.str_value:
@@ -104,7 +108,6 @@ class GraphMatchingNode(Node):
             if node_msg.type == "Plane":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "Finite Room":
-                num_rooms += 1
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "floor":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
@@ -114,28 +117,23 @@ class GraphMatchingNode(Node):
             node[1] = attributes
             node[1]["type"] = node_msg.type
             nodes.append(node)
+            
         graph["nodes"] = nodes
 
         edges = []
         for edge_msg in msg.edges:
             edge = (str(edge_msg.origin_node), str(edge_msg.target_node))
             edges.append(edge)
+        
         graph["edges"] = edges
         self.gm.set_graph_from_dict(graph, graph["name"])
+        dbg_graph = GraphWrapper(graph_def=graph)
+        accapted_node_types = ["Finite Room", "Plane"]
+        self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accapted_node_types)
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        # #### FILTERING OUT ROOMS
-        # if graph["name"] == "Prior":
-        #     all_room_node_ids = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
-        #     all_node_ids = list(self.gm.graphs['Prior'].get_nodes_ids())
-        #     self.gm.graphs['Prior'] = self.gm.graphs['Prior'].filter_graph_by_node_list(list(set(all_node_ids) - set(all_room_node_ids)) + ['57', '52'])
-        # ### END
 
-        self.gm.graphs[graph["name"]].draw(graph["name"], options, self.params["verbose"])
-        ### DEBUG
-        # for node_id, attrs in self.gm.graphs[graph["name"]].get_attributes_of_all_nodes():
-        #     self.get_logger().info(f"dbg node_id {node_id} normal {attrs['Geometric_info']}")
-        
-        ### END DEBUG
+        # self.gm.graphs[graph["name"]].draw(None, options, True)
+
 
         # ### Save dictionary of graphs
         # self.get_logger().info(f"FLAG type(graph) {graph}")
@@ -151,14 +149,20 @@ class GraphMatchingNode(Node):
 
 
         # ### Match
-        self.get_logger().info(f"flag num_rooms {num_rooms}")
-        if graph["name"] == "Online" and num_rooms>=2:
+        room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
+        self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
+        if graph["name"] == "Online" and len(room_ids)>=2:
+            self.get_logger().info(f"Starting match!")
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
             success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online", add_deviations=True)
+            # self.get_logger().info(f"DBG success: {success}")
+            # self.get_logger().info(f"DBG matches: {matches}")
+            # self.get_logger().info(f"DBG matches_full: {matches_full}")
+            # self.get_logger().info(f"DBG matches_dev: {matches_dev}")
             for match in matches:
-                self.get_logger().info(f"flag new consistent match")
+                self.get_logger().info(f"New consistent match!")
                 for i in match:
                     self.get_logger().info(f"flag {i['origin_node_attrs']['type']}. nodes {i['origin_node']} - {i['target_node']}. score {i['score']}")
                 self.get_logger().info(f" ")

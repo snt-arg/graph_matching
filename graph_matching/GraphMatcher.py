@@ -33,7 +33,7 @@ class GraphMatcher():
         self.params = params
 
     def set_graph_from_dict(self, graph_def, graph_name):
-        self.graphs[graph_name] = flatten_graph(GraphWrapper(graph_def = graph_def))
+        self.graphs[graph_name] = GraphWrapper(graph_def = graph_def)
 
     def set_graph_from_wrapper(self, graph_wrapper, graph_name):
         self.graphs[graph_name] = graph_wrapper
