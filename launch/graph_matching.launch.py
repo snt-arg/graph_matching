@@ -16,6 +16,14 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # launch_tester_node_ns = LaunchConfiguration('launch_tester_node_ns')
 
+    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    
+    DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation clock'
+    )
+
     config = os.path.join(
         get_package_share_directory('graph_matching'),
         'config',
@@ -26,10 +34,14 @@ def generate_launch_description():
         package='graph_matching',
         executable='graph_matching',
         # namespace='graph_matching',
-        parameters = [config],
+        parameters = [config,
+                      {'use_sim_time': use_sim_time}],
         remappings=[
-            ('graph_matching/graphs','/s_graphs/graph_structure'),
-        ]
+            # ('graph_matching/graphs', '/s_graphs/graph_structure'),
+            ('graph_matching/graphs', '/s_graphs/enriched_graph_structure'),
+        ],
+        output='screen',
+        emulate_tty=True,
     )
 
     return LaunchDescription([

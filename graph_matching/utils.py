@@ -37,6 +37,26 @@ def transform_plane_definition(points_and_normals, translation, rotation, logger
         translated_points_and_normals.append(translated_point_and_normal)
     return np.array(translated_points_and_normals)
 
+def shift_plane_origin(n, d, p, normalize=False):
+    """
+    Plane: n·x + d = 0 (in the original coordinate system with origin at 0)
+    New coordinate system: origin moved to p (i.e., x = x' + p)
+    Returns (n, d') such that n·x' + d' = 0
+    """
+    n = np.asarray(n, dtype=float).reshape(3)
+    p = np.asarray(p, dtype=float).reshape(3)
+    d = float(d)
+
+    d2 = d + n.dot(p)
+
+    if normalize:
+        s = np.linalg.norm(n)
+        if s > 0:
+            n = n / s
+            d2 = d2 / s
+
+    return n, d2
+
 
 def transform_normal_and_distance(original, translation, rotation, logger = None):
     # start_time = time.time()

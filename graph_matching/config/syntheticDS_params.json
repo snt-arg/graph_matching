@@ -31,17 +31,17 @@
     },
     "thresholds": {
         "local_intralevel": {
-            "Plane" : [0.2, 0.2],
+            "Plane" : [0.1, 0.1],
             "Finite Room" : [0.15]
         },
         "local_interlevel": {
-            "Finite Room - Plane" : [0.2, 0.5]
+            "Finite Room - Plane" : [0.1, 0.5]
         },
         "global_intralevel_deviations": {
             "Plane" : 0.3,
             "Finite Room" : 0.2
         },
-        "global": [0.8]
+        "global": [0.2]
     },
     "dbscan": {
         "eps": 0.01,

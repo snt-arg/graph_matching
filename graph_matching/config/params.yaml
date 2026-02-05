@@ -18,9 +18,9 @@ graph_matching:
           sign : 0.10
           epsn : 0.35
     thresholds : 
-      local_intralevel : 0.85
+      local_intralevel : 0.5 #0.85
       local_interlevel : 0.85
-      global : 0.85
+      global : 0.5 #0.85
     dbscan : 
       eps : 0.01
       min_samples : 1

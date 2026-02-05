@@ -50,14 +50,13 @@ from situational_graphs_reasoning_msgs.msg import Edge as EdgeMsg
 from situational_graphs_reasoning_msgs.msg import Attribute as AttributeMsg
 from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 
-
 from .GraphMatcher import GraphMatcher
 from .utils import plane_4_params_to_6_params
 class GraphMatchingNode(Node):
 
     def __init__(self):
         super().__init__('graph_matching', allow_undeclared_parameters = True, automatically_declare_parameters_from_overrides = True)
-        self.gm = GraphMatcher(self.get_logger())    
+        self.gm = GraphMatcher(self.get_logger(), 0)    
         self.set_interface()
         self.get_json_parameters_()
         # self.get_logger().info(f"{self.params}")
@@ -74,7 +73,7 @@ class GraphMatchingNode(Node):
     def set_interface(self):
         self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
         self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/unique_match', 10)
-        # self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
+        self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
         self.unique_match_visualization_inc_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/incremental', 10)
         self.unique_match_visualization_full_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/full', 10)
         self.unique_match_visualization_dev_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/dev', 10)
@@ -86,7 +85,17 @@ class GraphMatchingNode(Node):
 
 
     def graph_callback(self, msg):
-        self.get_logger().info('Incoming graph with name {}'.format(msg.name))
+        if (msg.nodes == []) or (msg.edges == []):
+            self.get_logger().warn(f'Empty graph {msg.name} received, skipping...')
+            return
+        print("************************************************************************")
+        print(f"================ Graph Matching Node: New graph {msg.name} received ================")
+        print("************************************************************************")
+        # self.get_logger().info('Incoming graph with name {}'.format(msg.name))
+        ### !DEBUG!
+        if (msg.header.stamp.sec > 832):
+            print("!DEBUG: Not processing graph with timestamp >832 for testing purposes")
+            return
         graph = {"name" : msg.name}
         self.gm.set_parameters(self.params)
         nodes = []
@@ -100,19 +109,26 @@ class GraphMatchingNode(Node):
                 elif attrib_msg.fl_value:
                     attributes[attrib_msg.name] = np.array(attrib_msg.fl_value)
                 else:
-                    print("Bad definition of attribute {}".format(attrib_msg.name))
+                    self.get_logger().warn("Bad definition of attribute {}".format(attrib_msg.name))
 
                 if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
                     attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
 
             if node_msg.type == "Plane":
-                attributes["draw_pos"] = attributes["Geometric_info"][:2]
+                # attributes["draw_pos"] = attributes["Geometric_info"][:2]
+                attributes["draw_pos"] = self.get_plane_draw_position(node_msg, attributes, msg)
             elif node_msg.type == "Finite Room":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
             elif node_msg.type == "floor":
                 attributes["draw_pos"] = attributes["Geometric_info"][:2]
+            elif node_msg.type == "Door":
+                attributes["draw_pos"] = attributes["Geometric_info"][:2]
+                # print(f'Door node received: {node_id} with attributes {attributes}')
+            elif node_msg.type == "Window":
+                attributes["draw_pos"] = attributes["Geometric_info"][:2]
+                # print(f'Window node received: {node_id} with attributes {attributes}')
             else:
-                self.get_logger().info('Received unknown node type: {}'.format(node_msg.type))
+                self.get_logger().warn('Received unknown node type: {}'.format(node_msg.type))
             
             node[1] = attributes
             node[1]["type"] = node_msg.type
@@ -124,16 +140,21 @@ class GraphMatchingNode(Node):
         for edge_msg in msg.edges:
             edge = (str(edge_msg.origin_node), str(edge_msg.target_node))
             edges.append(edge)
-        
+
         graph["edges"] = edges
         self.gm.set_graph_from_dict(graph, graph["name"])
+        # for node in graph["nodes"]:
+        #     print(f'Node ID: {node[0]}, Type: {node[1]["type"]}, Attributes: {node[1]}')
         dbg_graph = GraphWrapper(graph_def=graph)
-        accapted_node_types = ["Finite Room", "Plane"]
-        self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accapted_node_types)
+        accepted_node_types = ["Finite Room", "Plane", "Door", "Window"]
+        self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accepted_node_types)
         options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
 
-        # self.gm.graphs[graph["name"]].draw(None, options, True)
-
+        plot_graph = True
+        if plot_graph:
+            self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+        # time.sleep(1)
+        
 
         # ### Save dictionary of graphs
         # self.get_logger().info(f"FLAG type(graph) {graph}")
@@ -147,11 +168,16 @@ class GraphMatchingNode(Node):
         # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
         # self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
 
+        # Return if no graph Prior
+        if "Prior" not in self.gm.graphs.keys() or self.gm.graphs["Prior"].is_empty():
+            self.get_logger().warn('Graph Matching: no Prior graph available, skipping matching...')
+            return
 
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
-        if graph["name"] == "Online" and len(room_ids)>=2:
+        # if graph["name"] == "Online" and len(room_ids)>=2:
+        if graph["name"] == "Online" and len(room_ids)>=1:
             self.get_logger().info(f"Starting match!")
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
@@ -166,25 +192,30 @@ class GraphMatchingNode(Node):
                 for i in match:
                     self.get_logger().info(f"flag {i['origin_node_attrs']['type']}. nodes {i['origin_node']} - {i['target_node']}. score {i['score']}")
                 self.get_logger().info(f" ")
-
+                
             if success and len(matches) > 1:
                 for i, match in enumerate(matches):
-                    symmetry_match_msg = self.generate_match_msg(match)
-                    symmetry_match_publisher = self.create_publisher(MatchMsg, f'graph_matching/symmetry_match_{i+1}', 10)
-                    symmetry_match_publisher.publish(symmetry_match_msg)
+                    # symmetry_match_msg = self.generate_match_msg(match)
+                    # symmetry_match_publisher = self.create_publisher(MatchMsg, f'graph_matching/symmetry_match_{i+1}', 10)
+                    # symmetry_match_publisher.publish(symmetry_match_msg)
                     symmetry_match_visualization_msg = self.generate_match_visualization_msg(matches[i])
                     symmetry_match_visualization_publisher = self.create_publisher(MarkerArrayMsg, f'graph_matching/symmetry_match_{i+1}_visualization', 10)
                     symmetry_match_visualization_publisher.publish(symmetry_match_visualization_msg)
 
             if success and len(matches) == 1:
+                print("******************* Unique match found! *******************")
+                print(f"Match details:")
+                print(matches[0])
+
                 unique_match_msg = self.generate_match_msg(matches[0])
                 self.unique_match_publisher.publish(unique_match_msg)
-                unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
-                self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
+
+                # unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
+                # self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
                 unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])
                 self.unique_match_visualization_full_publisher.publish(unique_match_visualization_full_msg)
-                unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
-                self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
+                # unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
+                # self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
                 # time.sleep(999)
 
 
@@ -236,6 +267,7 @@ class GraphMatchingNode(Node):
 
     def generate_match_msg(self, match):
         match_msg = MatchMsg()
+        match_msg.header.stamp = self.get_clock().now().to_msg()
         for edge in match:
             ### Edge
             edge_msg = EdgeMsg()
@@ -356,7 +388,7 @@ class GraphMatchingNode(Node):
 
 
     def generate_match_visualization_msg(self, match, match_type = "normal"):
-        source_frame = "map"
+        source_frame = "matching_map"
         target_frame = "prior_map"
         tf_buffer = Buffer()
         tf_listener = TransformListener(tf_buffer, self)
@@ -438,6 +470,60 @@ class GraphMatchingNode(Node):
         marker_array_msg.markers = marker_array
 
         return marker_array_msg
+
+    def get_plane_draw_position(self, node_msg, attributes, graph_msg):
+                # --- find parent room id (robust to edge direction) ---
+                # node_id = str(node_msg.id)
+                parent_node_id = None
+                plane_draw_pos = None
+                for msg_edge in graph_msg.edges:
+                    # if this plane is connected, pick the other end as parent candidate
+                    if str(msg_edge.target_node) == str(node_msg.id):
+                        parent_node_id = str(msg_edge.origin_node)
+                        break
+                    if str(msg_edge.origin_node) == str(node_msg.id):
+                        parent_node_id = str(msg_edge.target_node)
+                        break
+
+                if parent_node_id is None:
+                    # print(f'No parent found for plane node {node_id}')
+                    return attributes["Geometric_info"][:2]
+                # --- get parent room center (2D) ---
+                parent_draw_pos = None
+                for msg_node in graph_msg.nodes:
+                    if str(msg_node.id) == parent_node_id and msg_node.type == "Finite Room":
+                        for attrib_msg in msg_node.attributes:
+                            if attrib_msg.name == "Geometric_info" and attrib_msg.fl_value:
+                                parent_draw_pos = np.array(attrib_msg.fl_value, dtype=float)[:2]
+                                break
+                        break
+
+                if parent_draw_pos is None:
+                    # print(f'Parent {parent_node_id} for plane node {node_id} has no Geometric_info')
+                    return attributes["Geometric_info"][:2]
+                else:
+                    # --- plane info ---
+                    gi = np.array(attributes["Geometric_info"], dtype=float)
+
+                    p0 = gi[:2]       # closest point to origin (XY)
+                    n  = gi[3:5]      # normal (XY)  (assuming layout [px,py,pz,nx,ny,nz])
+
+                    # normalize normal (avoid divide-by-zero)
+                    n_norm = np.linalg.norm(n)
+                    if n_norm < 1e-9:
+                        # print(f'Plane node {node_id} has near-zero normal, using original draw pos')
+                        adjusted = p0
+                    else:
+                        n_unit = n / n_norm
+
+                        c = parent_draw_pos  # room center (XY)
+
+                        # project room center onto plane (closest point on plane to the center)
+                        # p = c - n * dot(n, (c - p0))
+                        adjusted = c - n_unit * np.dot(n_unit, (c - p0))
+
+                    return adjusted
+
 
 
 def main(args=None):
