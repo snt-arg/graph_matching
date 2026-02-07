@@ -395,7 +395,7 @@ class GraphMatcher():
     def generate_clipper_input(self, G1_in, G2_in, A_categorical, feature_name):
         G1 = copy.deepcopy(G1_in)
         G2 = copy.deepcopy(G2_in)
-        nodes1, nodes2 = list(np.array(list(A_categorical))[:,0]), list(np.array(list(A_categorical))[:,1])
+        nodes1, nodes2 = list(set(np.array(list(A_categorical))[:,0])), list(set(np.array(list(A_categorical))[:,1]))
         data1 = G1.stack_nodes_feature(nodes1, feature_name)
         data2 = G2.stack_nodes_feature(nodes2, feature_name)
         A_numerical = np.array([[nodes1.index(pair[0]),nodes2.index(pair[1])] for pair in A_categorical]).astype(np.int32)
