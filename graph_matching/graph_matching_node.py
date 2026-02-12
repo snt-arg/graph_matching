@@ -17,11 +17,12 @@ import time
 import copy
 import numpy as np
 import json
+import pickle
 import networkx as nx
 import matplotlib.pyplot as plt
 
 from rclpy.node import Node
-from .utils import *
+from utils import *
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 from tf2_ros.buffer_interface import BufferInterface
@@ -50,8 +51,8 @@ from situational_graphs_reasoning_msgs.msg import Edge as EdgeMsg
 from situational_graphs_reasoning_msgs.msg import Attribute as AttributeMsg
 from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 
-from .GraphMatcher import GraphMatcher
-from .utils import plane_4_params_to_6_params
+from GraphMatcher import GraphMatcher
+from utils import plane_4_params_to_6_params
 class GraphMatchingNode(Node):
 
     def __init__(self):
@@ -83,6 +84,72 @@ class GraphMatchingNode(Node):
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_4_visualization', 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_matching/subgraph_match', self.subgraph_match_srv_callback)
 
+    def load_all_pickle_graphs(self):
+        """
+        Load all previously saved pickle graph files from the graph_dicts directory.
+        Returns a dictionary with graph names as keys and graph data as values.
+        """
+        pickle_dir = "/home/adminpc/workspace/src/graph_matching/graph_matching/graph_dicts"
+        loaded_graphs = {}
+        
+        # Create directory if it doesn't exist
+        if not os.path.exists(pickle_dir):
+            os.makedirs(pickle_dir)
+            self.get_logger().info(f"Created directory: {pickle_dir}")
+            return loaded_graphs
+        
+        # Find all pickle files in the directory
+        pickle_files = [f for f in os.listdir(pickle_dir) if f.endswith('.pkl')]
+        
+        if not pickle_files:
+            self.get_logger().info("No pickle files found in the graph_dicts directory")
+            return loaded_graphs
+        
+        # Load each pickle file
+        for pickle_file in pickle_files:
+            file_path = os.path.join(pickle_dir, pickle_file)
+            try:
+                with open(file_path, 'rb') as f:
+                    graph_data = pickle.load(f)
+                    graph_name = graph_data.get('name', pickle_file[:-4])  # Remove .pkl extension as fallback
+                    loaded_graphs[graph_name] = graph_data
+                    self.get_logger().info(f"Successfully loaded graph: {graph_name} from {pickle_file}")
+            except Exception as e:
+                self.get_logger().error(f"Failed to load pickle file {pickle_file}: {str(e)}")
+        
+        self.get_logger().info(f"Loaded {len(loaded_graphs)} graphs from pickle files")
+
+        # for node in graph["nodes"]:
+        #     print(f'Node ID: {node[0]}, Type: {node[1]["type"]}, Attributes: {node[1]}')
+        
+        plot_graph = False
+        accepted_node_types = ["Finite Room", "Plane", "Door", "Window"]
+        for key in loaded_graphs.keys():
+            graph = loaded_graphs[key]
+            self.gm.set_graph_from_dict(graph, graph["name"])
+            self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accepted_node_types)
+            
+            # if graph["name"] == "Prior":
+            #     node_list = ["72","10101","90010103","90010102","10100"] #,"10110", "10120"
+            #     print(self.gm.graphs[graph["name"]].get_neighbourhood_graph("10100").get_nodes_ids())
+            #     print(self.gm.graphs[graph["name"]].get_neighbourhood_graph("90010103").get_nodes_ids())
+            # if graph["name"] == "Online":
+            #     node_list = ["174", "83", "82", "81","80"] #,"96002", "124001"
+            #     print(self.gm.graphs[graph["name"]].get_neighbourhood_graph("80").get_nodes_ids())
+            #     print(self.gm.graphs[graph["name"]].get_neighbourhood_graph("81").get_nodes_ids())
+            # self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_list(node_list)
+            
+            options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+
+            if plot_graph:
+                self.gm.graphs[graph["name"]].draw(graph["name"], options, True)
+
+                input("Waiting")
+        return loaded_graphs
+
+    def match_loaded_graphs(self):
+        self.gm.set_parameters(self.params)
+        self.gm.match("Prior", "Online", add_deviations=False)
 
     def graph_callback(self, msg):
         if (msg.nodes == []) or (msg.edges == []):
@@ -173,6 +240,10 @@ class GraphMatchingNode(Node):
             self.get_logger().warn('Graph Matching: no Prior graph available, skipping matching...')
             return
 
+        # Save graph as pickle file
+        with open(f"/home/adminpc/workspace/src/graph_matching/graph_matching/graph_dicts/{graph['name']}.pkl", "wb") as pickle_file:
+            pickle.dump(self.gm.graphs[graph["name"]], pickle_file)
+
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
@@ -217,6 +288,8 @@ class GraphMatchingNode(Node):
                 # unique_match_visualization_dev_msg = self.generate_match_visualization_msg(matches_dev[0], match_type="deviations")
                 # self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
                 # time.sleep(999)
+
+        
 
 
     def subgraph_match_srv_callback(self, request, response):
@@ -529,6 +602,8 @@ class GraphMatchingNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     graph_matching_node = GraphMatchingNode()
+    # graph_matching_node.load_all_pickle_graphs()
+    # graph_matching_node.match_loaded_graphs()
 
     rclpy.spin(graph_matching_node)
     rclpy.get_logger().warn('Destroying node!')
