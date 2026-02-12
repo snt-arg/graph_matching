@@ -45,7 +45,7 @@ class GraphMatcher():
 
         start_time = time.time()
         ### Retrieve the levels to be processed from the parameters.
-        swept_levels = self.params["levels"]["name"] 
+        swept_levels = self.params["levels"]["name"] # ??
         lvl = 0
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
