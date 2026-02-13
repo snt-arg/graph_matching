@@ -203,8 +203,11 @@ class GraphMatchingNode(Node):
                 continue
 
             # Reconstruct endpoints from start_point along the tangent direction
-            normal_unit = normal_2d / normal_mag
-            tangent = np.array([-normal_unit[1], normal_unit[0]])
+            # Match RViz: X planes extend along +Y, Y planes extend along +X
+            if abs(normal_2d[0]) > abs(normal_2d[1]):
+                tangent = np.array([0.0, 1.0])
+            else:
+                tangent = np.array([1.0, 0.0])
             endpoint1 = np.array([start_point[0], start_point[1], 0.])
             endpoint2 = np.array([*(start_point + length * tangent), 0.])
             center_2d = (start_point + (length / 2) * tangent)
@@ -270,8 +273,11 @@ class GraphMatchingNode(Node):
             normal_mag = np.linalg.norm(normal_2d)
             if normal_mag < 1e-6:
                 continue
-            normal_unit = normal_2d / normal_mag
-            tangent = np.array([-normal_unit[1], normal_unit[0]])
+            # Match RViz: X planes extend along +Y, Y planes extend along +X
+            if abs(normal_2d[0]) > abs(normal_2d[1]):
+                tangent = np.array([0.0, 1.0])
+            else:
+                tangent = np.array([1.0, 0.0])
 
             if is_prior:
                 # Prior: compute center from start_point + length
@@ -311,7 +317,7 @@ class GraphMatchingNode(Node):
         if is_prior:
             self.prior_original_planes = plane_centers
 
-        #prior_splits_by_id = self._reconstruct_and_split_prior_planes(G)
+        prior_splits_by_id = self._reconstruct_and_split_prior_planes(G)
 
         for node_id, node_attrs in list(G.graph.nodes(data=True)):
             node_id_str = str(node_id)
@@ -373,61 +379,62 @@ class GraphMatchingNode(Node):
                             original_attrs=original_attrs,
                             limits=limits)
             
-        G.from_2D_to_3D()
-        G._add_complete_viz_attributes_to_graph()
-        visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
+        #G.from_2D_to_3D()
+        #G._add_complete_viz_attributes_to_graph()
+        #visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
         #plt.pause(0.5)
         
         ####################################################################################################################
         #Splitting planes into segments for both Online and Prior.
-        G.from_3D_to_2D()
+        #G.from_3D_to_2D()
 
         # # Iterate over ws nodes and split where possible
-        # for node_id, node_attrs in list(G.graph.nodes(data=True)):
-        #     if node_attrs.get("type") != "ws":
-        #         continue
+        for node_id, node_attrs in list(G.graph.nodes(data=True)):
+            if node_attrs.get("type") != "ws":
+                continue
 
-        #     node_id_str = str(node_id)
-        #     plane_id_int = int(node_id)
+            node_id_str = str(node_id)
+            plane_id_int = int(node_id)
 
         #     # Check for splits
-        #     splits = None
-        #     if plane_id_int in self.online_planes_by_original_id:
-        #         splits = self.online_planes_by_original_id[plane_id_int]
-        #     elif plane_id_int in prior_splits_by_id:
-        #         splits = prior_splits_by_id[plane_id_int]
+            splits = None
+            if plane_id_int in self.online_planes_by_original_id:
+                splits = self.online_planes_by_original_id[plane_id_int]
+            elif plane_id_int in prior_splits_by_id:
+                splits = prior_splits_by_id[plane_id_int]
 
-        #     if splits:
-        #         # Create one GNN node per split segment
-        #         split_ids = []
-        #         for si, split in enumerate(splits):
-        #             split_node_id = f"{node_id_str}_s{si}"
-        #             split_ids.append(split_node_id)
+            if splits:
+                # Create one GNN node per split segment
+                split_ids = []
+                for si, split in enumerate(splits):
+                    split_node_id = f"{node_id_str}_s{si}"
+                    split_ids.append(split_node_id)
 
-        #             split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
+                    split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
 
-        #             normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
-        #             normal_magnitude = np.linalg.norm(normal_vec)
-        #             if normal_magnitude > 1e-6:
-        #                 split_normal = (normal_vec / normal_magnitude).tolist()
-        #             else:
-        #                 split_normal = [0., 0.]
+                    normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
+                    normal_magnitude = np.linalg.norm(normal_vec)
+                    if normal_magnitude > 1e-6:
+                        split_normal = (normal_vec / normal_magnitude).tolist()
+                    else:
+                        split_normal = [0., 0.]
 
-        #             G.graph.add_node(split_node_id,
-        #                     type="ws",
-        #                     center=split_center,
-        #                     normal=split_normal,
-        #                     length=float(split["length"]),
-        #                     original_type=node_attrs.get("original_type", "Plane"),
-        #                     original_attrs=node_attrs.get("original_attrs", {}),
-        #                     original_id=node_id_str,
-        #                     limits=split["segment"])
+                    G.graph.add_node(split_node_id,
+                            type="ws",
+                            center=split_center,
+                            normal=split_normal,
+                            length=float(split["length"]),
+                            original_type=node_attrs.get("original_type", "Plane"),
+                            original_attrs=node_attrs.get("original_attrs", {}),
+                            original_id=node_id_str,
+                            limits=split["segment"])
 
-        #         # Remove original plane node (replaced by split nodes)
-        #         G.graph.remove_node(node_id)
-        #G.from_2D_to_3D()
-        #G._add_complete_viz_attributes_to_graph()
-        #visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)
+                 # Remove original plane node (replaced by split nodes)
+            G.graph.remove_node(node_id)
+            
+        G.from_2D_to_3D()
+        G._add_complete_viz_attributes_to_graph()
+        visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)
         #plt.pause(0.5)
         #new edges based on spatial proximity##################################
 
