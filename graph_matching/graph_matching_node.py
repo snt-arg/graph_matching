@@ -383,12 +383,13 @@ class GraphMatchingNode(Node):
         #G._add_complete_viz_attributes_to_graph()
         #visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
         #plt.pause(0.5)
+        #G.from_3D_to_2D()
+
         
         ####################################################################################################################
         #Splitting planes into segments for both Online and Prior.
-        #G.from_3D_to_2D()
-
-        # # Iterate over ws nodes and split where possible
+        
+        # Iterate over ws nodes and split where possible
         for node_id, node_attrs in list(G.graph.nodes(data=True)):
             if node_attrs.get("type") != "ws":
                 continue
@@ -396,7 +397,7 @@ class GraphMatchingNode(Node):
             node_id_str = str(node_id)
             plane_id_int = int(node_id)
 
-        #     # Check for splits
+            # Check for splits
             splits = None
             if plane_id_int in self.online_planes_by_original_id:
                 splits = self.online_planes_by_original_id[plane_id_int]
@@ -406,30 +407,30 @@ class GraphMatchingNode(Node):
             if splits:
                 # Create one GNN node per split segment
                 split_ids = []
-                for si, split in enumerate(splits):
-                    split_node_id = f"{node_id_str}_s{si}"
-                    split_ids.append(split_node_id)
+            for si, split in enumerate(splits):
+                split_node_id = f"{node_id_str}_s{si}"
+                split_ids.append(split_node_id)
 
-                    split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
+                split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
 
-                    normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
-                    normal_magnitude = np.linalg.norm(normal_vec)
-                    if normal_magnitude > 1e-6:
-                        split_normal = (normal_vec / normal_magnitude).tolist()
-                    else:
-                        split_normal = [0., 0.]
+                normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
+                normal_magnitude = np.linalg.norm(normal_vec)
+                if normal_magnitude > 1e-6:
+                    split_normal = (normal_vec / normal_magnitude).tolist()
+                else:
+                    split_normal = [0., 0.]
 
-                    G.graph.add_node(split_node_id,
-                            type="ws",
-                            center=split_center,
-                            normal=split_normal,
-                            length=float(split["length"]),
-                            original_type=node_attrs.get("original_type", "Plane"),
-                            original_attrs=node_attrs.get("original_attrs", {}),
-                            original_id=node_id_str,
-                            limits=split["segment"])
+                G.graph.add_node(split_node_id,
+                    type="ws",
+                    center=split_center,
+                    normal=split_normal,
+                    length=float(split["length"]),
+                    original_type=node_attrs.get("original_type", "Plane"),
+                    original_attrs=node_attrs.get("original_attrs", {}),
+                    original_id=node_id_str,
+                    limits=split["segment"])
 
-                 # Remove original plane node (replaced by split nodes)
+            # Remove original plane node (replaced by split nodes)
             G.graph.remove_node(node_id)
             
         G.from_2D_to_3D()
@@ -439,7 +440,7 @@ class GraphMatchingNode(Node):
         #new edges based on spatial proximity##################################
 
         #######################################################################
-        #G.from_3D_to_2D() 
+        G.from_3D_to_2D() 
         return G
 
 
