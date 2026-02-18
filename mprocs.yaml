@@ -9,7 +9,7 @@ procs:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/ouster/points base_frame:=base_link"'
     autostart: false
   rosbag_sim:
-    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/simulation/C1F2"'
+    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/simulation/47_basement_"'
     autostart: true
   rosbag_real:
     shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/Real/C1F2/C1F2_ros2 --clock"'

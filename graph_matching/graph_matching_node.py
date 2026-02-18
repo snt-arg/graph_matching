@@ -173,10 +173,6 @@ class GraphMatchingNode(Node):
             if node_attrs.get("type") != "Plane": #Skip non-plane nodes
                 continue
 
-            # Skip online planes — they are already split via the callback (Online planes)
-            if int(node_id) in self.online_planes_by_original_id:
-                continue
-
             # Skip planes without start_point (only Prior planes have it)
             if node_attrs.get("start_point") is None:
                 continue
@@ -378,18 +374,45 @@ class GraphMatchingNode(Node):
                             original_type=original_type,
                             original_attrs=original_attrs,
                             limits=limits)
-            
-        #G.from_2D_to_3D()
-        #G._add_complete_viz_attributes_to_graph()
-        #visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
-        #plt.pause(0.5)
-        #G.from_3D_to_2D()
+        
+        
+        if is_prior:
+            G.filterout_unparented_nodes()
+                
+        # G.from_2D_to_3D()
+        # G._add_complete_viz_attributes_to_graph()
+        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
+        # G.from_3D_to_2D()
 
         
+
+        ####################################################################################################################
+        # Room↔room edges: present in training data as bidirectional room-room connections.
+        for node_id, node_attrs in G.graph.nodes(data=True):
+            if node_attrs.get("type") != "ws":
+                continue
+            room_neighbors = [
+                n for n in set(G.graph.predecessors(node_id)) | set(G.graph.successors(node_id))
+                if G.graph.nodes[n].get("type") == "room"
+            ]
+            if len(room_neighbors) >= 2:
+                for ri in range(len(room_neighbors)):
+                    for rj in range(ri + 1, len(room_neighbors)):
+                        r1, r2 = str(room_neighbors[ri]), str(room_neighbors[rj])
+                        if not G.graph.has_edge(r1, r2):
+                            G.graph.add_edge(r1, r2)
+                        if not G.graph.has_edge(r2, r1):
+                            G.graph.add_edge(r2, r1)
+
+
+
+
         ####################################################################################################################
         #Splitting planes into segments for both Online and Prior.
-        
+
         # Iterate over ws nodes and split where possible
+        # Save room neighbors before removing original nodes, for edge creation later
+        room_neighbors_by_wall = {}
         for node_id, node_attrs in list(G.graph.nodes(data=True)):
             if node_attrs.get("type") != "ws":
                 continue
@@ -397,50 +420,113 @@ class GraphMatchingNode(Node):
             node_id_str = str(node_id)
             plane_id_int = int(node_id)
 
-            # Check for splits
+            # Check for splits — use the correct source based on graph type
             splits = None
-            if plane_id_int in self.online_planes_by_original_id:
-                splits = self.online_planes_by_original_id[plane_id_int]
-            elif plane_id_int in prior_splits_by_id:
-                splits = prior_splits_by_id[plane_id_int]
+            if is_prior:
+                if plane_id_int in prior_splits_by_id:
+                    splits = prior_splits_by_id[plane_id_int]
+            else:
+                if plane_id_int in self.online_planes_by_original_id:
+                    splits = self.online_planes_by_original_id[plane_id_int]
 
             if splits:
+                # Save room neighbors for that wall before removing this node
+                neighbourhood = G.get_neighbourhood_graph(node_id)
+                rooms_only = neighbourhood.filter_graph_by_node_types(["room"])
+                room_neighbors_by_wall[node_id_str] = [                             #for that original ID you have all the rooms connected to it (neighbors in the original graph, before splitting)
+                    str(rid) for rid in rooms_only.graph.nodes() if rid != node_id
+                ]
+
                 # Create one GNN node per split segment
                 split_ids = []
-            for si, split in enumerate(splits):
-                split_node_id = f"{node_id_str}_s{si}"
-                split_ids.append(split_node_id)
+                for si, split in enumerate(splits):
+                    split_node_id = f"{node_id_str}_s{si}"
+                    split_ids.append(split_node_id)
 
-                split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
+                    split_center = split["center"][:2].tolist() if isinstance(split["center"], np.ndarray) else list(split["center"][:2])
 
-                normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
-                normal_magnitude = np.linalg.norm(normal_vec)
-                if normal_magnitude > 1e-6:
-                    split_normal = (normal_vec / normal_magnitude).tolist()
-                else:
-                    split_normal = [0., 0.]
+                    normal_vec = split["normal"][:2] if isinstance(split["normal"], np.ndarray) else np.array(split["normal"][:2])
+                    normal_magnitude = np.linalg.norm(normal_vec)
+                    if normal_magnitude > 1e-6:
+                        split_normal = (normal_vec / normal_magnitude).tolist()
+                    else:
+                        split_normal = [0., 0.]
 
-                G.graph.add_node(split_node_id,
-                    type="ws",
-                    center=split_center,
-                    normal=split_normal,
-                    length=float(split["length"]),
-                    original_type=node_attrs.get("original_type", "Plane"),
-                    original_attrs=node_attrs.get("original_attrs", {}),
-                    original_id=node_id_str,
-                    limits=split["segment"])
+                    G.graph.add_node(split_node_id,
+                        type="ws",
+                        center=split_center,
+                        normal=split_normal,
+                        length=float(split["length"]),
+                        original_type=node_attrs.get("original_type", "Plane"),
+                        original_attrs=node_attrs.get("original_attrs", {}),
+                        original_id=node_id_str,
+                        limits=split["segment"])
 
-            # Remove original plane node (replaced by split nodes)
-            G.graph.remove_node(node_id)
+                # Remove original plane node (replaced by split nodes)
+                G.graph.remove_node(node_id)
             
-        G.from_2D_to_3D()
-        G._add_complete_viz_attributes_to_graph()
-        visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)
-        #plt.pause(0.5)
-        #new edges based on spatial proximity##################################
+        
+        
+        # Create edges between split ws nodes and their neighboring rooms.
+        
+        # Group split nodes by their original wall ID
+        splits_by_original = {}
+        for node_id, node_attrs in G.graph.nodes(data=True):
+            if node_attrs.get("type") != "ws":
+                continue
+            original_id = node_attrs.get("original_id")
+            if original_id is None:
+                continue
+            splits_by_original.setdefault(original_id, []).append((node_id, node_attrs))
 
-        #######################################################################
-        G.from_3D_to_2D() 
+        # For each original wall, connect each room neighbor to the closest split node
+        for original_id, split_nodes in splits_by_original.items():
+            room_neighbors = room_neighbors_by_wall.get(original_id, [])
+
+            for room_id in room_neighbors:
+                room_center = np.array(G.graph.nodes[room_id]["center"])
+
+                best_split_id = None
+                best_distance = float("inf")
+                for split_id, split_attrs in split_nodes:
+                    split_center = np.array(split_attrs["center"])
+                    dist = np.linalg.norm(room_center - split_center)
+                    if dist < best_distance:
+                        best_distance = dist
+                        best_split_id = split_id
+
+                if best_split_id is not None:
+                    # Training data has ws_belongs_room: room → ws (unidirectional)
+                    G.graph.add_edge(room_id, best_split_id)
+
+        ####################################################################################################################
+        # Add ws→ws unidirectional chain + shortcut edges per room.
+        # Training data has ws_same_room edges: a forward chain ws_0→ws_1→...→ws_(n-1)
+        # plus a shortcut edge ws_0→ws_(n-1).
+        for node_id, node_attrs in G.graph.nodes(data=True):
+            if node_attrs.get("type") != "room":
+                continue
+            # Collect all ws neighbors of this room (successors since room → ws)
+            ws_neighbors = [
+                n for n in G.graph.successors(node_id)
+                if G.graph.nodes[n].get("type") == "ws"
+            ]
+            if len(ws_neighbors) < 2:
+                continue
+            # Forward chain: ws_0 → ws_1 → ws_2 → ... → ws_(n-1)
+            for i in range(len(ws_neighbors) - 1):
+                if not G.graph.has_edge(ws_neighbors[i], ws_neighbors[i + 1]):
+                    G.graph.add_edge(ws_neighbors[i], ws_neighbors[i + 1])
+            # Shortcut: ws_0 → ws_(n-1)
+            if not G.graph.has_edge(ws_neighbors[0], ws_neighbors[-1]):
+                G.graph.add_edge(ws_neighbors[0], ws_neighbors[-1])
+
+        
+        # G.from_2D_to_3D()
+        # G._add_complete_viz_attributes_to_graph()
+        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
+        # G.from_3D_to_2D()
+        
         return G
 
 
@@ -591,6 +677,12 @@ class GraphMatchingNode(Node):
                 target_id = g2_nodes[col]
                 base_node = g1.nodes[base_id]
                 target_node = g2.nodes[target_id]
+
+                # Skip cross-type matches (room<->ws) — the GNN has no hard constraint preventing them
+                if base_node["type"] != target_node["type"]:
+                    self.get_logger().warn(f"Skipping cross-type match: {base_id} ({base_node['type']}) -> {target_id} ({target_node['type']})")
+                    continue
+
                 # Get original ROS attributes for both nodes
                 base_attrs = dict(base_node.get("original_attrs", {}))
                 target_attrs = dict(target_node.get("original_attrs", {}))
@@ -713,9 +805,6 @@ class GraphMatchingNode(Node):
         
         self.get_logger().info('Incoming graph with name {}'.format(msg.name))
 
-        # Cache the original GraphMsg for potential later use
-        # self.graphs_msg_cache[msg.name] = msg
-
         graph = {"name" : msg.name}
         self.gm.set_parameters(self.params)
         
@@ -764,7 +853,7 @@ class GraphMatchingNode(Node):
         graph["edges"] = edges
         
         
-        self.gm.set_graph_from_dict(graph, graph["name"]) #Takes dictionary representation of the graph and convert it to networkx.Graph (store it with a given key)
+        self.gm.set_graph_from_dict(graph, graph["name"]) #Takes dictionary representation of the graph and convert it into a GraphWrapper(store it with a given key(name))
         # dbg_graph = GraphWrapper(graph_def=graph)
         accapted_node_types = ["Finite Room", "Plane"]
         self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accapted_node_types)
@@ -773,9 +862,12 @@ class GraphMatchingNode(Node):
         
         
         if self.use_pgm:
-            gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs[graph["name"]])
-            self.graphs_gnn[graph["name"]] = gnn_wrapper
-            self.get_logger().info(f'Converted {graph["name"]} to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
+            if graph["name"] != "Prior" and not self.original_planes:
+                self.get_logger().warn(f'Skipping GNN conversion for {graph["name"]}: original_planes not yet received from /s_graphs/all_map_planes')
+            else:
+                gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs[graph["name"]])
+                self.graphs_gnn[graph["name"]] = gnn_wrapper
+                self.get_logger().info(f'Converted {graph["name"]} to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
 
 
 
@@ -806,15 +898,16 @@ class GraphMatchingNode(Node):
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
             if self.use_pgm:
-                # For PGM convert Prior to GNN format on-demand if not already done
-                if "Prior" not in self.graphs_gnn and "Prior" in self.gm.graphs:
-                    self.get_logger().info(f"Converting Prior graph to DiGraph format on-demand...")
-                    gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs["Prior"])
-                    self.graphs_gnn["Prior"] = gnn_wrapper
-                    self.get_logger().info(f'Converted Prior to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
-                if "Prior" not in self.graphs_gnn:
-                    self.get_logger().warn("Prior graph not yet received, skipping PGM matching")
-                    return
+                # # For PGM convert Prior to GNN format on-demand if not already done
+                # # Prior always arrives first, so this block is redundant
+                # if "Prior" not in self.graphs_gnn and "Prior" in self.gm.graphs:
+                #     self.get_logger().info(f"Converting Prior graph to DiGraph format on-demand...")
+                #     gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs["Prior"])
+                #     self.graphs_gnn["Prior"] = gnn_wrapper
+                #     self.get_logger().info(f'Converted Prior to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
+                #if "Prior" not in self.graphs_gnn:
+                #    self.get_logger().warn("Prior graph not yet received, skipping PGM matching")
+                #    return
                 success, matches, matches_full, matches_dev = self.run_pgm_matching("Prior", "Online")
             else:
                 success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online", add_deviations=True)
