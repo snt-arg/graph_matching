@@ -22,7 +22,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from rclpy.node import Node
-from utils import *
+from graph_matching.utils import *
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 from tf2_ros.buffer_interface import BufferInterface
@@ -51,8 +51,8 @@ from situational_graphs_reasoning_msgs.msg import Edge as EdgeMsg
 from situational_graphs_reasoning_msgs.msg import Attribute as AttributeMsg
 from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 
-from GraphMatcher import GraphMatcher
-from utils import plane_4_params_to_6_params
+from graph_matching.GraphMatcher import GraphMatcher
+from graph_matching.utils import plane_4_params_to_6_params
 class GraphMatchingNode(Node):
 
     def __init__(self):
@@ -61,6 +61,13 @@ class GraphMatchingNode(Node):
         self.set_interface()
         self.get_json_parameters_()
         # self.get_logger().info(f"{self.params}")
+
+        self.debug_csv_file = self.get_parameter('debug_csv_file').get_parameter_value().string_value
+        if self.debug_csv_file:
+            self.get_logger().info(f"Debug CSV file path: {self.debug_csv_file}")
+            self.write_csv_header()
+        else:
+            self.get_logger().info("No debug CSV file provided.")
 
     def get_json_parameters_(self):
         matching_package_path = ament_index_python.get_package_share_directory("graph_matching")
@@ -72,7 +79,7 @@ class GraphMatchingNode(Node):
 
         
     def set_interface(self):
-        self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 0)
+        self.graph_subscription = self.create_subscription(GraphMsg,'graph_matching/graphs', self.graph_callback, 10)
         self.unique_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/unique_match', 10)
         self.best_match_publisher = self.create_publisher(MatchMsg, 'graph_matching/best_match', 10)
         self.unique_match_visualization_inc_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/unique_match_visualization/incremental', 10)
@@ -160,9 +167,9 @@ class GraphMatchingNode(Node):
         print("************************************************************************")
         # self.get_logger().info('Incoming graph with name {}'.format(msg.name))
         ### !DEBUG!
-        if (msg.header.stamp.sec > 832):
-            print("!DEBUG: Not processing graph with timestamp >832 for testing purposes")
-            return
+        # if (msg.header.stamp.sec > 832):
+        #     print("!DEBUG: Not processing graph with timestamp >832 for testing purposes")
+        #     return
         graph = {"name" : msg.name}
         self.gm.set_parameters(self.params)
         nodes = []
@@ -241,8 +248,8 @@ class GraphMatchingNode(Node):
             return
 
         # Save graph as pickle file
-        with open(f"/home/adminpc/workspace/src/graph_matching/graph_matching/graph_dicts/{graph['name']}.pkl", "wb") as pickle_file:
-            pickle.dump(self.gm.graphs[graph["name"]], pickle_file)
+        # with open(f"/home/adminpc/workspace/src/graph_matching/graph_matching/graph_dicts/{graph['name']}.pkl", "wb") as pickle_file:
+        #     pickle.dump(self.gm.graphs[graph["name"]], pickle_file)
 
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
@@ -258,6 +265,10 @@ class GraphMatchingNode(Node):
             # self.get_logger().info(f"DBG matches: {matches}")
             # self.get_logger().info(f"DBG matches_full: {matches_full}")
             # self.get_logger().info(f"DBG matches_dev: {matches_dev}")
+            if self.debug_csv_file:
+                self.write_csv_line(self.gm.match_times[-1])
+                print(f'{self.gm.match_times=}')
+
             for match in matches:
                 self.get_logger().info(f"New consistent match!")
                 for i in match:
@@ -278,8 +289,8 @@ class GraphMatchingNode(Node):
                 print(f"Match details:")
                 print(matches[0])
 
-                unique_match_msg = self.generate_match_msg(matches[0])
-                self.unique_match_publisher.publish(unique_match_msg)
+                # unique_match_msg = self.generate_match_msg(matches[0])
+                # self.unique_match_publisher.publish(unique_match_msg)
 
                 # unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
                 # self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
@@ -289,7 +300,19 @@ class GraphMatchingNode(Node):
                 # self.unique_match_visualization_dev_publisher.publish(unique_match_visualization_dev_msg)
                 # time.sleep(999)
 
-        
+    def write_csv_header(self):
+        header = "prior_nodes,online_nodes,match_time\n"
+        with open(self.debug_csv_file, 'w') as f:
+            f.write(header)
+
+    def write_csv_line(self, info_line):
+        line = ''
+        for info in info_line:
+            line += f'{info},'
+        line += '\n'
+
+        with open(self.debug_csv_file, 'a') as f:
+            f.write(line)
 
 
     def subgraph_match_srv_callback(self, request, response):

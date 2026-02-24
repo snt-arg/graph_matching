@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
-import transforms3d.euler as eul
+# import transforms3d.euler as eul
 
 graph_matching_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"graph_matching")
 sys.path.append(graph_matching_dir)
@@ -29,8 +29,11 @@ class GraphMatcher():
         self.stored_match_graph = None
         self.stored_match_graph_dev = GraphWrapper({"nodes":[(0, {"match":set(),"split_match":[],"split_scores":[], "type" : "Plane", "merge_lvl": 0, "score_intralevel": 0})], "edges":[], "name": "deviations"})
         self.stored_consistent_combinations = []
-        self.room_string = "Finite Room"
-        self.ws_string = "Plane"
+        # self.room_string = "Finite Room"
+        # self.ws_string = "Plane"
+        self.room_string = "room"
+        self.ws_string = "ws"
+        self.match_times = []
 
     def set_parameters(self, params):
         self.params = params
@@ -43,7 +46,7 @@ class GraphMatcher():
 
 ###  The match function performs a detailed, multi-level graph matching operation between two graphs.
     def match(self, G1_name, G2_name, add_deviations = False):
-        unique_match_found = False
+        # unique_match_found = False
         if self.log_level > 0:
             self.logger.info("BENNINGING match")
         print("Add deviations flag:", add_deviations)
@@ -61,6 +64,7 @@ class GraphMatcher():
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
         ###  Create a deep copy of the stored_match_graph to store the matching results.
+        self.stored_match_graph = None # DEBUG!
         if self.stored_match_graph:
             stored_match_graph = copy.deepcopy(self.stored_match_graph)
             merged_stored_match_graph = stored_match_graph.filter_graph_by_node_attributes({"merge_lvl":len(swept_levels)-1, "type" : swept_levels[0]})
@@ -248,12 +252,12 @@ class GraphMatcher():
                 c for c in interlevel_consistent_combinations if len(c) == max_len
             )
 
-            ### !DEBUG: MATCHING FOR JUST ONE ROOM
-            if swept_levels[lvl] == self.room_string:
-                # remove if not '72' in any of the Pairs
-                interlevel_consistent_combinations = frozenset(
-                    c for c in interlevel_consistent_combinations if any('72' in pair for pair in c)
-                )
+            # ### !DEBUG: MATCHING FOR JUST ONE ROOM
+            # if swept_levels[lvl] == self.room_string:
+            #     # remove if not '72' in any of the Pairs
+            #     interlevel_consistent_combinations = frozenset(
+            #         c for c in interlevel_consistent_combinations if any('72' in pair for pair in c)
+            #     )
 
             print("****** MAX INTERLEVEL CONSISTENT COMBINATIONS ******")
             print(f"Interlevel consistent combinations: {interlevel_consistent_combinations}")
@@ -376,17 +380,14 @@ class GraphMatcher():
                 #         score = 0.
                 # ### END
                 print("************ PROCESSING INTRALEVEL COMBINATION ************")
-                print(f"Clipper input A_numerical: {A_numerical}")
-                print(f"Clipper input A_categorical: {A_categorical}")
-                print(f"Clipper input data1: {data1}")
-                print(f"Clipper input data2: {data2}")
-                print(f"Clipper input nodes1: {nodes1}")
-                print(f"Clipper input nodes2: {nodes2}")
                 # print(f"Clipper input A_numerical: {A_numerical}")
+                # print(f"Clipper input A_categorical: {A_categorical}")
+                # print(f"Clipper input data1: {data1}")
+                # print(f"Clipper input data2: {data2}")
                 # print(f"Clipper input nodes1: {nodes1}")
                 # print(f"Clipper input nodes2: {nodes2}")
-                # print(f"Clipper output match numerical: {clipper_match_numerical}")
-                print(f"Clipper output score: {score}")
+                # # print(f"Clipper output match numerical: {clipper_match_numerical}")
+                # print(f"Clipper output score: {score}")
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
                 print(f"Clipper output match categorical: {clipper_match_categorical}")
 
@@ -552,7 +553,7 @@ class GraphMatcher():
 
             if len(final_combinations) == 1:
                 self.logger.info("Only one match succeded with score - {}".format(final_combinations[0][0]["score"]))
-                unique_match_found = True
+                # unique_match_found = True
 
                 if not self.stored_match_graph:
                     self.stored_match_graph = match_graph.filter_graph_by_node_attributes({"merge_lvl":1})
@@ -603,7 +604,14 @@ class GraphMatcher():
             final_combinations_full = []
             final_combinations_dev = []
 
-        # self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
+        match_time = time.time() - start_time
+        self.logger.info("Elapsed time in match {}".format(match_time))
+        match_time_info = (len(G1_full.filter_graph_by_node_types(self.room_string).get_nodes_ids()), 
+                              len(G2_full.filter_graph_by_node_types(self.ws_string).get_nodes_ids()), 
+                              match_time)
+        print(f'{match_time_info}')
+        self.match_times.append(match_time_info)
+
         ###  Return a tuple containing the success flag, final combinations of matches, full matches, and deviated matches.
         print(f'{final_combinations_dev=}')
         return(success, final_combinations, final_combinations_full, final_combinations_dev)
@@ -1012,65 +1020,151 @@ class GraphMatcher():
         return data
         # return transformed
 
-
     def subplots_match(self, g1_name, g2_name, matches):
+        print(f"Plotting {len(matches)} matches between {g1_name} and {g2_name} graphs...")
         for candidate_i, match in enumerate(matches):
-            fig, axs = plt.subplots(nrows=3, ncols=2, num='Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
-            plt.clf()
-            fig.suptitle('Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i))
-
-            ### Plot base graph
-            plt.axes(axs[0,0])
-            axs[0,0].clear()
-            axs[0, 0].set_title('Base graph - {}'.format(g1_name))
-            options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+            fig, axs = plt.subplots(
+                nrows=3, ncols=2,
+                num=f"Match between {g1_name} and {g2_name} graphs. Candidate {candidate_i}",
+                figsize=(20, 14)
+            )
+    
+            fig.suptitle(f"Match between {g1_name} and {g2_name} graphs. Candidate {candidate_i}")
+    
+            # --- Base graph
+            ax = axs[0, 0]
+            ax.clear()
+            ax.set_title(f"Base graph - {g1_name}")
+            plt.sca(ax)  # make this ax the "current" one (useful if draw() uses plt.gca())
+            options_base = {
+                'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(),
+                'node_size': 50, 'width': 2, 'with_labels': True
+            }
             self.graphs[g1_name].draw(None, options_base, True)
-
-            ### Plot target graph
-            plt.axes(axs[0, 1])
-            axs[0, 1].clear()
-            axs[0, 1].set_title('Target graph - {}'.format(g2_name))
-            options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+    
+            # --- Target graph
+            ax = axs[0, 1]
+            ax.clear()
+            ax.set_title(f"Target graph - {g2_name}")
+            plt.sca(ax)
+            options_target = {
+                'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(),
+                'node_size': 50, 'width': 2, 'with_labels': True
+            }
             self.graphs[g2_name].draw(None, options_target, True)
-
-            ### Plot base graph with match
-            plt.axes(axs[1,0])
-            axs[1,0].clear()
-            axs[1,0].set_title('Base graph match - {}'.format(g1_name))
+    
+            # --- Base graph with match
+            ax = axs[1, 0]
+            ax.clear()
+            ax.set_title(f"Base graph match - {g1_name}")
+            plt.sca(ax)
             nodes_base = [pair["origin_node"] for pair in match]
-            options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "grey")
+            options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(
+                options_base, nodes_base, unmatched_color=None, matched_color="grey"
+            )
             self.graphs[g1_name].draw(None, options_base_matched, True)
-
-            ### Plot target graph with match
-            plt.axes(axs[1,1])
-            axs[1,1].clear()
-            axs[1,1].set_title('Target graph match - {}'.format(g2_name))
+    
+            # --- Target graph with match
+            ax = axs[1, 1]
+            ax.clear()
+            ax.set_title(f"Target graph match - {g2_name}")
+            plt.sca(ax)
             nodes_target = [pair["target_node"] for pair in match]
-            options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "grey")
+            options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(
+                options_target, nodes_target, unmatched_color=None, matched_color="grey"
+            )
             self.graphs[g2_name].draw(None, options_target_matched, True)
-            plt.show(block=False)
-            # plt.pause(0.2)
-
-            ### Combined match
-            # plt.clf()
-            # fig = plt.figure('Combined graph match. {} - {}. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
-            plt.subplot(313)
-            match_zip = np.stack([[str(pair["origin_node"]), str(pair["target_node"])] for pair in match])
-            g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:,0])
-            g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:,1])
+    
+            # --- Combined match (use bottom-left; bottom-right unused)
+            ax = axs[2, 0]
+            ax.clear()
+            ax.set_title("Combined match")
+            plt.sca(ax)
+    
+            match_zip = np.stack([[str(p["origin_node"]), str(p["target_node"])] for p in match])
+            g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:, 0])
+            g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:, 1])
+    
             mapping = {}
             node_id_diff = 100
             for last_id in list(g2_filtered.get_nodes_ids()):
-                mapping[str(last_id)] = str(int(last_id) + int(node_id_diff))
-            g2_filtered.relabel_nodes(mapping = mapping, copy = True)
-            # g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
-
+                mapping[str(last_id)] = str(int(last_id) + node_id_diff)
+    
+            g2_filtered.relabel_nodes(mapping=mapping, copy=True)
+    
             combined_graph = g1_filtered.merge_graph(g2_filtered)
-            match_edges_attr = []
-            for pair in match:
-                match_edges_attr.append((str(pair["origin_node"]), mapping[str(pair["target_node"])], {"color" : 'r'}))
+            match_edges_attr = [
+                (str(p["origin_node"]), mapping[str(p["target_node"])], {"color": "r"})
+                for p in match
+            ]
             combined_graph.add_subgraph([], match_edges_attr)
             combined_graph.draw(None, None, True)
+    
+            # optionally hide the unused axis
+            axs[2, 1].axis("off")
+    
+            plt.tight_layout()
+            plt.show(block=False)
+            # plt.pause(0.2)
+
+    # def subplots_match(self, g1_name, g2_name, matches):
+    #     for candidate_i, match in enumerate(matches):
+    #         fig, axs = plt.subplots(nrows=3, ncols=2, num='Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
+    #         # plt.clf()
+    #         fig.suptitle('Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i))
+
+    #         ### Plot base graph
+    #         plt.axes(axs[0,0])
+    #         axs[0,0].clear()
+    #         axs[0, 0].set_title('Base graph - {}'.format(g1_name))
+    #         options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+    #         self.graphs[g1_name].draw(None, options_base, True)
+
+    #         ### Plot target graph
+    #         plt.axes(axs[0, 1])
+    #         axs[0, 1].clear()
+    #         axs[0, 1].set_title('Target graph - {}'.format(g2_name))
+    #         options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
+    #         self.graphs[g2_name].draw(None, options_target, True)
+
+    #         ### Plot base graph with match
+    #         plt.axes(axs[1,0])
+    #         axs[1,0].clear()
+    #         axs[1,0].set_title('Base graph match - {}'.format(g1_name))
+    #         nodes_base = [pair["origin_node"] for pair in match]
+    #         options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "grey")
+    #         self.graphs[g1_name].draw(None, options_base_matched, True)
+
+    #         ### Plot target graph with match
+    #         plt.axes(axs[1,1])
+    #         axs[1,1].clear()
+    #         axs[1,1].set_title('Target graph match - {}'.format(g2_name))
+    #         nodes_target = [pair["target_node"] for pair in match]
+    #         options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "grey")
+    #         self.graphs[g2_name].draw(None, options_target_matched, True)
+    #         plt.show(block=False)
+    #         # plt.pause(0.2)
+
+    #         ### Combined match
+    #         # plt.clf()
+    #         # fig = plt.figure('Combined graph match. {} - {}. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
+    #         plt.subplot(313)
+    #         match_zip = np.stack([[str(pair["origin_node"]), str(pair["target_node"])] for pair in match])
+    #         g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:,0])
+    #         g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:,1])
+    #         mapping = {}
+    #         node_id_diff = 100
+    #         for last_id in list(g2_filtered.get_nodes_ids()):
+    #             mapping[str(last_id)] = str(int(last_id) + int(node_id_diff))
+    #         g2_filtered.relabel_nodes(mapping = mapping, copy = True)
+    #         # g2_filtered.translate_attr_all_nodes("draw_pos", np.array([10,0]))
+
+    #         combined_graph = g1_filtered.merge_graph(g2_filtered)
+    #         match_edges_attr = []
+    #         for pair in match:
+    #             match_edges_attr.append((str(pair["origin_node"]), mapping[str(pair["target_node"])], {"color" : 'r'}))
+    #         combined_graph.add_subgraph([], match_edges_attr)
+    #         combined_graph.draw(None, None, True)
 
 
     def filter_matches_by_node_type(self, g1, matches, node_type):
@@ -1758,58 +1852,91 @@ class GraphMatcher():
         return ws_content_nodes
 
     def filter_by_content(self, all_pairs_categorical, G1_full, G2_full, G1_lvl, G2_lvl):
+
         # print("FILTER BY CONTENT started")
-        # get rooms content
+        # Get node content
         content = {}
-        for node in G1_lvl.get_nodes_ids():
-            node_type = G1_full.get_attributes_of_node(node).get("type")
-            # print(f"flag node {node} type {node_type}")
-            if node_type == self.room_string:
-                content[node] = self.get_room_content(
-                        G1_full, node)
-            if node_type == self.ws_string:
-                content[node] = self.get_ws_content(
-                        G1_full, node)
-        for node in G2_lvl.get_nodes_ids():
-            node_type = G2_full.get_attributes_of_node(node).get("type")
-            if node_type == self.room_string:
-                content[node] = self.get_room_content(
-                        G2_full, node)
-            if node_type == self.ws_string:
-                content[node] = self.get_ws_content(
-                        G2_full, node)
+        self.get_nodes_content(G1_lvl, G1_full, content)
+        self.get_nodes_content(G2_lvl, G2_full, content)
         
         remove_pairs = []
         for pair in all_pairs_categorical:
             # print(f"fbc checking pair {pair}")
-            # print(f"fbc content {content[pair[1]]} vs {content[pair[0]]}")
+            print(f"fbc content {content[pair[1]]} vs {content[pair[0]]}")
 
-            if content[pair[0]].keys() != content[pair[1]].keys():
-                # print(f"fbc removing pair {pair} because of different keys")
+            # if not self.content_condition_strict(pair[0], pair[1], content):
+            #     print(f"fbc removing pair {pair} because of content condition")
+            #     remove_pairs.append(pair)
+
+            if not self.content_condition_detected(pair[0], pair[1], content):
+                print(f"fbc removing pair {pair} because of content condition")
                 remove_pairs.append(pair)
-                continue
 
-            for key in content[pair[1]].keys():
-                # print(f"fbc checking key {key} from {pair[1]} to {pair[0]}")
-                if key not in content[pair[0]].keys():
-                    # print(f"fbc removing pair {pair} because of key {key}")
-                    remove_pairs.append(pair)
-                    # all_pairs_categorical.remove(pair)
-                    # for ws_pair in all_pairs_categorical:
-                    #     print(f"flag ws_pair {ws_pair} in pair {pair}")
-                    #     if ws_pair[0] in content[pair[0]][self.ws_string] and ws_pair[1] in content[pair[0]][self.ws_string]:
-                    #         print(f"fbc removing ws pair {ws_pair} because of key {key}")
-                    #         all_pairs_categorical.remove(ws_pair)
-                    break
+            # Strinct condition: same content
+            # if content[pair[0]].keys() != content[pair[1]].keys():
+            #     # print(f"fbc removing pair {pair} because of different keys")
+            #     remove_pairs.append(pair)
+            #     continue
 
-                # If same keys, check if same number of object_same_room
-                # print(f"fbc comparing lengths {len(content[pair[0]][key])} vs {len(content[pair[1]][key])}")
-                if len(content[pair[0]][key]) != len(content[pair[1]][key]):
-                    # print(f"flag removing pair {pair} because of different number of {key}")
-                    # all_pairs_categorical.remove(pair)
-                    remove_pairs.append(pair)
-                    break
-        # print("FILTER BY CONTENT finished")
+            # for key in content[pair[1]].keys():
+            #     print(f"fbc checking key {key} from {pair[1]} to {pair[0]}")
+            #     if key not in content[pair[0]].keys():
+            #         print(f"fbc removing pair {pair} because of key {key}")
+            #         remove_pairs.append(pair)
+            #         # all_pairs_categorical.remove(pair)
+            #         # for ws_pair in all_pairs_categorical:
+            #         #     print(f"flag ws_pair {ws_pair} in pair {pair}")
+            #         #     if ws_pair[0] in content[pair[0]][self.ws_string] and ws_pair[1] in content[pair[0]][self.ws_string]:
+            #         #         print(f"fbc removing ws pair {ws_pair} because of key {key}")
+            #         #         all_pairs_categorical.remove(ws_pair)
+            #         break
+
+            #     # If same keys, check if same number of object_same_room
+            #     # print(f"fbc comparing lengths {len(content[pair[0]][key])} vs {len(content[pair[1]][key])}")
+            #     if len(content[pair[0]][key]) != len(content[pair[1]][key]):
+            #         print(f"flag removing pair {pair} because of different number of {key}")
+            #         # all_pairs_categorical.remove(pair)
+            #         remove_pairs.append(pair)
+            #         break
 
         return remove_pairs
+    
+    def get_nodes_content(self, graph_lvl, graph_full, content):
+        for node in graph_lvl.get_nodes_ids():
+            node_type = graph_full.get_attributes_of_node(node).get("type")
+            if node_type == self.room_string:
+                content[node] = self.get_room_content(
+                        graph_full, node)
+            if node_type == self.ws_string:
+                content[node] = self.get_ws_content(
+                        graph_full, node)
 
+    def content_condition_strict(self, prior_node, online_node, content):
+        # Both nodes must have the same types of objects in their content 
+        if content[online_node].keys() != content[prior_node].keys():
+            return False
+
+        # For each type of object, both nodes must have the same number of objects
+        for key in content[online_node].keys():
+            print(f"fbc checking key {key} from {online_node} to {prior_node}")
+            if key not in content[prior_node].keys():
+                return False
+
+            if len(content[prior_node][key]) != len(content[online_node][key]):
+                return False
+
+        return True
+
+    def content_condition_detected(self, prior_node, online_node, content):
+        # For each type of object, both nodes must have the same number of objects
+        for key in content[online_node].keys():
+            print(f"fbc checking key {key} from {online_node} to {prior_node}")
+            if key not in content[prior_node].keys():
+                print(f"fbc removing pair because of detected {key}")
+                return False
+
+            if len(content[prior_node][key]) < len(content[online_node][key]):
+                print(f"fbc removing pair because of more detections of {key}")
+                return False
+
+        return True

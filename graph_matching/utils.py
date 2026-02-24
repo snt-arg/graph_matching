@@ -1,7 +1,7 @@
 import numpy as np
 import time
 import math
-import transforms3d.euler as eul
+# import transforms3d.euler as eul
 import itertools
 import copy
 

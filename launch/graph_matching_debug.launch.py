@@ -1,21 +1,13 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch.actions import (DeclareLaunchArgument, EmitEvent, ExecuteProcess,
-                            LogInfo, RegisterEventHandler, TimerAction)
-from launch.event_handlers import (OnExecutionComplete, OnProcessExit,
-                                OnProcessIO, OnProcessStart, OnShutdown)
-from launch.events import Shutdown
-from launch.substitutions import (EnvironmentVariable, FindExecutable,
-                                LaunchConfiguration, LocalSubstitution,
-                                PythonExpression)
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    # launch_tester_node_ns = LaunchConfiguration('launch_tester_node_ns')
-
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
@@ -28,8 +20,11 @@ def generate_launch_description():
         description='Topic name for the graph input'
     )
 
-    use_sim_time = LaunchConfiguration('use_sim_time')
-    graph_topic = LaunchConfiguration('graph_topic')
+    debug_csv_file_arg = DeclareLaunchArgument(
+        'debug_csv_file',
+        default_value='',
+        description='Path to the csv file for debug'
+    )
 
     config = os.path.join(
         get_package_share_directory('graph_matching'),
@@ -40,11 +35,12 @@ def generate_launch_description():
     graph_matching_node = Node(
         package='graph_matching',
         executable='graph_matching',
-        # namespace='graph_matching',
-        parameters = [config,
-                      {'use_sim_time': use_sim_time}],
+        parameters=[
+            config,
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+            {'debug_csv_file': LaunchConfiguration('debug_csv_file')},
+        ],
         remappings=[
-            # ('graph_matching/graphs', '/s_graphs/graph_structure'),
             ('graph_matching/graphs', LaunchConfiguration('graph_topic')),
         ],
         output='screen',
@@ -54,5 +50,6 @@ def generate_launch_description():
     return LaunchDescription([
         use_sim_time_arg,
         graph_topic_arg,
+        debug_csv_file_arg,
         graph_matching_node,
     ])
