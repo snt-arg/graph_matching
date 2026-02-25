@@ -158,8 +158,248 @@ class GraphMatchingNode(Node):
         self.get_logger().info("PGM setup complete.")
 
 
+    def load_all_pickle_graphs(self):
+        """Load all previously saved pickle graph files from the graph_dicts directory."""
+        pickle_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
+        loaded_graphs = {}
+
+        if not os.path.exists(pickle_dir):
+            os.makedirs(pickle_dir)
+            self.get_logger().info(f"Created directory: {pickle_dir}")
+            return loaded_graphs
+
+        pickle_files = [f for f in os.listdir(pickle_dir) if f.endswith('.pkl')]
+
+        if not pickle_files:
+            self.get_logger().info("No pickle files found in the graph_dicts directory")
+            return loaded_graphs
+
+        for pickle_file in pickle_files:
+            file_path = os.path.join(pickle_dir, pickle_file)
+            try:
+                with open(file_path, 'rb') as f:
+                    graph_wrapper = pickle.load(f)
+                    graph_name = graph_wrapper.name if hasattr(graph_wrapper, 'name') else pickle_file[:-4]
+                    self.gm.graphs[graph_name] = graph_wrapper
+                    loaded_graphs[graph_name] = graph_wrapper
+                    self.get_logger().info(f"Loaded graph: {graph_name} from {pickle_file} "
+                                           f"({graph_wrapper.get_total_number_nodes()} nodes)")
+            except Exception as e:
+                self.get_logger().error(f"Failed to load pickle file {pickle_file}: {str(e)}")
+
+        self.get_logger().info(f"Loaded {len(loaded_graphs)} graphs from pickle files")
+        return loaded_graphs
+
+    def match_loaded_graphs(self):
+        """Load already GNN-converted graphs and run PGM matching."""
+        if "Prior" not in self.gm.graphs or "Online" not in self.gm.graphs:
+            self.get_logger().error("Both Prior and Online graphs must be loaded before matching")
+            return
+
+        # Loaded graphs are already in GNN DiGraph format (with split planes),
+        # so just assign them directly to graphs_gnn.
+        # Sanitize center/normal to plain Python lists so the PGM feature
+        # builder (which uses list '+' concatenation) doesn't receive numpy
+        # arrays and produce wrong-shaped tensors.
+        for graph_name in ["Prior", "Online"]:
+            self.graphs_gnn[graph_name] = self.gm.graphs[graph_name]
+            for _, attrs in self.graphs_gnn[graph_name].graph.nodes(data=True):
+                for key in ("center", "normal"):
+                    if key in attrs and hasattr(attrs[key], "tolist"):
+                        attrs[key] = attrs[key].tolist()
+            self.get_logger().info(f"Loaded {graph_name} GNN graph: "
+                                   f"{self.graphs_gnn[graph_name].graph.number_of_nodes()} nodes, "
+                                   f"{self.graphs_gnn[graph_name].graph.number_of_edges()} edges")
+
+        # Run PGM matching
+        success, matches, matches_full, matches_dev = self.run_pgm_matching("Prior", "Online")
+
+        if success and matches:
+            for match in matches:
+                self.get_logger().info("New consistent match!")
+                for i in match:
+                    self.get_logger().info(f"{i['origin_node_attrs']['type']}. "
+                                           f"nodes {i['origin_node']} - {i['target_node']}. "
+                                           f"score {i['score']}")
+
+        return success, matches, matches_full, matches_dev
+
+    # ------------------------------------------------------------------ #
+    #  GROUND TRUTH & EVALUATION                                           #
+    # ------------------------------------------------------------------ #
+
+    def generate_ground_truth(self):
+        """Load the manually defined ground truth from ground_truth.json.
+
+        File location: graph_dicts/ground_truth.json
+        Format:
+            {
+              "rooms": { "online_id": "prior_id", ... },
+              "ws":    [ ["online_split_id", "prior_split_id"], ... ]
+            }
+
+        "ws" is a list of pairs (not a dict) to support many-to-many mappings
+        where one online split can match multiple prior splits and vice-versa,
+        and to avoid silent data loss from duplicate JSON keys.
+
+        Returns:
+            list of (online_split_id (str), prior_split_id (str)) tuples
+        """
+        gt_path = os.path.join(
+            "/root/workspace/src/graph_matching/graph_matching/graph_dicts", "ground_truth.json")
+
+        if not os.path.exists(gt_path):
+            self.get_logger().error(f"[GT] Ground truth file not found: {gt_path}")
+            return []
+
+        with open(gt_path, "r") as f:
+            raw = json.load(f)
+
+        ground_truth = []
+        skipped = []
+
+        # Rooms: dict { online_id: prior_id } — rooms are never split
+        for o_id, p_id in raw.get("rooms", {}).items():
+            if p_id == "??":
+                skipped.append(f"rooms/{o_id}")
+                continue
+            ground_truth.append((str(o_id), str(p_id)))
+            self.get_logger().info(
+                f"[GT] Online {str(o_id):20s} (rooms) → Prior {str(p_id)}")
+
+        # ws: list of [online_split_id, prior_split_id] pairs
+        for entry in raw.get("ws", []):
+            if len(entry) != 2:
+                self.get_logger().warn(f"[GT] Malformed ws entry: {entry}")
+                continue
+            o_id, p_id = str(entry[0]), str(entry[1])
+            if p_id == "??":
+                skipped.append(f"ws/{o_id}")
+                continue
+            ground_truth.append((o_id, p_id))
+            self.get_logger().info(
+                f"[GT] Online {o_id:20s} (ws)    → Prior {p_id}")
+
+        if skipped:
+            self.get_logger().warn(
+                f"[GT] Skipped {len(skipped)} unannotated entries: {skipped}")
+
+        self.get_logger().info(f"[GT] Loaded {len(ground_truth)} annotated pairs")
+        return ground_truth
+
+    def evaluate_matches(self, predicted_matches, ground_truth):
+        """Compare predicted matches against ground truth and log metrics.
+
+        Args:
+            predicted_matches: flat list of match dicts produced by run_pgm_matching().
+                Each dict must contain:
+                  "origin_split_id": prior split node ID (str), e.g. "92077532_s4"
+                  "target_split_id": online split node ID (str), e.g. "75_s0"
+                  For room nodes these equal the plain room ID (e.g. "59", "129").
+            ground_truth: list of (online_split_id (str), prior_split_id (str)) tuples
+                as returned by generate_ground_truth().
+        """
+        # Build sets of (prior_split_id, online_split_id) pairs
+        predicted_set = {(str(m["origin_split_id"]), str(m["target_split_id"]))
+                         for m in predicted_matches}
+        gt_set = {(p_id, o_id) for o_id, p_id in ground_truth}
+
+        tp = predicted_set & gt_set
+        fp = predicted_set - gt_set
+        fn = gt_set - predicted_set
+
+        precision = len(tp) / len(predicted_set) if predicted_set else 0.0
+        recall    = len(tp) / len(gt_set)        if gt_set        else 0.0
+        f1 = (2 * precision * recall / (precision + recall)
+              if (precision + recall) > 0 else 0.0)
+
+        self.get_logger().info("=" * 50)
+        self.get_logger().info("MATCHING EVALUATION")
+        self.get_logger().info("=" * 50)
+        self.get_logger().info(f"  GT pairs:        {len(gt_set)}")
+        self.get_logger().info(f"  Predicted pairs: {len(predicted_set)}")
+        self.get_logger().info(f"  True positives:  {len(tp)}")
+        self.get_logger().info(f"  False positives: {len(fp)}")
+        self.get_logger().info(f"  False negatives: {len(fn)}")
+        self.get_logger().info(f"  Precision: {precision:.3f}")
+        self.get_logger().info(f"  Recall:    {recall:.3f}")
+        self.get_logger().info(f"  F1 score:  {f1:.3f}")
+        if fp:
+            self.get_logger().warn(f"  Wrong predictions: {fp}")
+        if fn:
+            self.get_logger().warn(f"  Missed GT pairs:   {fn}")
+
+        # Per-type breakdown: build a type lookup from predicted match dicts
+        # (type comes from origin_node_attrs["type"]: "Finite Room" or "Plane")
+        type_of = {(str(m["origin_split_id"]), str(m["target_split_id"])):
+                   m["origin_node_attrs"].get("type", "") for m in predicted_matches}
+        # Collect the set of prior IDs that the model considers rooms (used for FN classification)
+        room_prior_ids = {p[0] for p in predicted_set if type_of.get(p) == "Finite Room"}
+        # Also collect room prior IDs from GT pairs that are TP (type known via type_of)
+        room_prior_ids |= {p[0] for p in tp if type_of.get(p) == "Finite Room"}
+        room_tp = sum(1 for p in tp if type_of.get(p) == "Finite Room")
+        room_fp = sum(1 for p in fp if type_of.get(p) == "Finite Room")
+        # For FN (not in predicted set): use collected room_prior_ids to identify rooms
+        room_fn = sum(1 for p in fn if p[0] in room_prior_ids)
+        self.get_logger().info(f"  [rooms] TP={room_tp}  FP={room_fp}  FN={room_fn}")
+        self.get_logger().info(f"  [walls] TP={len(tp)-room_tp}  FP={len(fp)-room_fp}  FN={len(fn)-room_fn}")
+        self.get_logger().info("=" * 50)
+
+        return {"precision": precision, "recall": recall, "f1": f1,
+                "tp": list(tp), "fp": list(fp), "fn": list(fn)}
+
+    def validate_gt_against_graphs(self, ground_truth):
+        """Check whether every node ID in the ground truth actually exists in
+        the loaded Prior and Online GNN graphs.
+
+        This is the first thing to run when results are poor: if GT split IDs
+        (e.g. "92077532_s4") are not present in the graph, it means the graphs
+        were re-generated after the GT was annotated and the split indices
+        shifted.  Those pairs will always be FN regardless of model quality.
+
+        Args:
+            ground_truth: list of (online_split_id, prior_split_id) tuples
+                          as returned by generate_ground_truth().
+        """
+        if "Prior" not in self.graphs_gnn or "Online" not in self.graphs_gnn:
+            self.get_logger().error("[GT-VAL] graphs_gnn not loaded — run match_loaded_graphs() first")
+            return
+
+        prior_nodes  = set(str(n) for n in self.graphs_gnn["Prior"].graph.nodes())
+        online_nodes = set(str(n) for n in self.graphs_gnn["Online"].graph.nodes())
+
+        self.get_logger().info("[GT-VAL] Prior  nodes: " + str(sorted(prior_nodes)))
+        self.get_logger().info("[GT-VAL] Online nodes: " + str(sorted(online_nodes)))
+
+        missing_prior, missing_online, valid_pairs = [], [], []
+        for o_id, p_id in ground_truth:
+            bad_p = p_id not in prior_nodes
+            bad_o = o_id not in online_nodes
+            if bad_p or bad_o:
+                if bad_p:
+                    missing_prior.append(p_id)
+                if bad_o:
+                    missing_online.append(o_id)
+            else:
+                valid_pairs.append((o_id, p_id))
+
+        self.get_logger().info("=" * 50)
+        self.get_logger().info("GROUND TRUTH VALIDATION")
+        self.get_logger().info("=" * 50)
+        self.get_logger().info(f"  Total GT pairs:       {len(ground_truth)}")
+        self.get_logger().info(f"  Pairs with valid IDs: {len(valid_pairs)}")
+        self.get_logger().info(f"  Prior  IDs missing:   {len(missing_prior)}")
+        self.get_logger().info(f"  Online IDs missing:   {len(missing_online)}")
+        if missing_prior:
+            self.get_logger().warn(f"  [GT-VAL] Prior  IDs not in graph: {sorted(set(missing_prior))}")
+        if missing_online:
+            self.get_logger().warn(f"  [GT-VAL] Online IDs not in graph: {sorted(set(missing_online))}")
+        self.get_logger().info("=" * 50)
 
     def _reconstruct_and_split_prior_planes(self, graph_wrapper):
+        """ split_ws() expects plane dictionaries with explicit center, segment endpoints, length, and normal —
+        but Prior planes arrive with just a start_point, normal, and length. so we need to reconstruct the endpoints first, then call split_ws()."""
+        
         """Reconstruct segment endpoints for Prior planes from start_point/normal/length, then split them.
 
         Prior planes arrive with Geometric_info=[cx,cy,cz,nx,ny,nz] + length + start_point.
@@ -194,9 +434,6 @@ class GraphMatchingNode(Node):
                 continue
 
             start_point = node_attrs.get("start_point")
-            if start_point is None:
-                print(f"[ERROR] Prior plane {node_id} missing start_point attribute")
-                continue
 
             # Reconstruct endpoints from start_point along the tangent direction
             # Match RViz: X planes extend along +Y, Y planes extend along +X
@@ -259,7 +496,7 @@ class GraphMatchingNode(Node):
 
         # Compute correct plane centers based on graph type (before splitting)
         plane_centers = {}
-        is_prior = G.name == "Prior"
+        is_prior = G.name == "Prior" 
         for node_id, node_attrs in G.graph.nodes(data=True):
             if node_attrs.get("type") != "Plane":
                 continue
@@ -386,26 +623,6 @@ class GraphMatchingNode(Node):
 
         
 
-        ####################################################################################################################
-        # Room↔room edges: present in training data as bidirectional room-room connections.
-        for node_id, node_attrs in G.graph.nodes(data=True):
-            if node_attrs.get("type") != "ws":
-                continue
-            room_neighbors = [
-                n for n in set(G.graph.predecessors(node_id)) | set(G.graph.successors(node_id))
-                if G.graph.nodes[n].get("type") == "room"
-            ]
-            if len(room_neighbors) >= 2:
-                for ri in range(len(room_neighbors)):
-                    for rj in range(ri + 1, len(room_neighbors)):
-                        r1, r2 = str(room_neighbors[ri]), str(room_neighbors[rj])
-                        if not G.graph.has_edge(r1, r2):
-                            G.graph.add_edge(r1, r2)
-                        if not G.graph.has_edge(r2, r1):
-                            G.graph.add_edge(r2, r1)
-
-
-
 
         ####################################################################################################################
         #Splitting planes into segments for both Online and Prior.
@@ -465,7 +682,7 @@ class GraphMatchingNode(Node):
                 # Remove original plane node (replaced by split nodes)
                 G.graph.remove_node(node_id)
             
-        
+        #Edges generation 
         
         # Create edges between split ws nodes and their neighboring rooms.
         
@@ -479,7 +696,7 @@ class GraphMatchingNode(Node):
                 continue
             splits_by_original.setdefault(original_id, []).append((node_id, node_attrs))
 
-        # For each original wall, connect each room neighbor to the closest split node
+        # For each original wall, connect each room neighbor to the closest split node (Room -->ws)
         for original_id, split_nodes in splits_by_original.items():
             room_neighbors = room_neighbors_by_wall.get(original_id, [])
 
@@ -500,19 +717,123 @@ class GraphMatchingNode(Node):
                     G.graph.add_edge(room_id, best_split_id)
 
         ####################################################################################################################
-        # Add ws→ws unidirectional chain + shortcut edges per room.
-        # Training data has ws_same_room edges: a forward chain ws_0→ws_1→...→ws_(n-1)
-        # plus a shortcut edge ws_0→ws_(n-1).
+        # Room→room edges: two rooms share a wall when each owns a split ws node
+        # whose center is very close to the other's — the two opposing surfaces of
+        # the same physical wall.
+        #
+        # Algorithm:
+        #   1. Collect every split ws node and map it to its room (room→ws edge).
+        #   2. Log the full pairwise-distance distribution so the threshold can be tuned.
+        #   3. For every pair of split ws nodes within WALL_PAIR_THRESHOLD whose normals
+        #      point in roughly opposite directions, connect their parent rooms.
+
+        # Step 1: build ws→room map — reuse splits_by_original computed above
+        split_ws = [
+            (nid, nattrs)
+            for nodes_list in splits_by_original.values()
+            for nid, nattrs in nodes_list
+        ]
+        ws_to_room = {}
+        for nid, _ in split_ws:
+            for pred in G.graph.predecessors(nid):
+                if G.graph.nodes[pred].get("type") == "room":
+                    ws_to_room[nid] = pred
+                    break  # each split ws belongs to at most one room
+
+        ws_center_map = {nid: np.array(attrs["center"]) for nid, attrs in split_ws}
+        ws_normal_map = {nid: np.array(attrs.get("normal", [0., 0.])) for nid, attrs in split_ws}
+        ws_ids_list = list(ws_center_map.keys())
+
+        # Step 2: log pairwise distance distribution to help calibrate WALL_PAIR_THRESHOLD
+        pairwise_dists = []
+        for i in range(len(ws_ids_list)):
+            for j in range(i + 1, len(ws_ids_list)):
+                d = float(np.linalg.norm(ws_center_map[ws_ids_list[i]] - ws_center_map[ws_ids_list[j]]))
+                pairwise_dists.append(d)
+        if pairwise_dists:
+            pairwise_sorted = sorted(pairwise_dists)
+            self.get_logger().info(
+                f"[WALL-PAIR] {len(pairwise_dists)} pairwise ws-ws distances | "
+                f"min={pairwise_sorted[0]:.3f}  "
+                f"p10={np.percentile(pairwise_dists, 10):.3f}  "
+                f"p25={np.percentile(pairwise_dists, 25):.3f}  "
+                f"median={np.percentile(pairwise_dists, 50):.3f}  "
+                f"p75={np.percentile(pairwise_dists, 75):.3f}  "
+                f"max={pairwise_sorted[-1]:.3f}")
+            self.get_logger().info(
+                f"[WALL-PAIR] 20 smallest: {[f'{d:.3f}' for d in pairwise_sorted[:20]]}")
+
+        # Step 3: connect rooms whose ws faces are close enough to form a physical wall.
+        # WALL_PAIR_THRESHOLD is the maximum center-to-center distance between the two
+        # opposing surfaces of a wall.  Tune it using the [WALL-PAIR] log lines above:
+        # there should be a clear gap between the small cluster of wall-pair distances
+        # and the next group of unrelated segment distances.
+        # Typical wall thickness in SLAM environments: 0.05 – 0.30 m.
+        WALL_PAIR_THRESHOLD = 0.25  # meters — adjust based on [WALL-PAIR] log output
+
+        for i in range(len(ws_ids_list)):
+            for j in range(i + 1, len(ws_ids_list)):
+                sid_i = ws_ids_list[i]
+                sid_j = ws_ids_list[j]
+
+                dist = float(np.linalg.norm(ws_center_map[sid_i] - ws_center_map[sid_j]))
+                if dist > WALL_PAIR_THRESHOLD:
+                    continue
+
+                # The two faces of a physical wall have roughly opposite normals.
+                # Skip pairs that point in the same (or perpendicular) direction.
+                ni = ws_normal_map[sid_i]
+                nj = ws_normal_map[sid_j]
+                ni_mag = np.linalg.norm(ni)
+                nj_mag = np.linalg.norm(nj)
+                if ni_mag > 1e-6 and nj_mag > 1e-6:
+                    dot = float(np.dot(ni / ni_mag, nj / nj_mag))
+                    if dot > 0.0:  # same half-space → not opposing faces of a wall
+                        continue
+
+                room_i = ws_to_room.get(sid_i)
+                room_j = ws_to_room.get(sid_j)
+                if room_i is None or room_j is None or room_i == room_j:
+                    continue
+
+                if not G.graph.has_edge(room_i, room_j):
+                    G.graph.add_edge(room_i, room_j)
+
+        ####################################################################################################################
+        # Add ws→ws edges per room (ws_same_room), matching the training data format.
+        # Verified from original.pkl: pattern is angularly-sorted chain + shortcut.
+        # For n ws nodes: n-1 chain edges + 1 shortcut = n edges total.
+        #
+        # # PREVIOUS APPROACH (fully connected) — does NOT match training data:
+        # for node_id, node_attrs in G.graph.nodes(data=True):
+        #     if node_attrs.get("type") != "room":
+        #         continue
+        #     ws_neighbors = [
+        #         n for n in G.graph.successors(node_id)
+        #         if G.graph.nodes[n].get("type") == "ws"
+        #     ]
+        #     if len(ws_neighbors) < 2:
+        #         continue
+        #     for i in range(len(ws_neighbors)):
+        #         for j in range(i + 1, len(ws_neighbors)):
+        #             if not G.graph.has_edge(ws_neighbors[i], ws_neighbors[j]):
+        #                 G.graph.add_edge(ws_neighbors[i], ws_neighbors[j])
         for node_id, node_attrs in G.graph.nodes(data=True):
             if node_attrs.get("type") != "room":
                 continue
-            # Collect all ws neighbors of this room (successors since room → ws)
             ws_neighbors = [
                 n for n in G.graph.successors(node_id)
                 if G.graph.nodes[n].get("type") == "ws"
             ]
             if len(ws_neighbors) < 2:
                 continue
+            # Sort ws nodes angularly around the room center so that consecutive
+            # edges connect spatially adjacent walls
+            room_center = np.array(node_attrs.get("center", [0., 0., 0.]))
+            ws_neighbors.sort(key=lambda n: np.arctan2(
+                np.array(G.graph.nodes[n]["center"])[1] - room_center[1],
+                np.array(G.graph.nodes[n]["center"])[0] - room_center[0]
+            ))
             # Forward chain: ws_0 → ws_1 → ws_2 → ... → ws_(n-1)
             for i in range(len(ws_neighbors) - 1):
                 if not G.graph.has_edge(ws_neighbors[i], ws_neighbors[i + 1]):
@@ -522,11 +843,23 @@ class GraphMatchingNode(Node):
                 G.graph.add_edge(ws_neighbors[0], ws_neighbors[-1])
 
         
+        # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
+        # Training data has every ws connected to exactly one room — orphan ws nodes
+        # are a structural pattern the GNN was never trained on and hurt match quality.
+        orphan_ws = [
+            n for n, d in G.graph.nodes(data=True)
+            if d.get("type") == "ws"
+            and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
+        ]
+        if orphan_ws:
+            self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
+            G.graph.remove_nodes_from(orphan_ws)
+
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
-        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
+        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)
         # G.from_3D_to_2D()
-        
+
         return G
 
 
@@ -538,80 +871,10 @@ class GraphMatchingNode(Node):
             g1 = self.graphs_gnn[graph1].graph
             g2 = self.graphs_gnn[graph2].graph
 
-
-
-
             self.get_logger().info(f"Running PGM on {graph1} ({g1.number_of_nodes()} nodes) "
                                 f"vs {graph2} ({g2.number_of_nodes()} nodes)")
 
 
-
-
-            # Debug: Log node information and save graphs for analysis
-            self.get_logger().info(f"Graph1 nodes: {list(g1.nodes())}")
-            self.get_logger().info(f"Graph2 nodes: {list(g2.nodes())}")
-
-
-
-            # Collect statistics for comparison with training data
-            centers_g1 = []
-            centers_g2 = []
-            normals_g1 = []
-            normals_g2 = []
-
-
-
-            for node_id in g1.nodes():
-                node = g1.nodes[node_id]
-                centers_g1.append(node['center'])
-                if node['type'] == 'ws':
-                    normals_g1.append(node['normal'])
-
-
-
-            for node_id in g2.nodes():
-                node = g2.nodes[node_id]
-                centers_g2.append(node['center'])
-                if node['type'] == 'ws':
-                    normals_g2.append(node['normal'])
-
-
-
-            centers_g1 = np.array(centers_g1)
-            centers_g2 = np.array(centers_g2)
-
-
-
-            self.get_logger().info(f"=== ROS DATA STATISTICS ===")
-            self.get_logger().info(f"G1 centers: X range [{centers_g1[:,0].min():.2f}, {centers_g1[:,0].max():.2f}], Y range [{centers_g1[:,1].min():.2f}, {centers_g1[:,1].max():.2f}]")
-            self.get_logger().info(f"G2 centers: X range [{centers_g2[:,0].min():.2f}, {centers_g2[:,0].max():.2f}], Y range [{centers_g2[:,1].min():.2f}, {centers_g2[:,1].max():.2f}]")
-            if normals_g1:
-                normals_g1 = np.array(normals_g1)
-                self.get_logger().info(f"G1 normals magnitude: mean={np.linalg.norm(normals_g1, axis=1).mean():.4f}")
-            if normals_g2:
-                normals_g2 = np.array(normals_g2)
-                self.get_logger().info(f"G2 normals magnitude: mean={np.linalg.norm(normals_g2, axis=1).mean():.4f}")
-
-
-
-            # Save graphs for offline analysis (DEBUG - can be removed later)
-            debug_path = '/root/workspace/debug_graphs'
-            os.makedirs(debug_path, exist_ok=True)
-            with open(f'{debug_path}/g1_ros.pkl', 'wb') as f:
-                pickle.dump(g1, f)
-            with open(f'{debug_path}/g2_ros.pkl', 'wb') as f:
-                pickle.dump(g2, f)
-            self.get_logger().info(f"DEBUG: Saved graphs to {debug_path}/")
-
-
-
-            for node_id in list(g1.nodes())[:3]:  # Show first 3 nodes
-                node = g1.nodes[node_id]
-                self.get_logger().info(f"G1 Node {node_id}: type={node['type']}, center={node['center']}, normal={node['normal']}, length={node['length']}")
-            for node_id in list(g2.nodes())[:3]:  # Show first 3 nodes
-                node = g2.nodes[node_id]
-                self.get_logger().info(f"G2 Node {node_id}: type={node['type']}, center={node['center']}, normal={node['normal']}, length={node['length']}")
-            
             # Create temporary files
             with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f1:
                 g1_path = f1.name
@@ -624,7 +887,7 @@ class GraphMatchingNode(Node):
             with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f3:
                 output_path = f3.name
             
-            # Run subprocess
+            # Run subprocess (Note: susbprocess run has to return 0 for the code to proceed, otherwise it will jump to the except block and return no matches)
             result = subprocess.run(
                 [self.pgm_python, self.pgm_script, g1_path, g2_path, output_path],
                 capture_output=True,
@@ -665,12 +928,11 @@ class GraphMatchingNode(Node):
             
             # Convert matrix to classic match format for visualization
             matches = []
-            rows, cols = np.where(matching_matrix > 0.5)
+            rows, cols = np.where(matching_matrix > 0.7)
             
             for row, col in zip(rows, cols):
                 if row >= len(g1_nodes) or col >= len(g2_nodes):
                     continue
-
 
 
                 base_id = g1_nodes[row]
@@ -694,6 +956,9 @@ class GraphMatchingNode(Node):
                 matches.append({
                     "origin_node": int(base_original_id),
                     "target_node": int(target_original_id),
+                    # Split-level IDs kept for evaluation (e.g. "92077532_s4", "75_s0")
+                    "origin_split_id": base_id,    # Prior split node ID
+                    "target_split_id": target_id,  # Online split node ID
                     "origin_node_attrs": {
                         "type": base_node["original_type"],
                         **base_attrs
@@ -705,6 +970,31 @@ class GraphMatchingNode(Node):
                     "score": float(matching_matrix[row, col])
                 })
             
+            # Enforce one-to-one matching at original plane level.
+            # Multiple split-to-split matches can map to the same original pair, or one
+            # original plane can appear in multiple pairs. Two-step fix:
+            # 1. Count split-level votes per original pair → aggregate confidence
+            # 2. Greedy assignment: assign in confidence order, skip already-used planes
+            from collections import defaultdict
+            pair_votes = defaultdict(list)
+            for m in matches:
+                key = (m["origin_node"], m["target_node"])
+                pair_votes[key].append(m)
+
+            candidates = sorted(pair_votes.values(), key=lambda v: len(v), reverse=True)
+
+            used_origins = set()
+            used_targets = set()
+            unique_matches = []
+            for vote_list in candidates:
+                m = vote_list[0]
+                if m["origin_node"] not in used_origins and m["target_node"] not in used_targets:
+                    m["score"] = len(vote_list)  # number of split pairs agreeing on this match
+                    unique_matches.append(m)
+                    used_origins.add(m["origin_node"])
+                    used_targets.add(m["target_node"])
+            matches = unique_matches
+
             if matches:
                 self.get_logger().info(f"PGM found {len(matches)} correspondences")
                 for match in matches:
@@ -750,6 +1040,10 @@ class GraphMatchingNode(Node):
 
     def all_planes_callback_wrapper(self, msg):
         """Wrapper that extracts plane info, splits planes using split_ws(), and stores results."""
+        """  original_planes dictionary that contains all the planes with their original info before splitting"""
+        """ online_planes_info dictionary that contains all the planes with their info after splitting)"""
+        """online_planes_by_original_id dictionary that maps each original plane ID to a list of its split segments info (since one original plane can be split into multiple segments)"""
+        
         planes_msgs = msg.x_planes + msg.y_planes
 
         # Build planes_dict list for split_ws (expects list of dicts with keys: id, center, segment, length, normal, xy_type, msg)
@@ -865,20 +1159,20 @@ class GraphMatchingNode(Node):
             if graph["name"] != "Prior" and not self.original_planes:
                 self.get_logger().warn(f'Skipping GNN conversion for {graph["name"]}: original_planes not yet received from /s_graphs/all_map_planes')
             else:
-                gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs[graph["name"]])
+                gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs[graph["name"]])#Wrapper in DiGraph format with split planes as nodes, ready for GNN processing and PGM matching
                 self.graphs_gnn[graph["name"]] = gnn_wrapper
                 self.get_logger().info(f'Converted {graph["name"]} to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
+
+                # Save GNN-converted DiGraph (with split planes) as pickle
+                graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
+                os.makedirs(graph_dicts_dir, exist_ok=True)
+                with open(os.path.join(graph_dicts_dir, f"{graph['name']}.pkl"), "wb") as pickle_file:
+                    pickle.dump(gnn_wrapper, pickle_file)
+                self.get_logger().info(f"Saved {graph['name']} graph to {graph_dicts_dir}/{graph['name']}.pkl")
 
 
 
         # self.gm.graphs[graph["name"]].draw(None, options, True)
-
-
-        # ### Save dictionary of graphs
-        # self.get_logger().info(f"FLAG type(graph) {graph}")
-        # json_object = json.dumps(graph)
-        # with open(f"/home/adminpc/reasoning_ws/src/graph_matching/graph_dicts/{graph['name']}.json", "w") as outfile:
-        #     outfile.write(json_object)
 
 
 
@@ -1330,14 +1624,52 @@ def main(args=None):
     rclpy.init(args=args)
     graph_matching_node = GraphMatchingNode()
 
+    # Debug mode: load saved graphs and run matching without waiting for ROS messages
+    debug_offline = True
+    if debug_offline:
+        graph_matching_node.load_all_pickle_graphs()
+
+        # Visualize Prior and Online graphs side by side (two separate windows).
+        # visualize_nxgraph_3d() always creates its own figure, so subplot layout
+        # is not supported — both windows open simultaneously, blocking=False on
+        # each and a final plt.show(block=True) keeps them alive together.
+        for gname in ["Prior", "Online"]:
+            if gname in graph_matching_node.gm.graphs:
+                g_viz = copy.deepcopy(graph_matching_node.gm.graphs[gname])
+                g_viz.from_2D_to_3D()
+                g_viz._add_complete_viz_attributes_to_graph()
+                visualize_nxgraph_3d(g_viz, gname, visualize_alone=True,
+                                     include_node_ids=False, blocking=False)
+        plt.show(block=True)  # block here until both windows are closed
+
+        result = graph_matching_node.match_loaded_graphs()
+
+        if result is not None:
+            success, matches, _, _ = result
+            if success and matches:
+                # Flatten all match dicts across all symmetry hypotheses
+                all_predicted = [m for hypothesis in matches for m in hypothesis]
+
+                # Load manually annotated ground truth
+                gt = graph_matching_node.generate_ground_truth()
+
+                # Validate GT node IDs against actual graph nodes (run first to
+                # detect stale split indices before evaluating model quality)
+                graph_matching_node.validate_gt_against_graphs(gt)
+
+                # Evaluate and print metrics
+                graph_matching_node.evaluate_matches(all_predicted, gt)
+            else:
+                graph_matching_node.get_logger().warn("Matching returned no results — skipping evaluation.")
+
+        graph_matching_node.destroy_node()
+        rclpy.shutdown()
+        return
+
     rclpy.spin(graph_matching_node)
     rclpy.get_logger().warn('Destroying node!')
     graph_matching_node.destroy_node()
     rclpy.shutdown()
-
-
-
-
 
 
 if __name__ == '__main__':
