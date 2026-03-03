@@ -55,8 +55,8 @@ class GraphMatcher():
         G1_full = copy.deepcopy(self.graphs[G1_name])
         G2_full = copy.deepcopy(self.graphs[G2_name])
 
-        if self.log_level > 9:
-            self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
+        # if self.log_level > 9:
+        #     self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
 
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
@@ -120,11 +120,13 @@ class GraphMatcher():
             if all_pairs_categorical and swept_levels[lvl] == self.room_string:
                 # print(f"FILTERING BY CONTENT - {self.room_string}")
                 filtered_pairs_by_content += self.filter_by_content(all_pairs_categorical, G1_full, G2_full, G1_lvl, G2_lvl)
-
+                print(f"Room - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
             ## FILTERING WS BY CONTENT
             if all_pairs_categorical and swept_levels[lvl] == self.ws_string:
                 # print(f"FILTERING BY CONTENT - {self.ws_string}")
                 filtered_pairs_by_content += self.filter_by_content(all_pairs_categorical, G1_full, G2_full, G1_lvl, G2_lvl)
+                print(f"WS - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
+
 
             for pair in filtered_pairs_by_content:
                 if pair in all_pairs_categorical:
@@ -203,6 +205,7 @@ class GraphMatcher():
 
                 # self.logger.info(f"flag interlevel_scores {interlevel_scores, len(interlevel_scores)}")
                 good_pairs = interlevel_scores >= self.params["thresholds"]["local_interlevel"][f"{swept_levels[0]} - {swept_levels[1]}"][0]
+                # good_pairs = interlevel_scores >= -1.0
                 bad_pairs = [not elem for elem in good_pairs]
                 filtered_bad_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[bad_pairs], nodes1, nodes2))
                 filtered_good_pairs_categorical = set(clipper.categorize_clipper_output(all_pairs_numerical[good_pairs], nodes1, nodes2))
@@ -248,12 +251,12 @@ class GraphMatcher():
                 c for c in interlevel_consistent_combinations if len(c) == max_len
             )
 
-            ### !DEBUG: MATCHING FOR JUST ONE ROOM
-            if swept_levels[lvl] == self.room_string:
-                # remove if not '72' in any of the Pairs
-                interlevel_consistent_combinations = frozenset(
-                    c for c in interlevel_consistent_combinations if any('72' in pair for pair in c)
-                )
+            # ### !DEBUG: MATCHING FOR JUST ONE ROOM
+            # if swept_levels[lvl] == self.room_string:
+            #     # remove if not '72' in any of the Pairs
+            #     interlevel_consistent_combinations = frozenset(
+            #         c for c in interlevel_consistent_combinations if any('72' in pair for pair in c)
+            #     )
 
             print("****** MAX INTERLEVEL CONSISTENT COMBINATIONS ******")
             print(f"Interlevel consistent combinations: {interlevel_consistent_combinations}")
@@ -325,39 +328,23 @@ class GraphMatcher():
                 # self.logger.info(f"dbg building raw - C_list {C_list}")
                 # self.logger.info(f"dbg building raw - M_list {M_list}")
 
-                # PLOT INTRALEVEL SETLIST
-                if swept_levels[lvl] == self.ws_string:
-                    # tags = [[],[]]
-                    # for pair in A_numerical:
-                    #     if pair[0] > len(nodes1)-1 or pair[1] > len(nodes2)-1:
-                    #         tag1 = "PARENT"
-                    #         tag2 = "PARENT"
-                    #         # tags.append((tag1, tag2))
-                    #         tags[0].append(tag1)
-                    #         tags[1].append(tag2)
-                    #         continue
-                    #     tag1 = nodes1[pair[0]] 
-                    #     tag2 = nodes2[pair[1]]
-                    #     # tags.append((tag1, tag2))
-                    #     tags[0].append(tag1)
-                    #     tags[1].append(tag2)
+                
 
-                    plot_graph_2 = False
-                    if plot_graph_2:
-                        self.plot_geometry_setlist(f"INTRALEVEL {A_categorical}", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1, nodes2])
-                        # self.generate_comparison_plots(outer_gs, fig, pair_i, data1, data2, A_categorical, swept_levels, lvl, tags)
-                        # pair_i += 1
-                        input("clipper input at intralevel")
-
+                plot_graph_2 = False
+                if plot_graph_2:
+                    self.plot_geometry_setlist(f"INTRALEVEL {A_categorical}", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1, nodes2])
+                    # self.generate_comparison_plots(outer_gs, fig, pair_i, data1, data2, A_categorical, swept_levels, lvl, tags)
+                    # pair_i += 1
+                    input("clipper input at intralevel")
 
 
                 ### ORIGINAL
                 clipper = Clipper(self.params["levels"]["datatype"]
                                   [swept_levels[lvl]], self.params["levels"]
                                   ["clipper_invariants"][swept_levels[lvl]], self.params, self.logger)
+
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
-
                 clipper_match_numerical, score = clipper.solve_clipper()
                 ### END
 
@@ -1016,45 +1003,38 @@ class GraphMatcher():
     def subplots_match(self, g1_name, g2_name, matches):
         for candidate_i, match in enumerate(matches):
             fig, axs = plt.subplots(nrows=3, ncols=2, num='Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
-            plt.clf()
             fig.suptitle('Match between {} and {} graphs. Candidate {}'.format(g1_name, g2_name, candidate_i))
 
             ### Plot base graph
-            plt.axes(axs[0,0])
-            axs[0,0].clear()
+            plt.sca(axs[0,0])
             axs[0, 0].set_title('Base graph - {}'.format(g1_name))
             options_base = {'node_color': self.graphs[g1_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
             self.graphs[g1_name].draw(None, options_base, True)
 
             ### Plot target graph
-            plt.axes(axs[0, 1])
-            axs[0, 1].clear()
+            plt.sca(axs[0, 1])
             axs[0, 1].set_title('Target graph - {}'.format(g2_name))
             options_target = {'node_color': self.graphs[g2_name].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
             self.graphs[g2_name].draw(None, options_target, True)
 
             ### Plot base graph with match
-            plt.axes(axs[1,0])
-            axs[1,0].clear()
+            plt.sca(axs[1,0])
             axs[1,0].set_title('Base graph match - {}'.format(g1_name))
             nodes_base = [pair["origin_node"] for pair in match]
             options_base_matched = self.graphs[g1_name].define_draw_color_from_node_list(options_base, nodes_base, unmatched_color = None, matched_color = "grey")
             self.graphs[g1_name].draw(None, options_base_matched, True)
 
             ### Plot target graph with match
-            plt.axes(axs[1,1])
-            axs[1,1].clear()
+            plt.sca(axs[1,1])
             axs[1,1].set_title('Target graph match - {}'.format(g2_name))
             nodes_target = [pair["target_node"] for pair in match]
             options_target_matched = self.graphs[g2_name].define_draw_color_from_node_list(options_target, nodes_target, unmatched_color = None, matched_color = "grey")
             self.graphs[g2_name].draw(None, options_target_matched, True)
-            plt.show(block=False)
-            # plt.pause(0.2)
 
             ### Combined match
-            # plt.clf()
-            # fig = plt.figure('Combined graph match. {} - {}. Candidate {}'.format(g1_name, g2_name, candidate_i), figsize=(20, 14))
-            plt.subplot(313)
+            plt.sca(axs[2,0])  # Use the bottom-left subplot for combined match
+            ### Combined match
+            plt.sca(axs[2,0])  # Use the bottom-left subplot for combined match
             match_zip = np.stack([[str(pair["origin_node"]), str(pair["target_node"])] for pair in match])
             g1_filtered = self.graphs[g1_name].filter_graph_by_node_list(match_zip[:,0])
             g2_filtered = self.graphs[g2_name].filter_graph_by_node_list(match_zip[:,1])
@@ -1071,6 +1051,8 @@ class GraphMatcher():
                 match_edges_attr.append((str(pair["origin_node"]), mapping[str(pair["target_node"])], {"color" : 'r'}))
             combined_graph.add_subgraph([], match_edges_attr)
             combined_graph.draw(None, None, True)
+            
+            plt.show(block=False)
 
 
     def filter_matches_by_node_type(self, g1, matches, node_type):
