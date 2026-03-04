@@ -345,6 +345,14 @@ class GraphMatchingNode(Node):
         self.get_logger().info(f"  [walls] TP={len(tp)-room_tp}  FP={len(fp)-room_fp}  FN={len(fn)-room_fn}")
         self.get_logger().info("=" * 50)
 
+        # # ------------------------------------------------------------------
+        # # Seen-based accuracy: redundant when all GT pairs are eligible.
+        # # Uncomment if you need to filter out unseen/orphan wall pairs.
+        # # ------------------------------------------------------------------
+        # seen_metrics = {}
+        # if "Online" in self.graphs_gnn:
+        #     ...
+
         return {"precision": precision, "recall": recall, "f1": f1,
                 "tp": list(tp), "fp": list(fp), "fn": list(fn)}
 
@@ -953,12 +961,23 @@ class GraphMatchingNode(Node):
                 base_original_id = base_node.get("original_id", base_id)
                 target_original_id = target_node.get("original_id", target_id)
 
+                # Use the GNN node's actual segment center actual center not Geometric_info[:3] which is the closest point on the infinite plane to world origin, not the segment center. The segment center is stored in original_attrs["center"] for split nodes, and in original_attrs["Geometric_info"] for room nodes. This is important for accurate visualization and evaluation, especially for wall segments where the infinite plane center can be far from the actual segment center.
+                # Geometric_info[:3] is the closest point on the infinite plane to world origin, not the segment center
+                base_center = base_node.get("center", None)
+                target_center = target_node.get("center", None)
+                if base_center is not None and hasattr(base_center, "tolist"):
+                    base_center = base_center.tolist()
+                if target_center is not None and hasattr(target_center, "tolist"):
+                    target_center = target_center.tolist()
+
                 matches.append({
                     "origin_node": int(base_original_id),
                     "target_node": int(target_original_id),
                     # Split-level IDs kept for evaluation (e.g. "92077532_s4", "75_s0")
                     "origin_split_id": base_id,    # Prior split node ID
                     "target_split_id": target_id,  # Online split node ID
+                    "origin_center": base_center,   # Actual segment center (not Geometric_info[:3])
+                    "target_center": target_center, # Actual segment center (not Geometric_info[:3])
                     "origin_node_attrs": {
                         "type": base_node["original_type"],
                         **base_attrs
@@ -970,6 +989,15 @@ class GraphMatchingNode(Node):
                     "score": float(matching_matrix[row, col])
                 })
             
+            # # DEBUG: log raw GNN matches before dedup to diagnose missing wall matches
+            # self.get_logger().info(f"[DEBUG RAW] {len(matches)} raw split-level matches from GNN:")
+            # for m in matches:
+            #     self.get_logger().info(
+            #         f"  [RAW] {m['origin_node_attrs']['type']}: "
+            #         f"split {m['origin_split_id']} (orig {m['origin_node']}) -> "
+            #         f"split {m['target_split_id']} (orig {m['target_node']})"
+            #     )
+
             # Enforce one-to-one matching at original plane level.
             # Multiple split-to-split matches can map to the same original pair, or one
             # original plane can appear in multiple pairs. Two-step fix:
@@ -1163,12 +1191,16 @@ class GraphMatchingNode(Node):
                 self.graphs_gnn[graph["name"]] = gnn_wrapper
                 self.get_logger().info(f'Converted {graph["name"]} to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
 
-                # Save GNN-converted DiGraph (with split planes) as pickle
+                # Always save Prior immediately.
+                # Online is saved only at the matching trigger (>= 4 rooms) so the
+                # pickle always reflects the state actually used for matching, not a
+                # later callback where SLAM may have merged rooms back below 4.
                 graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
                 os.makedirs(graph_dicts_dir, exist_ok=True)
-                with open(os.path.join(graph_dicts_dir, f"{graph['name']}.pkl"), "wb") as pickle_file:
-                    pickle.dump(gnn_wrapper, pickle_file)
-                self.get_logger().info(f"Saved {graph['name']} graph to {graph_dicts_dir}/{graph['name']}.pkl")
+                if graph["name"] == "Prior":
+                    with open(os.path.join(graph_dicts_dir, "Prior.pkl"), "wb") as pickle_file:
+                        pickle.dump(gnn_wrapper, pickle_file)
+                    self.get_logger().info(f"Saved Prior graph to {graph_dicts_dir}/Prior.pkl")
 
 
 
@@ -1188,6 +1220,13 @@ class GraphMatchingNode(Node):
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
         if graph["name"] == "Online" and len(room_ids)>=4:
             self.get_logger().info(f"Starting match!")
+            # Save Online pickle here — every time matching fires — so the pickle
+            # always holds the most recent >= 4-room state used for matching.
+            if self.use_pgm and "Online" in self.graphs_gnn:
+                graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
+                with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
+                    pickle.dump(self.graphs_gnn["Online"], pickle_file)
+                self.get_logger().info(f"Saved Online graph to {graph_dicts_dir}/Online.pkl")
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
@@ -1275,9 +1314,9 @@ class GraphMatchingNode(Node):
                 if response.success == 0:
                     # self.unique_match_publisher.publish(matches_msg[0])
                     self.unique_match_visualization_inc_publisher.publish(matches_visualization_msg[0])
-                if response.success == 0 or response.success == 1:
-                    self.best_match_publisher.publish(matches_msg[0])
-                    self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
+                # if response.success == 0 or response.success == 1:
+                #     self.best_match_publisher.publish(matches_msg[0])
+                #     self.best_match_visualization_publisher.publish(matches_visualization_msg[0])
 
 
 
@@ -1525,13 +1564,20 @@ class GraphMatchingNode(Node):
         for i, edge in enumerate(match):
             origin_geom = edge["origin_node_attrs"]["Geometric_info"]
 
-
-
-            # For Plane nodes after conversion, Geometric_info is [cx, cy, cz, nx, ny, nz]
-            # Center is at indices 0:3
-            # For Finite Room, Geometric_info is [cx, cy, cz, ...]
-            # So we always use indices 0:3 for center
-            origin_point_original = origin_geom[:3]
+            # Use actual split segment center if available (avoids using Geometric_info[:3] which
+            # is the closest point on the infinite plane to world origin, not the segment center).
+            # Fallback to Geometric_info[:3] for room nodes (which don't have split centers).
+            if edge.get("origin_center") is not None:
+                origin_point_original = list(edge["origin_center"])
+                # Ensure 3D
+                if len(origin_point_original) == 2:
+                    origin_point_original.append(0.)
+            else:
+                # For Plane nodes after conversion, Geometric_info is [cx, cy, cz, nx, ny, nz]
+                # Center is at indices 0:3
+                # For Finite Room, Geometric_info is [cx, cy, cz, ...]
+                # So we always use indices 0:3 for center
+                origin_point_original = origin_geom[:3]
 
 
 
@@ -1549,12 +1595,19 @@ class GraphMatchingNode(Node):
 
 
 
-            # For Plane nodes after conversion, Geometric_info is [cx, cy, cz, nx, ny, nz]
-            # Center is at indices 0:3
-            # For Finite Room, Geometric_info is [cx, cy, cz, ...]
-            # So we always use indices 0:3 for center
+            # Use actual split segment center if available; fallback to Geometric_info[:3]
             target_geom = edge["target_node_attrs"]["Geometric_info"]
-            target_point = list(target_geom[:3])
+            if edge.get("target_center") is not None:
+                target_point = list(edge["target_center"])
+                # Ensure 3D
+                if len(target_point) == 2:
+                    target_point.append(0.)
+            else:
+                # For Plane nodes after conversion, Geometric_info is [cx, cy, cz, nx, ny, nz]
+                # Center is at indices 0:3
+                # For Finite Room, Geometric_info is [cx, cy, cz, ...]
+                # So we always use indices 0:3 for center
+                target_point = list(target_geom[:3])
             if edge["origin_node_attrs"]["type"] == "Finite Room":
                 origin_point[2] = 22.
                 target_point[2] = 22.
@@ -1629,6 +1682,14 @@ def main(args=None):
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 
+        g = graph_matching_node.gm.graphs["Online"].graph
+        rooms = [(n, d) for n, d in g.nodes(data=True) if d.get("type") == "room"]
+        ws    = [(n, d) for n, d in g.nodes(data=True) if d.get("type") == "ws"]
+        print(f"[DEBUG] Rooms in pickle: {len(rooms)}, WS in pickle: {len(ws)}")
+        for r_id, r_attrs in rooms:
+            connected_ws = list(g.successors(r_id))
+            print(f"[DEBUG]   Room {r_id}: {len(connected_ws)} ws neighbors → {connected_ws}")
+
         # Visualize Prior and Online graphs side by side (two separate windows).
         # visualize_nxgraph_3d() always creates its own figure, so subplot layout
         # is not supported — both windows open simultaneously, blocking=False on
@@ -1639,7 +1700,7 @@ def main(args=None):
                 g_viz.from_2D_to_3D()
                 g_viz._add_complete_viz_attributes_to_graph()
                 visualize_nxgraph_3d(g_viz, gname, visualize_alone=True,
-                                     include_node_ids=False, blocking=False)
+                                     include_node_ids=True, blocking=False)
         plt.show(block=True)  # block here until both windows are closed
 
         result = graph_matching_node.match_loaded_graphs()
