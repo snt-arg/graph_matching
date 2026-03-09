@@ -15,7 +15,7 @@ def plane_6_params_to_4_params(point_and_normal):
     point = np.array(point_and_normal[:3])
     normal = np.array(point_and_normal[3:6])
     closest_point = closest_point_on_line(point, np.array([0,0,0]), normal)
-    distance = 1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
+    distance = -1 * np.sign(np.dot(closest_point, normal)) * np.linalg.norm(closest_point)
     return(np.concatenate((normal, [distance])))
 
 def closest_point_on_line(point, line_origin, line_normal):

@@ -72,10 +72,9 @@ def process_synthetic_graph(graph):
             initial = [node_attrs["center"][0], node_attrs["center"][1], node_attrs["center"][2],
                        node_attrs["normal"][0], node_attrs["normal"][1], node_attrs["normal"][2]]
 
-            node_attrs["Geometric_info"] = plane_4_params_to_6_params(plane_6_params_to_4_params(initial))
-            ### DBG TODO
+            # node_attrs["Geometric_info"] = plane_4_params_to_6_params(plane_6_params_to_4_params(initial))
             node_attrs["Geometric_info"] = initial
-            ### END DEBUG
+            
 
 def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=""):
     """
@@ -97,7 +96,7 @@ def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=
     graph_matcher = GraphMatcher(fake_logger, log_level=0)
     graph_matcher.set_parameters(syntheticDS_params)
     graph_matcher.set_graph_from_wrapper(a_graph, "A-Graph")
-    graph_matcher.set_graph_from_wrapper(target_graph, f"S-Graph")
+    graph_matcher.set_graph_from_wrapper(s_graph, f"S-Graph")
     graph_matcher.room_string = "room"
     graph_matcher.ws_string = "ws"
     
@@ -123,6 +122,7 @@ def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=
     if success and len(matches_node_ids) == 1:
         metrics = compute_metrics(gt_match, matches_node_ids[0])
     
+    print(f"dbg matches_node_ids {matches_node_ids}")
     return {
         'success': success,
         'matches': matches,
@@ -266,12 +266,12 @@ def compute_metrics(ground_truth_matches, predicted_matches):
 
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
-full_dataset = pickle.load(open(os.path.join(pickle_datasets_path, "incremental_translation.pkl"), "rb"))
+full_dataset = pickle.load(open(os.path.join(pickle_datasets_path, "incremental_symmetries_grid_squared_translation.pkl"), "rb"))
 
 # Initialize data collection for visualization
 all_metrics_data = []  # List to store (n_rooms, metrics_dict) tuples
 
-for a_graph, s_graphs in full_dataset:
+for a_graph, s_graphs in full_dataset[3:]:
     # visualize_nxgraph_3d(a_graph, "a_graph", visualize_alone=True, include_node_ids=True)
     process_synthetic_graph(a_graph)
     for i, s_graph in enumerate(s_graphs):
@@ -293,6 +293,7 @@ for a_graph, s_graphs in full_dataset:
         print(f"Running experiment with {n_rooms_s_graphs} rooms...")
 
         # Create ground truth matches
+        a_graph_no_objects = copy.deepcopy(a_graph).filter_graph_by_node_types(["room", "ws"])
         s_graph_no_objects = copy.deepcopy(s_graph).filter_graph_by_node_types(["room", "ws"])
         gt_match = [[i, i] for i in s_graph_no_objects.get_nodes_ids()]
         
@@ -311,7 +312,7 @@ for a_graph, s_graphs in full_dataset:
         
         # Experiment 2: Without objects (only rooms and walls)
         results_no_objects = run_graph_matching_experiment(
-            a_graph, s_graph_no_objects, gt_match,
+            a_graph_no_objects, s_graph_no_objects, gt_match,
             graph_name_suffix=f"no_objects_{n_rooms_s_graphs}_rooms"
         )
 
@@ -322,8 +323,8 @@ for a_graph, s_graphs in full_dataset:
         metrics_no_objects['success'] = bool(results_no_objects['success'])
         all_metrics_data.append((n_rooms_s_graphs, metrics_no_objects))
         
-        if results_with_objects['success'] and results_with_objects['metrics']:
-            pass
+        # if results_with_objects['success'] and results_with_objects['metrics']:
+        #     pass
             ### Plot the matched graphs (disabled for batch processing)
             # s_graph.relabel_nodes(mapping, copy=True)
             # as_graph = copy.deepcopy(a_graph)
@@ -335,6 +336,7 @@ for a_graph, s_graphs in full_dataset:
             # as_graph.add_edges(edges)
             # visualize_nxgraph_3d(as_graph, "as_graph", visualize_alone=True, include_node_ids=True)
             # input("Press Enter to continue...")  # Disabled for batch processing
+
 
 # Save collected data to JSON file
 if all_metrics_data:

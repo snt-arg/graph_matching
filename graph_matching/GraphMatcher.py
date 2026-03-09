@@ -42,11 +42,12 @@ class GraphMatcher():
         self.graphs[graph_name] = graph_wrapper
 
 ###  The match function performs a detailed, multi-level graph matching operation between two graphs.
-    def match(self, G1_name, G2_name, add_deviations = False):
+    def match(self, G1_name, G2_name, add_deviations = False, plot_flag = False):
         unique_match_found = False
         if self.log_level > 0:
             self.logger.info("BENNINGING match")
-        print("Add deviations flag:", add_deviations)
+        if self.log_level > 1:
+            print("Add deviations flag:", add_deviations)
 
         start_time = time.time()
         ### Retrieve the levels to be processed from the parameters.
@@ -57,6 +58,13 @@ class GraphMatcher():
 
         # if self.log_level > 9:
         #     self.plot_geometry_graphs([G1_full, G2_full], swept_levels)
+
+        if plot_flag:
+            G1_full_aux = copy.deepcopy(G1_full).filter_graph_by_node_types('ws')
+            G2_full_aux = copy.deepcopy(G2_full).filter_graph_by_node_types('ws')
+            all_pairs_categorical_dbg = set(itertools.product(G1_full_aux.graph.nodes(), G2_full_aux.graph.nodes()))
+            data1_aux, data2_aux, _, nodes1_aux, nodes2_aux = self.generate_clipper_input(G1_full_aux, G2_full_aux, all_pairs_categorical_dbg, "Geometric_info")
+            self.plot_geometry_setlist(f"DBG INITIAL ALL WS", [data1_aux, data2_aux], self.params["levels"]["datatype"][swept_levels[1]], [nodes1_aux, nodes2_aux])
 
         ### Initialize an empty match_graph to store the matching results using GraphWrapper.
         match_graph = GraphWrapper(graph_def={'name': "match",'nodes' : [], 'edges' : []}) 
@@ -78,14 +86,16 @@ class GraphMatcher():
             stored_match_graph = None
         ### Define a nested function match_iteration to perform the actual matching at each level.    
         def match_iteration(working_node_ID, lvl):
-            print("=============================================================")
-            print(f"************ INTERLEVEL CANDIDATES GENERATION - LEVEL {swept_levels[lvl]} ************")
-            print("=============================================================")
+            if self.log_level > 1:
+                print("=============================================================")
+                print(f"************ INTERLEVEL CANDIDATES GENERATION - LEVEL {swept_levels[lvl]} ************")
+                print("=============================================================")
             ### INTERLEVEL CANDIDATES GENERATION
             if working_node_ID:
                 ### Extract every children of the parent higher-level match which belongs to current level
                 working_node_attrs = match_graph.get_attributes_of_node(working_node_ID)
-                self.logger.info(f"flag working_node_ID match {working_node_attrs['match']}")
+                if self.log_level > 2:
+                    self.logger.info(f"flag working_node_ID match {working_node_attrs['match']}")
                 G1_lvl = G1_full.get_neighbourhood_graph(working_node_attrs["match"][0]).filter_graph_by_node_types(swept_levels[lvl])
                 G2_lvl = G2_full.get_neighbourhood_graph(working_node_attrs["match"][1]).filter_graph_by_node_types(swept_levels[lvl])
 
@@ -109,32 +119,34 @@ class GraphMatcher():
             # all_pairs_categorical = self.filter_local_match_with_global(all_pairs_categorical, full_graph_matches) # TODO include
 
             # TODO(dps): implementing objects filtering
-            print("LEVEL: ", swept_levels[lvl])
-            # categories = {}
-            print(f"Number of original pairs: {len(all_pairs_categorical)}")
-            print(f"Original pairs {all_pairs_categorical}")
-            print("FILTERING BY CONTENT SWEEPING LEVEL: ", swept_levels[lvl])
+            if self.log_level > 2:
+                print("LEVEL: ", swept_levels[lvl])
+                print(f"Number of original pairs: {len(all_pairs_categorical)}")
+                print(f"Original pairs {all_pairs_categorical}")
+                print("FILTERING BY CONTENT SWEEPING LEVEL: ", swept_levels[lvl])
 
             ### FILTERING ROOMS BY CONTENT
             filtered_pairs_by_content =  []
             if all_pairs_categorical and swept_levels[lvl] == self.room_string:
                 # print(f"FILTERING BY CONTENT - {self.room_string}")
                 filtered_pairs_by_content += self.filter_by_content(all_pairs_categorical, G1_full, G2_full, G1_lvl, G2_lvl)
-                print(f"Room - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
+                if self.log_level > 1:
+                    print(f"Room - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
             ## FILTERING WS BY CONTENT
             if all_pairs_categorical and swept_levels[lvl] == self.ws_string:
                 # print(f"FILTERING BY CONTENT - {self.ws_string}")
                 filtered_pairs_by_content += self.filter_by_content(all_pairs_categorical, G1_full, G2_full, G1_lvl, G2_lvl)
-                print(f"WS - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
+                if self.log_level > 1:
+                    print(f"WS - Number of all_pairs_categorical, filtered_pairs_by_content: {len(all_pairs_categorical),  len(filtered_pairs_by_content)}")
 
 
             for pair in filtered_pairs_by_content:
                 if pair in all_pairs_categorical:
                     all_pairs_categorical.remove(pair)
 
-            print(f"Number of pairs after removing objects: {len(all_pairs_categorical)}")
-            print(f"Pairs after removing objects {all_pairs_categorical}")
-
+            if self.log_level > 2:
+                print(f"Number of pairs after removing objects: {len(all_pairs_categorical)}")
+                print(f"Pairs after removing objects {all_pairs_categorical}")
 
             ### Compute all possible node combinations between the subgraphs, assess geometric consistency using the Clipper class, and filter out bad pairs.
             filtered_bad_pairs_categorical = set()
@@ -148,11 +160,9 @@ class GraphMatcher():
                 # print(f"nodes1 {nodes1}")
                 # print(f"nodes2 {nodes2}")
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[lvl]], self.params["levels"]["clipper_invariants"][swept_levels[lvl]], self.params, self.logger)
-                n_extra_pairs = 0
-                if working_node_ID:
-                    n_extra_pairs += 1
-                    data1, data2, all_pairs_and_parent_numerical, nodes1, nodes2 = self.add_parents_data(data1, data2, all_pairs_numerical, working_node_attrs["data_node1"],working_node_attrs["data_node2"], nodes1, nodes2)
-                    origin_nodes_attrs = [working_node_attrs["data_node1"], working_node_attrs["data_node2"]]
+                data1, data2, all_pairs_and_parent_numerical, nodes1, nodes2 = self.add_parents_data(data1, data2, all_pairs_numerical, working_node_attrs["data_node1"],working_node_attrs["data_node2"], nodes1, nodes2)
+                n_extra_pairs = 1
+                origin_nodes_attrs = [working_node_attrs["data_node1"], working_node_attrs["data_node2"]]
 
                 # print(f"data1 {data1}")
                 # print(f"data2 {data2}")
@@ -166,14 +176,13 @@ class GraphMatcher():
                 #         all_pairs_and_parent_numerical = copy.deepcopy(all_pairs_numerical)
                 #     data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_and_parent_numerical, best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"])
                 #     origin_nodes_attrs = [best_pair_attrs[0]["Geometric_info"],best_pair_attrs[1]["Geometric_info"]]
-                data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], origin_nodes_attrs[0]))
-                data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1]))
-                
-                plot_flag = False
-                
+                data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], origin_nodes_attrs[0], n_extra_pairs))
+                data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], origin_nodes_attrs[1], n_extra_pairs))
+
+
                 if plot_flag:
                     print(f"Plot geometry setlist for level {lvl}")
-                    self.plot_geometry_setlist("INTERLEVEL", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1,nodes2])
+                    self.plot_geometry_setlist(f"INTERLEVEL - {all_pairs_categorical}", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1,nodes2])
                     input("clipper input at intralevel")
                     
                 if working_node_ID:
@@ -235,16 +244,18 @@ class GraphMatcher():
             filter1_matches = []
             filter1_lengths = []
 
-            print("************ INTERLEVEL CONSISTENT COMBINATIONS ************")
-            print(f"Interlevel consistent combinations")
-            for interlevel_consistent_combination in interlevel_consistent_combinations:
-                print(f"{list(interlevel_consistent_combination)}")
-            print("**************************************************************")
+            if self.log_level > 1:
+                print("************ INTERLEVEL CONSISTENT COMBINATIONS ************")
+                print(f"Interlevel consistent combinations")
+                for interlevel_consistent_combination in interlevel_consistent_combinations:
+                    print(f"{list(interlevel_consistent_combination)}")
+                print("**************************************************************")
 
             # find max length
             # max_len = max((len(c) for c in interlevel_consistent_combinations), default=0)
             max_len = len(G2_lvl.get_nodes_ids())
-            print(f"MAX INTERLEVEL COMBINATION LENGTH: {max_len}")
+            if self.log_level > 1:
+                print(f"MAX INTERLEVEL COMBINATION LENGTH: {max_len}")
             
             # keep only those with max length
             interlevel_consistent_combinations = frozenset(
@@ -258,15 +269,17 @@ class GraphMatcher():
             #         c for c in interlevel_consistent_combinations if any('72' in pair for pair in c)
             #     )
 
-            print("****** MAX INTERLEVEL CONSISTENT COMBINATIONS ******")
-            print(f"Interlevel consistent combinations: {interlevel_consistent_combinations}")
-            print("***************************************************")
+            if self.log_level > 1:
+                print("****** MAX INTERLEVEL CONSISTENT COMBINATIONS ******")
+                print(f"Interlevel consistent combinations: {interlevel_consistent_combinations}")
+                print("***************************************************")
 
             ### INTRALEVEL CANDIDATES COMBINATION
             ### Evaluate the consistency of candidate pairs within the same level and retain good matches. Adds these good matches to match_graph as nodes and edges
-            print("=============================================================")
-            print(f"************ INTRALEVEL CANDIDATES EVALUATION - LEVEL {swept_levels[lvl]} ************")
-            print("=============================================================")
+            if self.log_level > 1:
+                print("=============================================================")
+                print(f"************ INTRALEVEL CANDIDATES EVALUATION - LEVEL {swept_levels[lvl]} ************")
+                print("=============================================================")
 
             # PREPARE INTRALEVEL COMPARISON PLOT
             # n_pairs = len(interlevel_consistent_combinations)
@@ -283,17 +296,21 @@ class GraphMatcher():
 
                 if working_node_ID:
                     ### ADD FLOOR ORIENTATION
-                    floor1 = copy.deepcopy(data1[A_numerical[0][0]])
-                    floor1[2:] = np.array([2,0,0,1])
-                    floor2 = copy.deepcopy(data2[A_numerical[0][1]])
-                    floor2[2:] = np.array([2,0,0,1])
-                    data1, data2, all_pairs_and_parent_numerical, nodes1, nodes2  = self.add_parents_data(data1, data2, A_numerical, floor1,floor2,nodes1, nodes2)
+                    working_node_attrs["data_node1"]
+                    floor1 = copy.deepcopy(working_node_attrs["data_node1"])
+                    floor1[2] = 2 
+                    floor1[3:] = np.array([0,0,1])
+                    floor2 = copy.deepcopy(working_node_attrs["data_node2"])
+                    floor2[2] = 2 
+                    floor2[3:] = np.array([0,0,1])
+                    data1, data2, all_pairs_and_parent_numerical, nodes1, nodes2  = self.add_parents_data(data1, data2, A_numerical, floor1, floor2, nodes1, nodes2)
+                    n_extra_pairs = 1
                     parent_pair = all_pairs_and_parent_numerical[-1]
                     A_numerical = all_pairs_and_parent_numerical
                     ### END
-                    data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], working_node_attrs["data_node1"]))
-                    data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], working_node_attrs["data_node2"]))
-                
+                    data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[lvl], working_node_attrs["data_node1"], n_extra_pairs))
+                    data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[lvl], working_node_attrs["data_node2"], n_extra_pairs))
+
                 ### DEBUGGING
                 # dbg_scores_list,dbg_lengths_list, dbg_tuples_list, C_list, M_list = [],[], [], [], []
 
@@ -328,16 +345,6 @@ class GraphMatcher():
                 # self.logger.info(f"dbg building raw - C_list {C_list}")
                 # self.logger.info(f"dbg building raw - M_list {M_list}")
 
-                
-
-                plot_graph_2 = False
-                if plot_graph_2:
-                    self.plot_geometry_setlist(f"INTRALEVEL {A_categorical}", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1, nodes2])
-                    # self.generate_comparison_plots(outer_gs, fig, pair_i, data1, data2, A_categorical, swept_levels, lvl, tags)
-                    # pair_i += 1
-                    input("clipper input at intralevel")
-
-
                 ### ORIGINAL
                 clipper = Clipper(self.params["levels"]["datatype"]
                                   [swept_levels[lvl]], self.params["levels"]
@@ -362,20 +369,24 @@ class GraphMatcher():
                 #     else:
                 #         score = 0.
                 # ### END
-                print("************ PROCESSING INTRALEVEL COMBINATION ************")
-                print(f"Clipper input A_numerical: {A_numerical}")
-                print(f"Clipper input A_categorical: {A_categorical}")
-                print(f"Clipper input data1: {data1}")
-                print(f"Clipper input data2: {data2}")
-                print(f"Clipper input nodes1: {nodes1}")
-                print(f"Clipper input nodes2: {nodes2}")
-                # print(f"Clipper input A_numerical: {A_numerical}")
-                # print(f"Clipper input nodes1: {nodes1}")
-                # print(f"Clipper input nodes2: {nodes2}")
-                # print(f"Clipper output match numerical: {clipper_match_numerical}")
-                print(f"Clipper output score: {score}")
+                if self.log_level > 2:
+                    print("************ PROCESSING INTRALEVEL COMBINATION ************")
+                    print(f"Clipper input A_numerical: {A_numerical}")
+                    print(f"Clipper input A_categorical: {A_categorical}")
+                    print(f"Clipper input data1: {data1}")
+                    print(f"Clipper input data2: {data2}")
+                    print(f"Clipper input nodes1: {nodes1}")
+                    print(f"Clipper input nodes2: {nodes2}")
+                    print(f"Clipper output score: {score}")
                 clipper_match_categorical = set(clipper.categorize_clipper_output(clipper_match_numerical, nodes1, nodes2))
-                print(f"Clipper output match categorical: {clipper_match_categorical}")
+                if self.log_level > 2:
+                    print(f"Clipper output match categorical: {clipper_match_categorical}")
+                
+                if plot_flag:
+                    self.plot_geometry_setlist(f"INTRALEVEL {A_categorical}", [data1, data2], self.params["levels"]["datatype"][swept_levels[lvl]], [nodes1, nodes2])
+                    # self.generate_comparison_plots(outer_gs, fig, pair_i, data1, data2, A_categorical, swept_levels, lvl, tags)
+                    # pair_i += 1
+                    input("clipper input at intralevel")
 
                 if working_node_ID:
                     nodes1 = nodes1[:-1]
@@ -387,22 +398,25 @@ class GraphMatcher():
                     clipper_match_categorical = unparented_clipper_match_categorical
 
                 # self.logger.info(f"dbg match_iteration clipper_match_categorical {clipper_match_categorical}")
-                print("**************************************************************")
+                if self.log_level > 2:
+                    print("**************************************************************")
                 # floor_condition = self.assess_floor_consistency(data1, data2, swept_levels[lvl])
                 floor_condition = True
                 if working_node_ID:
                     floor_condition = self.assess_floor_consistency(data1, data2, swept_levels[lvl], A_numerical)
                 else:
                     floor_condition = True
-                print(f"FLOOR CONDITION: {floor_condition}")
-
+                if self.log_level > 1:
+                    print(f"FLOOR CONDITION: {floor_condition}")
 
                 if score > self.params["thresholds"]["local_intralevel"][swept_levels[lvl]][0] and clipper_match_categorical not in filter1_matches and floor_condition:
-                    print("********************************")
-                    print("GOOD INTRALEVEL MATCH FOUND")
-                    print(f"Match: {clipper_match_categorical}")
-                    print(f"Score: {score}")
-                    print("********************************")
+                    if self.log_level > 1:
+                        print("********************************")
+                        print("GOOD INTRALEVEL MATCH FOUND")
+                        print(f"Match: {clipper_match_categorical}")
+                        print(f"Score: {score}")
+                        print("********************************")
+                    # print(f"dbg GOOD INTRALEVEL MATCH - LEVEL {swept_levels[lvl]} - Score: {score} - Match: {clipper_match_categorical}")
                     filter1_scores.append(score)
                     filter1_matches.append(clipper_match_categorical)
                     filter1_lengths.append(len(clipper_match_categorical))
@@ -412,22 +426,26 @@ class GraphMatcher():
             # plt.show(block=True)
             ### Add good submatches to the match_graph.      
             if filter1_scores:
-                print("=============================================================")
-                print(f"************ ADDING GOOD INTRALEVEL MATCHES TO MATCH GRAPH - LEVEL {swept_levels[lvl]} ************")
-                print("=============================================================")
-                print(f"filter1_matches: {filter1_matches}")
-                print(f"filter1_scores: {filter1_scores}")
+                if self.log_level > 1:
+                    print("=============================================================")
+                    print(f"************ ADDING GOOD INTRALEVEL MATCHES TO MATCH GRAPH - LEVEL {swept_levels[lvl]} ************")
+                    print("=============================================================")
+                    print(f"filter1_matches: {filter1_matches}")
+                    print(f"filter1_scores: {filter1_scores}")
                 sorted_matches_indexes = [index for index, val in enumerate(filter1_lengths) if val == max(filter1_lengths)]
-                print(f"sorted_matches_indexes: {sorted_matches_indexes}")
+                if self.log_level > 1:
+                    print(f"sorted_matches_indexes: {sorted_matches_indexes}")
 
                 if working_node_ID:
                     best_submatch_score = max([filter1_scores[i] for i in sorted_matches_indexes])
                     match_graph.update_node_attrs(working_node_ID, {"downstream_score" : best_submatch_score})
-                    print(f"Updated working node {working_node_ID} with downstream_score {best_submatch_score}")
+                    if self.log_level > 1:
+                        print(f"Updated working node {working_node_ID} with downstream_score {best_submatch_score}")
 
-                print("************ ADDING TO MATCH GRAPH ************")
-                print("MATCH GRAPH BEFORE ADDING:")
-                print(match_graph.graph)
+                if self.log_level > 2:
+                    print("************ ADDING TO MATCH GRAPH ************")
+                    print("MATCH GRAPH BEFORE ADDING:")
+                    print(match_graph.graph)
 
                 # sorted_matches_indexes = range(len(filter1_lengths))
                 for good_submatch_i in sorted_matches_indexes:
@@ -480,22 +498,26 @@ class GraphMatcher():
             elif working_node_ID:
                 match_graph.update_node_attrs(working_node_ID, {"downstream_score" : 0.0})
 
-            print("MATCH GRAPH AFTER ADDING:")
-            print(match_graph.graph)
+            if self.log_level > 2:
+                print("MATCH GRAPH AFTER ADDING:")
+                print(match_graph.graph)
 
             ### Prune the match_graph to remove inconsistent matches and select the best localization pair for the next level.
             if lvl < len(swept_levels) - 1:
                 if self.log_level > 0:
                     self.draw_as_match_graph(match_graph, "raw match graph")
+                    input("DBG raw match graph\n")
                 n_nodes_raw_match_graph = len(match_graph.get_nodes_ids())
                 # self.logger.info(f"dbg n_nodes_raw_match_graph {n_nodes_raw_match_graph}")
                 self.prune_interlevel(match_graph, self.graphs[G1_name], self.graphs[G2_name], swept_levels[lvl:lvl+2])
                 self.select_best_global_localization_pair(match_graph, swept_levels[lvl:lvl+2])
                 # self.add_upranted_nodes_by_level(match_graph, G1_full, G2_full, swept_levels[lvl:lvl+2])
-                print(f"PRUNED MATCH GRAPH AT LEVEL {swept_levels[lvl]}:")
-                print(match_graph.graph)
+                if self.log_level > 2:
+                    print(f"PRUNED MATCH GRAPH AT LEVEL {swept_levels[lvl]}:")
+                    print(match_graph.graph)
 
-            print("=============================================================")
+            if self.log_level > 1:
+                print("=============================================================")
 
             return
         ### End match_iteration function.
@@ -514,23 +536,26 @@ class GraphMatcher():
         else:
             final_combinations = []
 
-        print(f"FINAL COMBINATIONS: {len(final_combinations)}")
-        # print(f"{final_combinations}")
+        if self.log_level > 1:
+            print(f"FINAL COMBINATIONS: {len(final_combinations)}")
         max_combination_length = 0
         for comb in final_combinations:
-            # print(comb)
             if len(comb) > max_combination_length:
                 max_combination_length = len(comb)
-        print(f'{max_combination_length=}')
+        if self.log_level > 1:
+            print(f'{max_combination_length=}')
         filtered_list = []
         for comb in final_combinations:
             if len(comb) < max_combination_length:
-                print("Removing combination due to length inconsistency with length: ", len(comb))
+                if self.log_level > 1:
+                    print("Removing combination due to length inconsistency with length: ", len(comb))
                 filtered_list.append(comb)
         for item in filtered_list:
             final_combinations.remove(item)
-        print(f"FINAL COMBINATIONS AFTER LENGTH FILTERING: {len(final_combinations)}")
-        print(f"final_combinations:{final_combinations}")
+        if self.log_level > 1:
+            print(f"FINAL COMBINATIONS AFTER LENGTH FILTERING: {len(final_combinations)}")
+        if self.log_level > 2:
+            print(f"final_combinations:{final_combinations}")
 
         ###  Log the number of good matches found. If only one match is found, update the stored match graph with the current match. Handle cases with multiple symmetries by logging the scores of the matches. Return a success flag and the final combinations of matches.
         if final_combinations:
@@ -592,7 +617,8 @@ class GraphMatcher():
 
         # self.logger.info("Elapsed time in match {}".format(time.time() - start_time))
         ###  Return a tuple containing the success flag, final combinations of matches, full matches, and deviated matches.
-        print(f'{final_combinations_dev=}')
+        if self.log_level > 2:
+            print(f'{final_combinations_dev=}')
         return(success, final_combinations, final_combinations_full, final_combinations_dev)
 
 
@@ -758,7 +784,8 @@ class GraphMatcher():
             # print(f"You pressed {key}")
         ####################################
         if reflection_needed:
-            print("REJECTED BECAUSE REFLECTION NEEDED")
+            if self.log_level > 1:
+                print("REJECTED BECAUSE REFLECTION NEEDED")
             return False
         return True
         ####################################
@@ -948,7 +975,7 @@ class GraphMatcher():
     
         return n, d2
 
-    def geometric_info_transformation(self, data_in, level, parent_data_in):
+    def geometric_info_transformation(self, data_in, level, parent_data_in, n_extra_pairs=0):
         # print("DEBUG ********* GEOMETRIC INFO TRANSFORMATION *********")
         # print(f"level {level}")
         # print(f"parent_data_in {parent_data_in}")
@@ -959,7 +986,7 @@ class GraphMatcher():
         # print(f"data before transform {data}")
         if level == self.ws_string:
             # print("Applying plane transformation at level: ", level)
-            for i in range(data.shape[0] - 1):
+            for i in range(data.shape[0] - n_extra_pairs):
                 plane = data[i]
                 n = plane[3:]
                 p0 = plane[:3]
@@ -972,7 +999,9 @@ class GraphMatcher():
         
                 data[i, 3:] = n2
                 data[i, :3] = -d2 * n2   # closest point to the new origin (valid if n2 is unit)
-            data[-1][:3] = data[-1][:3] - parent_data[:3]  # transform floor point
+            
+            if n_extra_pairs == 1:
+                data[-1][:3] = data[-1][:3] - parent_data[:3]
             # data[-1][2] = 5.0  # FIXME: TEST. REMOVE THIS
 
 
@@ -1234,6 +1263,10 @@ class GraphMatcher():
     #     return clipper_matches_msg_sorted
 
     def symmetry_detection(self, candidates):
+        if self.log_level > 0:
+            print("Symmetry detection")
+            print(f"candidates {candidates}")
+
         X = np.array([match["consistency_avg"] for match in candidates])
         # self.logger.info("X {}".format(X))
         # X_fit = StandardScaler().fit_transform(X.reshape(0, 1))
@@ -1267,7 +1300,8 @@ class GraphMatcher():
 
 
     def prune_interlevel(self,match_graph, G1_full, G2_full, merged_levels):
-
+        if self.log_level > 0:
+            print("Pruning interlevel")
         higher_level_group_nodes = list(match_graph.filter_graph_by_node_types(merged_levels[0])\
                                                     .filter_graph_by_node_attributes({"combination_type" : "group"})\
                                                     .get_nodes_ids())
@@ -1277,6 +1311,8 @@ class GraphMatcher():
             new_consistent_combinations = self.merge_lower_level_groups(match_graph, G1_full, G2_full, node, merged_levels)
             if new_consistent_combinations:
                 consistent_combinations += new_consistent_combinations
+
+        # print(f"dbg consistent_combinations {consistent_combinations}")
 
         # ### DEBUGGING
         # def make_hashable(value):
@@ -1330,35 +1366,34 @@ class GraphMatcher():
             for node in combination:
                 A_categorical.update(match_graph.get_attributes_of_node(node)["match"])
             data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, A_categorical, "Geometric_info")
-            # data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
 
-            if self.stored_match_graph:
-                stored_match_graph = copy.deepcopy(self.stored_match_graph)
-                stored_match_graph_lvl_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": merged_levels[1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
-                stored_match_graph_lvl_data = np.array([(copy.deepcopy(G1_full.get_attributes_of_node(match[0])["Geometric_info"]), copy.deepcopy(G2_full.get_attributes_of_node(match[1])["Geometric_info"])) for match in stored_match_graph_lvl_match])
-                data1, data2, A_numerical = self.add_parents_data(data1, data2, A_numerical, stored_match_graph_lvl_data[:,0,:], stored_match_graph_lvl_data[:,1,:])
+            # data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
+            n_extra_pairs = 0
+            # if self.stored_match_graph:
+            #     stored_match_graph = copy.deepcopy(self.stored_match_graph)
+            #     stored_match_graph_lvl_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": merged_levels[1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
+            #     stored_match_graph_lvl_data = np.array([(copy.deepcopy(G1_full.get_attributes_of_node(match[0])["Geometric_info"]), copy.deepcopy(G2_full.get_attributes_of_node(match[1])["Geometric_info"])) for match in stored_match_graph_lvl_match])
+            #     data1, data2, A_numerical, nodes1, nodes2 = self.add_parents_data(data1, data2, A_numerical, stored_match_graph_lvl_data[:,0,:], stored_match_graph_lvl_data[:,1,:])
+            #     n_extra_pairs += 1
                 # data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
                 # data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
                 # clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
                 # clipper.score_pairwise_consistency(data1, data2, A_numerical)
                 # consistency_avg = clipper.get_score_all_inital_u()
             
-            data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])
-            data2 = self.geometric_info_transformation(data2, merged_levels[1], G2_full.get_attributes_of_node(parent_node_attrs["match"][1])["Geometric_info"])
-            # self.logger.info(f"dbg merge A_categorical {A_categorical}")
+
             clipper = Clipper(self.params["levels"]["datatype"][merged_levels[1]], self.params["levels"]["clipper_invariants"][merged_levels[1]], self.params, self.logger)
             clipper.score_pairwise_consistency(data1, data2, A_numerical)
             consistency_avg = clipper.get_score_all_inital_u()
             # self.logger.info(f"dbg consistency_avg {consistency_avg}")
-            # floor_condition = self.assess_floor_consistency(data1, data2, merged_levels[1])
-            floor_condition = True
 
-            if consistency_avg >= self.params["thresholds"]["global"] and floor_condition:
+
+            if consistency_avg >= self.params["thresholds"]["global"]:
                 # self.logger.info(f"dbg consistency_avg IN {consistency_avg}")
                 consistent_combinations.append({"consistency_avg":consistency_avg,"lower_level_nodes_IDs": combination,"match":A_categorical, "higher_level_node_ID":working_node_ID})
             # for consistent_combination in consistent_combinations:
             #     self.logger.info(f"flag consistent_combination 1 {consistent_combination['match']}")
-
+        # print(f'dbg in merge consistent_combinations {len(consistent_combinations)}')
         return consistent_combinations
 
 
@@ -1435,9 +1470,10 @@ class GraphMatcher():
                 parent2_data = copy.deepcopy(G2_full.get_attributes_of_node(G2_matched_nodes[0])["Geometric_info"])
                 data1, data2, all_pairs_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, wild_nodes_combination, "Geometric_info")
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], self.params["levels"]["clipper_invariants"][swept_levels[1]], self.params, self.logger)
+                n_extra_pairs = 0
                 data1, data2, all_pairs_and_parent_numerical = self.add_parents_data(data1, data2, all_pairs_numerical, parent1_data, parent2_data)
-                data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[1], parent1_data))
-                data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[1], parent2_data))
+                data1 = copy.deepcopy(self.geometric_info_transformation(data1, swept_levels[1], parent1_data, n_extra_pairs))
+                data2 = copy.deepcopy(self.geometric_info_transformation(data2, swept_levels[1], parent2_data, n_extra_pairs))
                 clipper.score_pairwise_consistency(data1, data2, all_pairs_and_parent_numerical)
                 M_aux, _ = clipper.get_M_C_matrices()
                 interlevel_scores = M_aux[:,-1][:-1]
@@ -1450,8 +1486,8 @@ class GraphMatcher():
                 merged_node_match.update(filtered_good_pairs_categorical)
 
                 data1, data2, A_numerical, nodes1, nodes2 = self.generate_clipper_input(G1_full, G2_full, merged_node_match, "Geometric_info")
-                data1 = self.geometric_info_transformation(data1, swept_levels[1], parent1_data)
-                data2 = self.geometric_info_transformation(data2, swept_levels[1], parent2_data)
+                data1 = self.geometric_info_transformation(data1, swept_levels[1], parent1_data, n_extra_pairs)
+                data2 = self.geometric_info_transformation(data2, swept_levels[1], parent2_data, n_extra_pairs)
                 # data1, data2, A_numerical, floor_pair_numerical = self.add_floor_data(data1, data2, A_numerical)
                 clipper = Clipper(self.params["levels"]["datatype"][swept_levels[1]], self.params["levels"]["clipper_invariants"][swept_levels[1]], self.params, self.logger)
                 clipper.score_pairwise_consistency(data1, data2, A_numerical)

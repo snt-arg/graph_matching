@@ -79,13 +79,16 @@ def process_data(data):
 def calculate_statistics(metrics_by_rooms_and_type, success_data, timing_data, solution_count_data):
     """Calculate statistics for all metrics including performance, success rates, timing, and solution counts."""
     
-    # Get all experiment types and room counts
-    experiment_types = list(metrics_by_rooms_and_type.keys())
+    # Get all experiment types from ALL data sources, not just those with classification metrics
+    all_exp_types = set()
+    for d in [metrics_by_rooms_and_type, success_data, timing_data, solution_count_data]:
+        all_exp_types.update(d.keys())
+    experiment_types = sorted(all_exp_types)
+
     all_room_counts = set()
     for exp_type in experiment_types:
-        all_room_counts.update(metrics_by_rooms_and_type[exp_type].keys())
-        all_room_counts.update(success_data[exp_type].keys())
-        all_room_counts.update(timing_data[exp_type].keys())
+        for d in [metrics_by_rooms_and_type, success_data, timing_data, solution_count_data]:
+            all_room_counts.update(d[exp_type].keys())
     room_counts = sorted(all_room_counts)
     
     # Performance metrics to analyze
@@ -177,21 +180,25 @@ def create_plots(room_counts, metric_names, metric_labels, stats_by_type,
     type_colors = {'with_objects': '#1f77b4', 'no_objects': '#ff7f0e', 'unknown': '#2ca02c'}
     type_labels = {'with_objects': 'With Objects', 'no_objects': 'Without Objects', 'unknown': 'Unknown'}
     
+    # X-offsets so overlapping series remain visible
+    type_offsets = {'with_objects': -0.03, 'no_objects': 0.03, 'unknown': 0.0}
+
     # Plot performance metrics (first 5 plots)
-    for i, (metric, label) in enumerate(zip(metric_names, metric_labels)):
-        ax = axes_flat[i]
+    for metric_idx, (metric, label) in enumerate(zip(metric_names, metric_labels)):
+        ax = axes_flat[metric_idx]
         
         # Plot each experiment type
         for exp_type in experiment_types:
             if exp_type in stats_by_type:
                 averaged_metrics = stats_by_type[exp_type]['averaged_metrics']
                 std_metrics = stats_by_type[exp_type]['std_metrics']
+                x_offset = type_offsets.get(exp_type, 0.0)
                 
-                # Filter out NaN values
-                valid_indices = [i for i, val in enumerate(averaged_metrics[metric]) if not np.isnan(val)]
-                valid_room_counts = [room_counts[i] for i in valid_indices]
-                valid_means = [averaged_metrics[metric][i] for i in valid_indices]
-                valid_stds = [std_metrics[metric][i] for i in valid_indices]
+                # Filter out NaN values — use vi (not i) to avoid shadowing outer loop var
+                valid_indices = [vi for vi, val in enumerate(averaged_metrics[metric]) if not np.isnan(val)]
+                valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
+                valid_means = [averaged_metrics[metric][vi] for vi in valid_indices]
+                valid_stds = [std_metrics[metric][vi] for vi in valid_indices]
                 
                 if valid_means:  # Only plot if we have valid data
                     ax.errorbar(valid_room_counts, valid_means, 
@@ -207,7 +214,7 @@ def create_plots(room_counts, metric_names, metric_labels, stats_by_type,
         ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_xlim(left=0)
         ax.set_ylim(0, 1.05)
-        if i == 0:  # Only show legend on first plot
+        if metric_idx == 0:  # Only show legend on first plot
             ax.legend(fontsize=9, loc='lower left')
     
     # Plot success rates (6th plot)
@@ -216,10 +223,10 @@ def create_plots(room_counts, metric_names, metric_labels, stats_by_type,
         if exp_type in stats_by_type:
             success_rates = stats_by_type[exp_type]['success_rates']
             
-            # Filter out NaN values
-            valid_indices = [i for i, val in enumerate(success_rates) if not np.isnan(val)]
-            valid_room_counts = [room_counts[i] for i in valid_indices]
-            valid_rates = [success_rates[i] for i in valid_indices]
+            x_offset = type_offsets.get(exp_type, 0.0)
+            valid_indices = [vi for vi, val in enumerate(success_rates) if not np.isnan(val)]
+            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
+            valid_rates = [success_rates[vi] for vi in valid_indices]
             
             if valid_rates:
                 ax_success.plot(valid_room_counts, valid_rates,
@@ -242,11 +249,11 @@ def create_plots(room_counts, metric_names, metric_labels, stats_by_type,
             avg_times = stats_by_type[exp_type]['avg_times']
             std_times = stats_by_type[exp_type]['std_times']
             
-            # Filter out NaN values
-            valid_indices = [i for i, val in enumerate(avg_times) if not np.isnan(val)]
-            valid_room_counts = [room_counts[i] for i in valid_indices]
-            valid_times = [avg_times[i] for i in valid_indices]
-            valid_time_stds = [std_times[i] for i in valid_indices]
+            x_offset = type_offsets.get(exp_type, 0.0)
+            valid_indices = [vi for vi, val in enumerate(avg_times) if not np.isnan(val)]
+            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
+            valid_times = [avg_times[vi] for vi in valid_indices]
+            valid_time_stds = [std_times[vi] for vi in valid_indices]
             
             if valid_times:
                 ax_time.errorbar(valid_room_counts, valid_times,
@@ -271,11 +278,11 @@ def create_plots(room_counts, metric_names, metric_labels, stats_by_type,
             avg_solutions = stats_by_type[exp_type]['avg_solutions']
             std_solutions = stats_by_type[exp_type]['std_solutions']
             
-            # Filter out NaN values
-            valid_indices = [i for i, val in enumerate(avg_solutions) if not np.isnan(val)]
-            valid_room_counts = [room_counts[i] for i in valid_indices]
-            valid_solution_counts = [avg_solutions[i] for i in valid_indices]
-            valid_solution_stds = [std_solutions[i] for i in valid_indices]
+            x_offset = type_offsets.get(exp_type, 0.0)
+            valid_indices = [vi for vi, val in enumerate(avg_solutions) if not np.isnan(val)]
+            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
+            valid_solution_counts = [avg_solutions[vi] for vi in valid_indices]
+            valid_solution_stds = [std_solutions[vi] for vi in valid_indices]
             
             if valid_solution_counts:
                 ax_solutions.errorbar(valid_room_counts, valid_solution_counts,
@@ -348,21 +355,43 @@ def print_numerical_summary(room_counts, metric_names, metric_labels,
         if exp_type not in stats_by_type:
             print("  No data available")
             continue
-            
-        averaged_metrics = stats_by_type[exp_type]['averaged_metrics']
-        std_metrics = stats_by_type[exp_type]['std_metrics']
         
-        for room_count in room_counts:
-            if room_count in metrics_by_rooms_and_type[exp_type]:
-                n_experiments = len(metrics_by_rooms_and_type[exp_type][room_count])
-                print(f"\n  Rooms: {room_count} (N={n_experiments} experiments)")
-                
-                idx = room_counts.index(room_count)
+        stats = stats_by_type[exp_type]
+        averaged_metrics = stats['averaged_metrics']
+        std_metrics = stats['std_metrics']
+        
+        for idx, room_count in enumerate(room_counts):
+            # Always print room entry if we have any data for it
+            success_rate = stats['success_rates'][idx]
+            avg_time = stats['avg_times'][idx]
+            avg_solutions = stats['avg_solutions'][idx]
+            has_any_data = not (np.isnan(success_rate) and np.isnan(avg_time))
+
+            if not has_any_data:
+                continue
+
+            has_classification = room_count in metrics_by_rooms_and_type[exp_type]
+            n_total = int(round(len(metrics_by_rooms_and_type[exp_type].get(room_count, [])) or
+                                (stats['success_rates'][idx] / 100 if not np.isnan(success_rate) else 0)))
+            n_class = len(metrics_by_rooms_and_type[exp_type].get(room_count, []))
+            print(f"\n  Rooms: {room_count}")
+
+            if not np.isnan(success_rate):
+                print(f"    {'Success Rate':12s}: {success_rate:.1f}%")
+            if not np.isnan(avg_time):
+                print(f"    {'Avg Time':12s}: {avg_time:.4f}s ± {stats['std_times'][idx]:.4f}s")
+            if not np.isnan(avg_solutions):
+                print(f"    {'Avg Solutions':13s}: {avg_solutions:.2f} ± {stats['std_solutions'][idx]:.2f}")
+
+            if has_classification:
+                print(f"    --- Classification metrics (N={n_class} unambiguous) ---")
                 for metric, label in zip(metric_names, metric_labels):
                     mean_val = averaged_metrics[metric][idx]
                     std_val = std_metrics[metric][idx]
                     if not np.isnan(mean_val):
                         print(f"    {label:12s}: {mean_val:.4f} ± {std_val:.4f}")
+            else:
+                print(f"    Classification metrics: N/A (no unambiguous solution)")
 
 
 def save_summary_statistics(room_counts, metric_names, metric_labels, 
@@ -393,17 +422,32 @@ def save_summary_statistics(room_counts, metric_names, metric_labels,
             averaged_metrics = stats_by_type[exp_type]['averaged_metrics']
             std_metrics = stats_by_type[exp_type]['std_metrics']
             
-            for room_count in room_counts:
+            for idx, room_count in enumerate(room_counts):
+                success_rate = stats_by_type[exp_type]['success_rates'][idx]
+                avg_time = stats_by_type[exp_type]['avg_times'][idx]
+                avg_solutions = stats_by_type[exp_type]['avg_solutions'][idx]
+                has_any_data = not (np.isnan(success_rate) and np.isnan(avg_time))
+                if not has_any_data:
+                    continue
+
+                f.write(f"\nRooms: {room_count}\n")
+                if not np.isnan(success_rate):
+                    f.write(f"  {'Success Rate':12s}: {success_rate:.1f}%\n")
+                if not np.isnan(avg_time):
+                    f.write(f"  {'Avg Time':12s}: {avg_time:.4f}s ± {stats_by_type[exp_type]['std_times'][idx]:.4f}s\n")
+                if not np.isnan(avg_solutions):
+                    f.write(f"  {'Avg Solutions':13s}: {avg_solutions:.2f} ± {stats_by_type[exp_type]['std_solutions'][idx]:.2f}\n")
+
                 if room_count in metrics_by_rooms_and_type[exp_type]:
-                    n_experiments = len(metrics_by_rooms_and_type[exp_type][room_count])
-                    f.write(f"\nRooms: {room_count} (N={n_experiments} experiments)\n")
-                    
-                    idx = room_counts.index(room_count)
+                    n_class = len(metrics_by_rooms_and_type[exp_type][room_count])
+                    f.write(f"  --- Classification metrics (N={n_class} unambiguous) ---\n")
                     for metric, label in zip(metric_names, metric_labels):
                         mean_val = averaged_metrics[metric][idx]
                         std_val = std_metrics[metric][idx]
                         if not np.isnan(mean_val):
                             f.write(f"  {label:12s}: {mean_val:.4f} ± {std_val:.4f}\n")
+                else:
+                    f.write(f"  Classification metrics: N/A (no unambiguous solution)\n")
             f.write("\n")
     
     print(f"Summary statistics saved to: {save_path}")
