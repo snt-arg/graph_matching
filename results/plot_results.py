@@ -17,6 +17,8 @@ import sys
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+from scipy.interpolate import griddata
 from collections import defaultdict
 import datetime
 
@@ -46,34 +48,55 @@ def process_data(data):
     success_data = defaultdict(lambda: defaultdict(list))
     timing_data = defaultdict(lambda: defaultdict(list))
     solution_count_data = defaultdict(lambda: defaultdict(list))
-    
+
+    # Raw per-experiment points for 3D scatter/surface plots
+    raw_points = defaultdict(list)
+    _cls_metrics = ['precision', 'recall', 'f1_score', 'accuracy', 'specificity']
+
     for experiment in experiments:
-        n_rooms = experiment['n_rooms_s_graphs']
+        n_rooms_s = experiment['n_rooms_s_graphs']
+        n_rooms_a = experiment.get('n_rooms_a_graphs', n_rooms_s)
+        pct_obj = experiment.get('pct_object_nodes', 0.0)
         exp_type = experiment.get('experiment_type', 'unknown')
         
         # Extract matching time
         matching_time = experiment.get('matching_time', 0.0)
-        timing_data[exp_type][n_rooms].append(matching_time)
+        timing_data[exp_type][n_rooms_s].append(matching_time)
         
         # Check success: use explicit 'success' field if present, else infer from metrics
         if 'success' in experiment:
             is_success = experiment['success']
         else:
             is_success = 'metrics' in experiment and bool(experiment['metrics'])
-        success_data[exp_type][n_rooms].append(1 if is_success else 0)
+        success_data[exp_type][n_rooms_s].append(1 if is_success else 0)
         
         has_metrics = ('metrics' in experiment and 
                        bool(experiment['metrics']) and 
                        'precision' in experiment['metrics'])
         if has_metrics:
             metrics = experiment['metrics']
-            metrics_by_rooms_and_type[exp_type][n_rooms].append(metrics)
+            metrics_by_rooms_and_type[exp_type][n_rooms_s].append(metrics)
 
         # num_solutions is always at the top level of the experiment, not inside metrics
         num_solutions = experiment.get('num_solutions', 0)
-        solution_count_data[exp_type][n_rooms].append(num_solutions)
+        solution_count_data[exp_type][n_rooms_s].append(num_solutions)
+
+        # Collect raw point for 3D plots
+        point = {
+            'n_rooms_s': n_rooms_s,
+            'n_rooms_a': n_rooms_a,
+            'pct_obj': pct_obj,
+            'success': 1 if is_success else 0,
+            'time': matching_time,
+            'num_solutions': num_solutions,
+        }
+        for m in _cls_metrics:
+            point[m] = (experiment['metrics'][m]
+                        if has_metrics and m in experiment['metrics']
+                        else np.nan)
+        raw_points[exp_type].append(point)
     
-    return metrics_by_rooms_and_type, success_data, timing_data, solution_count_data, metadata
+    return metrics_by_rooms_and_type, success_data, timing_data, solution_count_data, metadata, raw_points
 
 
 def calculate_statistics(metrics_by_rooms_and_type, success_data, timing_data, solution_count_data):
@@ -165,177 +188,224 @@ def calculate_statistics(metrics_by_rooms_and_type, success_data, timing_data, s
     return room_counts, metric_names, metric_labels, stats_by_type, experiment_types
 
 
-def create_plots(room_counts, metric_names, metric_labels, stats_by_type, 
-                experiment_types, metadata, save_path=None):
-    """Create comprehensive subplot visualization comparing experiment types."""
-    
-    # Create larger subplot visualization (3x3 grid)
-    fig, axes = plt.subplots(3, 3, figsize=(22, 16))
-    fig.suptitle('Graph Matching Performance: With vs Without Objects', fontsize=20, y=0.98)
-    
-    # Flatten axes for easier indexing
-    axes_flat = axes.flatten()
-    
-    # Color scheme for each experiment type
-    type_colors = {'with_objects': '#1f77b4', 'no_objects': '#ff7f0e', 'unknown': '#2ca02c'}
-    type_labels = {'with_objects': 'With Objects', 'no_objects': 'Without Objects', 'unknown': 'Unknown'}
-    
-    # X-offsets so overlapping series remain visible
-    type_offsets = {'with_objects': -0.03, 'no_objects': 0.03, 'unknown': 0.0}
+def _attach_expand_on_dblclick(fig):
+    """Double-click a subplot to expand it full-window; double-click again to restore."""
+    axes_list = fig.get_axes()
+    orig_pos = {ax: ax.get_position() for ax in axes_list}
+    orig_vis = {ax: ax.get_visible() for ax in axes_list}
+    state = [None]  # state[0] = currently expanded ax, or None
 
-    # Plot performance metrics (first 5 plots)
-    for metric_idx, (metric, label) in enumerate(zip(metric_names, metric_labels)):
-        ax = axes_flat[metric_idx]
-        
-        # Plot each experiment type
+    def on_dblclick(event):
+        if not event.dblclick:
+            return
+        dpi = fig.dpi
+        fx = event.x / (fig.get_figwidth() * dpi)
+        fy = event.y / (fig.get_figheight() * dpi)
+
+        if state[0] is not None:
+            # Restore all axes
+            for ax in axes_list:
+                ax.set_position(orig_pos[ax])
+                ax.set_visible(orig_vis[ax])
+            state[0] = None
+        else:
+            # Find the axes that was clicked
+            clicked = None
+            for ax in axes_list:
+                pos = orig_pos[ax]
+                if pos.x0 <= fx <= pos.x1 and pos.y0 <= fy <= pos.y1:
+                    clicked = ax
+                    break
+            if clicked is None:
+                return
+            for ax in axes_list:
+                if ax is clicked:
+                    ax.set_position([0.05, 0.05, 0.9, 0.9])
+                else:
+                    ax.set_visible(False)
+            state[0] = clicked
+
+        fig.canvas.draw_idle()
+
+    fig.canvas.mpl_connect('button_press_event', on_dblclick)
+
+
+def _make_3d_subplots(raw_points_by_type, fig_title, xlabel, ylabel,
+                      x_getter, y_getter, save_path, show_scatter=True):
+    """Shared helper: create a 3x3 figure of 3D surface+scatter subplots.
+
+    x_getter / y_getter are callables that accept a raw point dict and return
+    the X or Y coordinate for that point.
+    show_scatter: if False, only the interpolated surface is drawn.
+    """
+    type_colors = {
+        'with_objects': '#1f77b4',
+        'no_objects': '#ff7f0e',
+        'unknown': '#2ca02c',
+    }
+    type_labels_map = {
+        'with_objects': 'With Objects',
+        'no_objects': 'Without Objects',
+        'unknown': 'Unknown',
+    }
+    plot_specs = [
+        ('precision',     'Precision'),
+        ('recall',        'Recall'),
+        ('f1_score',      'F1-Score'),
+        ('accuracy',      'Accuracy'),
+        ('specificity',   'Specificity'),
+        ('success',       'Success (0/1)'),
+        ('time',          'Matching Time (s)'),
+        ('num_solutions', 'Num Solutions'),
+    ]
+    NUM_SOLUTIONS_THRESHOLD = 1.5  # highlight points at or below this value
+
+    fig = plt.figure(figsize=(28, 20))
+    fig.suptitle(fig_title, fontsize=16)
+    experiment_types = sorted(raw_points_by_type.keys())
+
+    for plot_idx, (field, zlabel) in enumerate(plot_specs):
+        ax = fig.add_subplot(3, 3, plot_idx + 1, projection='3d')
+
         for exp_type in experiment_types:
-            if exp_type in stats_by_type:
-                averaged_metrics = stats_by_type[exp_type]['averaged_metrics']
-                std_metrics = stats_by_type[exp_type]['std_metrics']
-                x_offset = type_offsets.get(exp_type, 0.0)
-                
-                # Filter out NaN values — use vi (not i) to avoid shadowing outer loop var
-                valid_indices = [vi for vi, val in enumerate(averaged_metrics[metric]) if not np.isnan(val)]
-                valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
-                valid_means = [averaged_metrics[metric][vi] for vi in valid_indices]
-                valid_stds = [std_metrics[metric][vi] for vi in valid_indices]
-                
-                if valid_means:  # Only plot if we have valid data
-                    ax.errorbar(valid_room_counts, valid_means, 
-                               yerr=valid_stds, 
-                               marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                               capsize=4, capthick=1.5, 
-                               color=type_colors.get(exp_type, '#2ca02c'),
-                               label=type_labels.get(exp_type, exp_type.title()))
-        
-        ax.set_xlabel('Number of Rooms (S-Graph)', fontsize=10, fontweight='bold')
-        ax.set_ylabel(label, fontsize=10, fontweight='bold')
-        ax.set_title(f'{label} vs Number of Rooms', fontsize=11, fontweight='bold', pad=15)
-        ax.grid(True, alpha=0.3, linestyle='--')
-        ax.set_xlim(left=0)
-        ax.set_ylim(0, 1.05)
-        if metric_idx == 0:  # Only show legend on first plot
-            ax.legend(fontsize=9, loc='lower left')
-    
-    # Plot success rates (6th plot)
-    ax_success = axes_flat[5]
-    for exp_type in experiment_types:
-        if exp_type in stats_by_type:
-            success_rates = stats_by_type[exp_type]['success_rates']
-            
-            x_offset = type_offsets.get(exp_type, 0.0)
-            valid_indices = [vi for vi, val in enumerate(success_rates) if not np.isnan(val)]
-            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
-            valid_rates = [success_rates[vi] for vi in valid_indices]
-            
-            if valid_rates:
-                ax_success.plot(valid_room_counts, valid_rates,
-                               marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                               color=type_colors.get(exp_type, '#2ca02c'),
-                               label=type_labels.get(exp_type, exp_type.title()))
-    
-    ax_success.set_xlabel('Number of Rooms (S-Graph)', fontsize=10, fontweight='bold')
-    ax_success.set_ylabel('Success Rate (%)', fontsize=10, fontweight='bold')
-    ax_success.set_title('Success Rate vs Number of Rooms', fontsize=11, fontweight='bold', pad=15)
-    ax_success.grid(True, alpha=0.3, linestyle='--')
-    ax_success.set_xlim(left=0)
-    ax_success.set_ylim(0, 105)
-    ax_success.legend(fontsize=9, loc='lower right')
-    
-    # Plot average matching times (7th plot)
-    ax_time = axes_flat[6]
-    for exp_type in experiment_types:
-        if exp_type in stats_by_type:
-            avg_times = stats_by_type[exp_type]['avg_times']
-            std_times = stats_by_type[exp_type]['std_times']
-            
-            x_offset = type_offsets.get(exp_type, 0.0)
-            valid_indices = [vi for vi, val in enumerate(avg_times) if not np.isnan(val)]
-            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
-            valid_times = [avg_times[vi] for vi in valid_indices]
-            valid_time_stds = [std_times[vi] for vi in valid_indices]
-            
-            if valid_times:
-                ax_time.errorbar(valid_room_counts, valid_times,
-                                yerr=valid_time_stds,
-                                marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                                capsize=4, capthick=1.5,
-                                color=type_colors.get(exp_type, '#2ca02c'),
-                                label=type_labels.get(exp_type, exp_type.title()))
-    
-    ax_time.set_xlabel('Number of Rooms (S-Graph)', fontsize=10, fontweight='bold')
-    ax_time.set_ylabel('Matching Time (seconds)', fontsize=10, fontweight='bold')
-    ax_time.set_title('Matching Time vs Number of Rooms', fontsize=11, fontweight='bold', pad=15)
-    ax_time.set_yscale('log')
-    ax_time.grid(True, alpha=0.3, linestyle='--', which='both')
-    ax_time.set_xlim(left=0)
-    ax_time.legend(fontsize=9, loc='upper left')
-    
-    # Plot average solution counts (8th plot)
-    ax_solutions = axes_flat[7]
-    for exp_type in experiment_types:
-        if exp_type in stats_by_type:
-            avg_solutions = stats_by_type[exp_type]['avg_solutions']
-            std_solutions = stats_by_type[exp_type]['std_solutions']
-            
-            x_offset = type_offsets.get(exp_type, 0.0)
-            valid_indices = [vi for vi, val in enumerate(avg_solutions) if not np.isnan(val)]
-            valid_room_counts = [room_counts[vi] + x_offset for vi in valid_indices]
-            valid_solution_counts = [avg_solutions[vi] for vi in valid_indices]
-            valid_solution_stds = [std_solutions[vi] for vi in valid_indices]
-            
-            if valid_solution_counts:
-                ax_solutions.errorbar(valid_room_counts, valid_solution_counts,
-                                     yerr=valid_solution_stds,
-                                     marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                                     capsize=4, capthick=1.5,
-                                     color=type_colors.get(exp_type, '#2ca02c'),
-                                     label=type_labels.get(exp_type, exp_type.title()))
-    
-    ax_solutions.set_xlabel('Number of Rooms (S-Graph)', fontsize=10, fontweight='bold')
-    ax_solutions.set_ylabel('Number of Solutions Found', fontsize=10, fontweight='bold')
-    ax_solutions.set_title('Solution Count vs Number of Rooms', fontsize=11, fontweight='bold', pad=15)
-    ax_solutions.grid(True, alpha=0.3, linestyle='--')
-    ax_solutions.set_xlim(left=0)
-    ax_solutions.legend(fontsize=9, loc='upper right')
-    
-    # Add summary statistics subplot (9th plot)
-    ax_summary = axes_flat[8]
-    ax_summary.text(0.05, 0.95, 'Experiment Summary', 
-                   transform=ax_summary.transAxes, fontsize=12, weight='bold')
-    ax_summary.text(0.05, 0.85, f'Total Experiments: {metadata["total_experiments"]}', 
-                   transform=ax_summary.transAxes, fontsize=10, weight='bold')
-    ax_summary.text(0.05, 0.75, f'Dataset: {metadata["dataset_file"]}', 
-                   transform=ax_summary.transAxes, fontsize=9)
-    ax_summary.text(0.05, 0.65, f'Generated: {metadata["timestamp"][:19]}', 
-                   transform=ax_summary.transAxes, fontsize=9)
-    
-    # Count experiments by type
-    ax_summary.text(0.05, 0.50, 'Experiments by Type:', 
-                   transform=ax_summary.transAxes, fontsize=10, weight='bold')
-    
-    line_y = 0.40
-    for exp_type in experiment_types:
-        type_label = type_labels.get(exp_type, exp_type.title())
-        # Count total experiments for this type across all room counts
-        total_exp = len(stats_by_type.get(exp_type, {}).get('success_rates', []))
-        ax_summary.text(0.1, line_y, f'{type_label}: {total_exp} room configs', 
-                       transform=ax_summary.transAxes, fontsize=9)
-        line_y -= 0.1
-    
-    ax_summary.set_xlim(0, 1)
-    ax_summary.set_ylim(0, 1)
-    ax_summary.axis('off')
-    
-    # Adjust layout to prevent overlapping
-    plt.tight_layout(rect=[0, 0.02, 1, 0.96], pad=3.0, h_pad=3.5, w_pad=2.0)
-    
-    # Save plot if path provided
+            points = raw_points_by_type[exp_type]
+            color = type_colors.get(exp_type, '#2ca02c')
+            label = type_labels_map.get(exp_type, exp_type)
+
+            xs = np.array([x_getter(p) for p in points], dtype=float)
+            ys = np.array([y_getter(p) for p in points], dtype=float)
+            zs = np.array([p[field] for p in points], dtype=float)
+
+            valid = ~np.isnan(zs)
+            xs_v, ys_v, zs_v = xs[valid], ys[valid], zs[valid]
+            if len(xs_v) == 0:
+                continue
+
+            # Attempt interpolated surface when data spans 2D
+            unique_xy = np.unique(np.column_stack([xs_v, ys_v]), axis=0)
+            if (len(unique_xy) >= 6
+                    and len(np.unique(xs_v)) >= 2
+                    and len(np.unique(ys_v)) >= 2):
+                xi = np.linspace(xs_v.min(), xs_v.max(), 30)
+                yi = np.linspace(ys_v.min(), ys_v.max(), 30)
+                Xi, Yi = np.meshgrid(xi, yi)
+                try:
+                    # Average z values for duplicate (x, y) pairs so the surface
+                    # reflects the mean of all samples at each grid position.
+                    xy_to_zs = defaultdict(list)
+                    for x, y, z in zip(xs_v, ys_v, zs_v):
+                        xy_to_zs[(x, y)].append(z)
+                    xs_agg = np.array([k[0] for k in xy_to_zs])
+                    ys_agg = np.array([k[1] for k in xy_to_zs])
+                    zs_agg = np.array([np.mean(v) for v in xy_to_zs.values()])
+                    Zi = griddata((xs_agg, ys_agg), zs_agg, (Xi, Yi), method='linear')
+                    if field == 'num_solutions':
+                        # Use a two-tone colormap: red below threshold, normal color above
+                        import matplotlib.colors as mcolors
+                        cmap_colors = ['#d62728', '#d62728', color, color]
+                        cmap_nodes = [0.0, NUM_SOLUTIONS_THRESHOLD, NUM_SOLUTIONS_THRESHOLD, max(zs_agg.max(), NUM_SOLUTIONS_THRESHOLD + 0.01)]
+                        norm_max = cmap_nodes[-1]
+                        norm_nodes = [v / norm_max for v in cmap_nodes]
+                        cmap = mcolors.LinearSegmentedColormap.from_list(
+                            'thresh', list(zip(norm_nodes, cmap_colors)))
+                        z_norm = mcolors.Normalize(vmin=0, vmax=norm_max)
+                        fcolors = cmap(z_norm(Zi))
+                        ax.plot_surface(Xi, Yi, Zi, facecolors=fcolors, alpha=0.5,
+                                        linewidth=0, antialiased=True)
+                    else:
+                        ax.plot_surface(Xi, Yi, Zi, alpha=0.35, color=color,
+                                        linewidth=0, antialiased=True)
+                except Exception:
+                    pass
+
+            if show_scatter:
+                ax.scatter(xs_v, ys_v, zs_v, color=color, s=20,
+                           label=label, depthshade=True)
+            elif plot_idx == 0:
+                # Still need a handle for the legend when scatter is hidden
+                ax.scatter([], [], [], color=color, s=20, label=label)
+
+        ax.set_xlabel(xlabel, fontsize=8, labelpad=3)
+        ax.set_ylabel(ylabel, fontsize=8, labelpad=3)
+        ax.set_zlabel(zlabel, fontsize=8, labelpad=3)
+        ax.set_title(zlabel, fontsize=10, fontweight='bold')
+        if plot_idx == 0:
+            ax.legend(fontsize=7)
+
+    return fig
+
+
+def create_3d_plots(raw_points_by_type, metadata, save_path=None, show_scatter=True):
+    """3D surface plots: X = n_rooms_s, Y = n_rooms_a, Z = metric."""
+    fig = _make_3d_subplots(
+        raw_points_by_type,
+        fig_title='Graph Matching: 3D View  (S-Rooms \u00d7 A-Rooms)',
+        xlabel='S-Rooms',
+        ylabel='A-Rooms',
+        x_getter=lambda p: p['n_rooms_s'],
+        y_getter=lambda p: p['n_rooms_a'],
+        save_path=None,
+        show_scatter=show_scatter,
+    )
+
+    # Summary info in the 9th cell
+    ax_info = fig.add_subplot(3, 3, 9)
+    ax_info.axis('off')
+    ax_info.text(0.05, 0.95, 'Experiment Summary', transform=ax_info.transAxes,
+                 fontsize=11, weight='bold', va='top')
+    ax_info.text(0.05, 0.82, f"Total: {metadata['total_experiments']}",
+                 transform=ax_info.transAxes, fontsize=9, va='top')
+    ax_info.text(0.05, 0.70, f"Dataset:\n{metadata['dataset_file']}",
+                 transform=ax_info.transAxes, fontsize=7, va='top')
+    ax_info.text(0.05, 0.50, f"Generated:\n{metadata['timestamp'][:19]}",
+                 transform=ax_info.transAxes, fontsize=9, va='top')
+
+    plt.tight_layout()
+    _attach_expand_on_dblclick(fig)
+
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight', 
-                   facecolor='white', edgecolor='none')
-        print(f"Plot saved to: {save_path}")
-    
+        plt.savefig(save_path, dpi=200, bbox_inches='tight', facecolor='white')
+        print(f"3D plot (abs rooms) saved to: {save_path}")
+
+    return fig
+
+
+def create_3d_normalized_plots(raw_points_by_type, metadata, save_path=None, show_scatter=True):
+    """3D surface plots: X = n_rooms_s/n_rooms_a ratio, Y = pct_object_nodes, Z = metric.
+
+    All experiment types are merged into one series so that no_objects (pct_obj=0)
+    and with_objects (pct_obj>0) appear as different regions of the same surface.
+    """
+    merged = {'all': [p for pts in raw_points_by_type.values() for p in pts]}
+    fig = _make_3d_subplots(
+        merged,
+        fig_title='Graph Matching: 3D View  (S/A Ratio \u00d7 % Object Nodes)',
+        xlabel='S/A Ratio',
+        ylabel='% Obj Nodes',
+        x_getter=lambda p: p['n_rooms_s'] / max(p['n_rooms_a'], 1),
+        y_getter=lambda p: p['pct_obj'],
+        save_path=None,
+        show_scatter=show_scatter,
+    )
+
+    ax_info = fig.add_subplot(3, 3, 9)
+    ax_info.axis('off')
+    ax_info.text(0.05, 0.95, 'Experiment Summary', transform=ax_info.transAxes,
+                 fontsize=11, weight='bold', va='top')
+    ax_info.text(0.05, 0.82, f"Total: {metadata['total_experiments']}",
+                 transform=ax_info.transAxes, fontsize=9, va='top')
+    ax_info.text(0.05, 0.70, f"Dataset:\n{metadata['dataset_file']}",
+                 transform=ax_info.transAxes, fontsize=7, va='top')
+    ax_info.text(0.05, 0.50, f"Generated:\n{metadata['timestamp'][:19]}",
+                 transform=ax_info.transAxes, fontsize=9, va='top')
+
+    plt.tight_layout()
+    _attach_expand_on_dblclick(fig)
+
+    if save_path:
+        plt.savefig(save_path, dpi=200, bbox_inches='tight', facecolor='white')
+        print(f"3D plot (normalized) saved to: {save_path}")
+
     return fig
 
 
@@ -457,9 +527,11 @@ def main():
     parser = argparse.ArgumentParser(description='Plot graph matching results from JSON file')
     parser.add_argument('json_file', nargs='?', default='latest_results.json',
                        help='JSON file containing results (default: latest_results.json)')
-    parser.add_argument('--no-display', action='store_true', 
+    parser.add_argument('--no-display', action='store_true',
                        help='Do not display plots (only save them)')
-    
+    parser.add_argument('--no-scatter', action='store_true',
+                       help='Hide individual data-point spheres; show surfaces only')
+
     args = parser.parse_args()
     
     # Determine file paths
@@ -482,24 +554,31 @@ def main():
     print(f"Loaded {len(data['experiments'])} experiments")
     
     # Process data
-    metrics_by_rooms_and_type, success_data, timing_data, solution_count_data, metadata = process_data(data)
+    (metrics_by_rooms_and_type, success_data, timing_data,
+     solution_count_data, metadata, raw_points) = process_data(data)
     room_counts, metric_names, metric_labels, stats_by_type, experiment_types = calculate_statistics(
         metrics_by_rooms_and_type, success_data, timing_data, solution_count_data)
     
     # Create output filenames with timestamp
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    plot_filename = f"graph_matching_plots_{timestamp}.png"
-    summary_filename = f"graph_matching_summary_{timestamp}.txt"
+    plot_3d_filename      = f"graph_matching_3d_{timestamp}.png"
+    plot_norm_filename    = f"graph_matching_3d_normalized_{timestamp}.png"
+    summary_filename      = f"graph_matching_summary_{timestamp}.txt"
     
-    plot_path = os.path.join(results_dir, plot_filename)
-    summary_path = os.path.join(results_dir, summary_filename)
+    plot_3d_path   = os.path.join(results_dir, plot_3d_filename)
+    plot_norm_path = os.path.join(results_dir, plot_norm_filename)
+    summary_path   = os.path.join(results_dir, summary_filename)
     
     # Ensure results directory exists
     os.makedirs(results_dir, exist_ok=True)
     
-    # Create plots
-    fig = create_plots(room_counts, metric_names, metric_labels, 
-                      stats_by_type, experiment_types, metadata, plot_path)
+    show_scatter = not args.no_scatter
+
+    # Figure 1 – absolute room counts (X=S-rooms, Y=A-rooms, Z=metric)
+    fig1 = create_3d_plots(raw_points, metadata, plot_3d_path, show_scatter=show_scatter)
+
+    # Figure 2 – normalised axes (X=S/A ratio, Y=%obj nodes, Z=metric)
+    fig2 = create_3d_normalized_plots(raw_points, metadata, plot_norm_path, show_scatter=show_scatter)
     
     # Save summary statistics
     save_summary_statistics(room_counts, metric_names, metric_labels,
@@ -514,11 +593,13 @@ def main():
     if not args.no_display:
         plt.show()
     else:
-        plt.close(fig)
+        plt.close(fig1)
+        plt.close(fig2)
         print("Plots saved but not displayed (--no-display flag used)")
     
     print(f"\nResults processed successfully!")
-    print(f"  - Plot: {plot_path}")
+    print(f"  - 3D plot (abs rooms): {plot_3d_path}")
+    print(f"  - 3D plot (normalized): {plot_norm_path}")
     print(f"  - Summary: {summary_path}")
 
 

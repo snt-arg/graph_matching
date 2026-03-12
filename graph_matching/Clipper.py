@@ -86,7 +86,7 @@ class Clipper():
 
 
     def solve_clipper(self):
-        best_score, best_selected_associations = 0, None
+        best_score, best_selected_associations = 0, []
         for i in range(self.params["solver_iterations"]):
             self.create_clipper_object(self.invariant)
             self.score_pairwise_consistency(self.D1, self.D2, self.A)

@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_
 from collections import defaultdict
 
 from sympy import false
+from tqdm import tqdm
 
 from GraphMatcher import GraphMatcher
 from utils import plane_4_params_to_6_params, plane_6_params_to_4_params, correct_plane_direction
@@ -122,7 +123,6 @@ def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=
     if success and len(matches_node_ids) == 1:
         metrics = compute_metrics(gt_match, matches_node_ids[0])
     
-    print(f"dbg matches_node_ids {matches_node_ids}")
     return {
         'success': success,
         'matches': matches,
@@ -135,7 +135,7 @@ def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=
     }
 
 
-def compute_metrics(ground_truth_matches, predicted_matches):
+def compute_metrics(ground_truth_matches, predicted_matches, log_level=0):
     """
     Compute graph matching performance metrics treating it as node correspondence classification.
     
@@ -149,8 +149,9 @@ def compute_metrics(ground_truth_matches, predicted_matches):
         dict: Dictionary containing confusion matrix and performance metrics
     """
     
-    # print(f"\nDEBUG: ground_truth_matches = {ground_truth_matches}")
-    # print(f"DEBUG: predicted_matches = {predicted_matches}")
+    if log_level >= 2:
+        print(f"\nDEBUG: ground_truth_matches = {ground_truth_matches}")
+        print(f"DEBUG: predicted_matches = {predicted_matches}")
     
     # Convert matches to sets of tuples for easier comparison
     # For graph matching, we keep the order (node_A, node_B) - don't sort!
@@ -239,39 +240,39 @@ def compute_metrics(ground_truth_matches, predicted_matches):
         'total_pred_matches': total_pred_matches
     }
     
-    # Print metrics
-    print("\n" + "="*60)
-    print("GRAPH MATCHING PERFORMANCE METRICS")
-    print("="*60)
-    print(f"Total possible correspondences: {len(all_possible_correspondences)}")
-    print(f"Ground truth matches: {len(gt_set)}")
-    print(f"Predicted matches: {len(pred_set)}")
-    print(f"Correct matches: {correct_matches}")
-    print(f"Match accuracy: {correct_matches/max(total_gt_matches, 1):.4f}")
-    print("\nConfusion Matrix:")
-    print(f"                     Predicted")
-    print(f"                   No Match  Match")
-    print(f"Actual  No Match   {tn:6d}  {fp:5d}")
-    print(f"        Match      {fn:6d}  {tp:5d}")
-    print("\nClassification Metrics:")
-    print(f"Accuracy:    {accuracy:.4f}")
-    print(f"Precision:   {precision:.4f}")
-    print(f"Recall:      {recall:.4f}")
-    print(f"F1-Score:    {f1:.4f}")
-    print(f"Specificity: {specificity:.4f}")
-    print("="*60)
+    if log_level >= 1:
+        # Print metrics
+        print("\n" + "="*60)
+        print("GRAPH MATCHING PERFORMANCE METRICS")
+        print("="*60)
+        print(f"Total possible correspondences: {len(all_possible_correspondences)}")
+        print(f"Ground truth matches: {len(gt_set)}")
+        print(f"Predicted matches: {len(pred_set)}")
+        print(f"Correct matches: {correct_matches}")
+        print(f"Match accuracy: {correct_matches/max(total_gt_matches, 1):.4f}")
+        print("\nConfusion Matrix:")
+        print(f"                     Predicted")
+        print(f"                   No Match  Match")
+        print(f"Actual  No Match   {tn:6d}  {fp:5d}")
+        print(f"        Match      {fn:6d}  {tp:5d}")
+        print("\nClassification Metrics:")
+        print(f"Accuracy:    {accuracy:.4f}")
+        print(f"Precision:   {precision:.4f}")
+        print(f"Recall:      {recall:.4f}")
+        print(f"F1-Score:    {f1:.4f}")
+        print(f"Specificity: {specificity:.4f}")
+        print("="*60)
     
     return metrics
 
 
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
-full_dataset = pickle.load(open(os.path.join(pickle_datasets_path, "incremental_symmetries_grid_squared_translation.pkl"), "rb"))
+full_dataset = pickle.load(open(os.path.join(pickle_datasets_path, "incremental_translation.pkl"), "rb"))
 
 # Initialize data collection for visualization
 all_metrics_data = []  # List to store (n_rooms, metrics_dict) tuples
-
-for a_graph, s_graphs in full_dataset[3:]:
+for a_graph, s_graphs in tqdm(full_dataset, desc="Matching graphs", colour="green"):
     # visualize_nxgraph_3d(a_graph, "a_graph", visualize_alone=True, include_node_ids=True)
     process_synthetic_graph(a_graph)
     for i, s_graph in enumerate(s_graphs):
@@ -286,11 +287,19 @@ for a_graph, s_graphs in full_dataset[3:]:
         mapping = dict(zip(s_graph.get_nodes_ids(), list(np.array(s_graph.get_nodes_ids()) + len(a_graph_nodes_ids) + 1)))
 
         n_rooms_s_graphs = len(copy.deepcopy(s_graph).filter_graph_by_node_types(["room"]).get_nodes_ids())
+        n_rooms_a_graphs = len(copy.deepcopy(a_graph).filter_graph_by_node_types(["room"]).get_nodes_ids())
+
+        # Percentage of object nodes (non room/ws) in S-graph
+        all_s_nodes = copy.deepcopy(s_graph).get_nodes_ids()
+        non_object_s_nodes = copy.deepcopy(s_graph).filter_graph_by_node_types(["room", "ws"]).get_nodes_ids()
+        n_total_s = len(all_s_nodes)
+        n_object_s = n_total_s - len(non_object_s_nodes)
+        pct_object_nodes = (n_object_s / n_total_s * 100.0) if n_total_s > 0 else 0.0
 
         s_graph.stringify_node_ids()
 
         # Run graph matching experiments
-        print(f"Running experiment with {n_rooms_s_graphs} rooms...")
+        print(f"Running experiment with {n_rooms_s_graphs} rooms in S-graph, {n_rooms_a_graphs} in A-graph, {pct_object_nodes:.1f}% object nodes...")
 
         # Create ground truth matches
         a_graph_no_objects = copy.deepcopy(a_graph).filter_graph_by_node_types(["room", "ws"])
@@ -308,7 +317,7 @@ for a_graph, s_graphs in full_dataset[3:]:
         metrics_with_objects['matching_time'] = results_with_objects['matching_time']
         metrics_with_objects['num_solutions'] = len(results_with_objects['matches_node_ids'])
         metrics_with_objects['success'] = bool(results_with_objects['success'])
-        all_metrics_data.append((n_rooms_s_graphs, metrics_with_objects))
+        all_metrics_data.append((n_rooms_s_graphs, n_rooms_a_graphs, pct_object_nodes, metrics_with_objects))
         
         # Experiment 2: Without objects (only rooms and walls)
         results_no_objects = run_graph_matching_experiment(
@@ -321,7 +330,7 @@ for a_graph, s_graphs in full_dataset[3:]:
         metrics_no_objects['matching_time'] = results_no_objects['matching_time']
         metrics_no_objects['num_solutions'] = len(results_no_objects['matches_node_ids'])
         metrics_no_objects['success'] = bool(results_no_objects['success'])
-        all_metrics_data.append((n_rooms_s_graphs, metrics_no_objects))
+        all_metrics_data.append((n_rooms_s_graphs, n_rooms_a_graphs, 0.0, metrics_no_objects))
         
         # if results_with_objects['success'] and results_with_objects['metrics']:
         #     pass
@@ -350,18 +359,20 @@ if all_metrics_data:
     # Prepare data for JSON serialization
     # Convert numpy arrays and other non-serializable objects
     serializable_data = []
-    for n_rooms, metrics in all_metrics_data:
+    for n_rooms_s, n_rooms_a, pct_obj, metrics in all_metrics_data:
         serializable_metrics = {}
         for key, value in metrics.items():
             if key == 'confusion_matrix':
-                serializable_metrics[key] = value.tolist()  # Convert numpy array to list
+                serializable_metrics[key] = value.tolist()
             elif isinstance(value, bool):
                 serializable_metrics[key] = value
             else:
                 serializable_metrics[key] = float(value) if isinstance(value, np.number) else value
         
         serializable_data.append({
-            'n_rooms_s_graphs': int(n_rooms),
+            'n_rooms_s_graphs': int(n_rooms_s),
+            'n_rooms_a_graphs': int(n_rooms_a),
+            'pct_object_nodes': float(pct_obj),
             'metrics': serializable_metrics,
             'experiment_type': metrics.get('experiment_type', 'unknown'),
             'matching_time': metrics.get('matching_time', 0.0),
