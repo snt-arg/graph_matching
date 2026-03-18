@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-03-18T08:25:20.739480",
+    "timestamp": "2026-03-17T13:44:50.216129",
     "total_experiments": 1,
     "dataset_file": "graph_dicts/",
     "description": "Graph matching performance metrics collected from real environment dataset experiments"
@@ -33,12 +33,12 @@
         "total_gt_matches": 18,
         "total_pred_matches": 20,
         "experiment_type": "pgm_real",
-        "matching_time": 0.007153987884521484,
+        "matching_time": 0.10753440856933594,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_real",
-      "matching_time": 0.007153987884521484,
+      "matching_time": 0.10753440856933594,
       "num_solutions": 1,
       "success": true
     }
