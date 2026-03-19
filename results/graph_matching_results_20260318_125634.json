@@ -1,12 +1,9 @@
 {
   "metadata": {
-    "timestamp": "2026-03-18T16:05:30.110008",
+    "timestamp": "2026-03-18T12:56:34.830600",
     "total_experiments": 151,
     "dataset_file": "/root/workspace/src/graph_matching_gnn/GNN/preprocessed/partial_graph_matching/ws_room_dropout_noise/test_dataset.pkl",
-    "description": "Graph matching performance metrics collected from MSD dataset experiments",
-    "score_threshold": 1.0,
-    "affinity_threshold": null,
-    "dataset": "msd"
+    "description": "Graph matching performance metrics collected from MSD dataset experiments"
   },
   "experiments": [
     {
@@ -36,12 +33,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09792542457580566,
+        "matching_time": 0.011346578598022461,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09792542457580566,
+      "matching_time": 0.011346578598022461,
       "num_solutions": 1,
       "success": false
     },
@@ -72,12 +69,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009999513626098633,
+        "matching_time": 0.02843952178955078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009999513626098633,
+      "matching_time": 0.02843952178955078,
       "num_solutions": 1,
       "success": false
     },
@@ -108,12 +105,12 @@
         "total_gt_matches": 86,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06658554077148438,
+        "matching_time": 0.01227569580078125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06658554077148438,
+      "matching_time": 0.01227569580078125,
       "num_solutions": 1,
       "success": false
     },
@@ -144,12 +141,12 @@
         "total_gt_matches": 84,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012069940567016602,
+        "matching_time": 0.013217687606811523,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012069940567016602,
+      "matching_time": 0.013217687606811523,
       "num_solutions": 1,
       "success": false
     },
@@ -180,12 +177,12 @@
         "total_gt_matches": 100,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03480362892150879,
+        "matching_time": 0.028718948364257812,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03480362892150879,
+      "matching_time": 0.028718948364257812,
       "num_solutions": 1,
       "success": false
     },
@@ -216,12 +213,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010456323623657227,
+        "matching_time": 0.014629125595092773,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010456323623657227,
+      "matching_time": 0.014629125595092773,
       "num_solutions": 1,
       "success": false
     },
@@ -252,12 +249,12 @@
         "total_gt_matches": 47,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0049059391021728516,
+        "matching_time": 0.005913972854614258,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0049059391021728516,
+      "matching_time": 0.005913972854614258,
       "num_solutions": 1,
       "success": false
     },
@@ -288,12 +285,12 @@
         "total_gt_matches": 26,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0034415721893310547,
+        "matching_time": 0.003674030303955078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0034415721893310547,
+      "matching_time": 0.003674030303955078,
       "num_solutions": 1,
       "success": false
     },
@@ -324,12 +321,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010595083236694336,
+        "matching_time": 0.009617328643798828,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010595083236694336,
+      "matching_time": 0.009617328643798828,
       "num_solutions": 1,
       "success": false
     },
@@ -360,12 +357,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010732889175415039,
+        "matching_time": 0.0416722297668457,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010732889175415039,
+      "matching_time": 0.0416722297668457,
       "num_solutions": 1,
       "success": false
     },
@@ -396,12 +393,12 @@
         "total_gt_matches": 90,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014026641845703125,
+        "matching_time": 0.022149324417114258,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014026641845703125,
+      "matching_time": 0.022149324417114258,
       "num_solutions": 1,
       "success": false
     },
@@ -432,12 +429,12 @@
         "total_gt_matches": 74,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010215520858764648,
+        "matching_time": 0.010353565216064453,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010215520858764648,
+      "matching_time": 0.010353565216064453,
       "num_solutions": 1,
       "success": false
     },
@@ -468,12 +465,12 @@
         "total_gt_matches": 64,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00893855094909668,
+        "matching_time": 0.008895158767700195,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00893855094909668,
+      "matching_time": 0.008895158767700195,
       "num_solutions": 1,
       "success": false
     },
@@ -504,12 +501,12 @@
         "total_gt_matches": 64,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008971214294433594,
+        "matching_time": 0.009216070175170898,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008971214294433594,
+      "matching_time": 0.009216070175170898,
       "num_solutions": 1,
       "success": false
     },
@@ -540,12 +537,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008188724517822266,
+        "matching_time": 0.009496212005615234,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008188724517822266,
+      "matching_time": 0.009496212005615234,
       "num_solutions": 1,
       "success": false
     },
@@ -576,12 +573,12 @@
         "total_gt_matches": 89,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017824411392211914,
+        "matching_time": 0.01714158058166504,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017824411392211914,
+      "matching_time": 0.01714158058166504,
       "num_solutions": 1,
       "success": false
     },
@@ -612,12 +609,12 @@
         "total_gt_matches": 88,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013000965118408203,
+        "matching_time": 0.013836145401000977,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013000965118408203,
+      "matching_time": 0.013836145401000977,
       "num_solutions": 1,
       "success": false
     },
@@ -648,12 +645,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004730701446533203,
+        "matching_time": 0.005686759948730469,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004730701446533203,
+      "matching_time": 0.005686759948730469,
       "num_solutions": 1,
       "success": false
     },
@@ -684,12 +681,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007951974868774414,
+        "matching_time": 0.007416248321533203,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007951974868774414,
+      "matching_time": 0.007416248321533203,
       "num_solutions": 1,
       "success": false
     },
@@ -720,12 +717,12 @@
         "total_gt_matches": 12,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0028371810913085938,
+        "matching_time": 0.002741575241088867,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0028371810913085938,
+      "matching_time": 0.002741575241088867,
       "num_solutions": 1,
       "success": false
     },
@@ -756,12 +753,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01033329963684082,
+        "matching_time": 0.00851893424987793,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01033329963684082,
+      "matching_time": 0.00851893424987793,
       "num_solutions": 1,
       "success": false
     },
@@ -792,12 +789,12 @@
         "total_gt_matches": 66,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008572578430175781,
+        "matching_time": 0.008068323135375977,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008572578430175781,
+      "matching_time": 0.008068323135375977,
       "num_solutions": 1,
       "success": false
     },
@@ -828,12 +825,12 @@
         "total_gt_matches": 112,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02112746238708496,
+        "matching_time": 0.04562830924987793,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02112746238708496,
+      "matching_time": 0.04562830924987793,
       "num_solutions": 1,
       "success": false
     },
@@ -864,12 +861,12 @@
         "total_gt_matches": 70,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010264396667480469,
+        "matching_time": 0.042829275131225586,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010264396667480469,
+      "matching_time": 0.042829275131225586,
       "num_solutions": 1,
       "success": false
     },
@@ -900,12 +897,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007548093795776367,
+        "matching_time": 0.007665157318115234,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007548093795776367,
+      "matching_time": 0.007665157318115234,
       "num_solutions": 1,
       "success": false
     },
@@ -936,12 +933,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004320383071899414,
+        "matching_time": 0.0046844482421875,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004320383071899414,
+      "matching_time": 0.0046844482421875,
       "num_solutions": 1,
       "success": false
     },
@@ -972,12 +969,12 @@
         "total_gt_matches": 34,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0064280033111572266,
+        "matching_time": 0.006616830825805664,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0064280033111572266,
+      "matching_time": 0.006616830825805664,
       "num_solutions": 1,
       "success": false
     },
@@ -1008,12 +1005,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007598161697387695,
+        "matching_time": 0.02054142951965332,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007598161697387695,
+      "matching_time": 0.02054142951965332,
       "num_solutions": 1,
       "success": false
     },
@@ -1044,12 +1041,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04901003837585449,
+        "matching_time": 0.04901599884033203,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04901003837585449,
+      "matching_time": 0.04901599884033203,
       "num_solutions": 1,
       "success": false
     },
@@ -1080,12 +1077,12 @@
         "total_gt_matches": 69,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.027771949768066406,
+        "matching_time": 0.0130462646484375,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.027771949768066406,
+      "matching_time": 0.0130462646484375,
       "num_solutions": 1,
       "success": false
     },
@@ -1116,12 +1113,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008836030960083008,
+        "matching_time": 0.0076177120208740234,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008836030960083008,
+      "matching_time": 0.0076177120208740234,
       "num_solutions": 1,
       "success": false
     },
@@ -1152,12 +1149,12 @@
         "total_gt_matches": 33,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004382133483886719,
+        "matching_time": 0.004555463790893555,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004382133483886719,
+      "matching_time": 0.004555463790893555,
       "num_solutions": 1,
       "success": false
     },
@@ -1188,12 +1185,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009614229202270508,
+        "matching_time": 0.03905606269836426,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009614229202270508,
+      "matching_time": 0.03905606269836426,
       "num_solutions": 1,
       "success": false
     },
@@ -1224,12 +1221,12 @@
         "total_gt_matches": 73,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010824203491210938,
+        "matching_time": 0.012024164199829102,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010824203491210938,
+      "matching_time": 0.012024164199829102,
       "num_solutions": 1,
       "success": false
     },
@@ -1260,12 +1257,12 @@
         "total_gt_matches": 165,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04690718650817871,
+        "matching_time": 0.03224492073059082,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04690718650817871,
+      "matching_time": 0.03224492073059082,
       "num_solutions": 1,
       "success": false
     },
@@ -1296,12 +1293,12 @@
         "total_gt_matches": 70,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009730100631713867,
+        "matching_time": 0.010091781616210938,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009730100631713867,
+      "matching_time": 0.010091781616210938,
       "num_solutions": 1,
       "success": false
     },
@@ -1332,12 +1329,12 @@
         "total_gt_matches": 71,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010646820068359375,
+        "matching_time": 0.014948844909667969,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010646820068359375,
+      "matching_time": 0.014948844909667969,
       "num_solutions": 1,
       "success": false
     },
@@ -1368,12 +1365,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009857416152954102,
+        "matching_time": 0.011604070663452148,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009857416152954102,
+      "matching_time": 0.011604070663452148,
       "num_solutions": 1,
       "success": false
     },
@@ -1404,12 +1401,12 @@
         "total_gt_matches": 52,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006725788116455078,
+        "matching_time": 0.00776219367980957,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006725788116455078,
+      "matching_time": 0.00776219367980957,
       "num_solutions": 1,
       "success": false
     },
@@ -1440,12 +1437,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0059642791748046875,
+        "matching_time": 0.008674860000610352,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0059642791748046875,
+      "matching_time": 0.008674860000610352,
       "num_solutions": 1,
       "success": false
     },
@@ -1476,12 +1473,12 @@
         "total_gt_matches": 98,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01629924774169922,
+        "matching_time": 0.013990640640258789,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01629924774169922,
+      "matching_time": 0.013990640640258789,
       "num_solutions": 1,
       "success": false
     },
@@ -1512,12 +1509,12 @@
         "total_gt_matches": 107,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015850543975830078,
+        "matching_time": 0.02278614044189453,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015850543975830078,
+      "matching_time": 0.02278614044189453,
       "num_solutions": 1,
       "success": false
     },
@@ -1548,12 +1545,12 @@
         "total_gt_matches": 33,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004136323928833008,
+        "matching_time": 0.004130840301513672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004136323928833008,
+      "matching_time": 0.004130840301513672,
       "num_solutions": 1,
       "success": false
     },
@@ -1584,12 +1581,12 @@
         "total_gt_matches": 80,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013044357299804688,
+        "matching_time": 0.014047622680664062,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013044357299804688,
+      "matching_time": 0.014047622680664062,
       "num_solutions": 1,
       "success": false
     },
@@ -1620,12 +1617,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006494760513305664,
+        "matching_time": 0.005585670471191406,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006494760513305664,
+      "matching_time": 0.005585670471191406,
       "num_solutions": 1,
       "success": false
     },
@@ -1656,12 +1653,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0719754695892334,
+        "matching_time": 0.004311800003051758,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0719754695892334,
+      "matching_time": 0.004311800003051758,
       "num_solutions": 1,
       "success": false
     },
@@ -1692,12 +1689,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013002872467041016,
+        "matching_time": 0.007058858871459961,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013002872467041016,
+      "matching_time": 0.007058858871459961,
       "num_solutions": 1,
       "success": false
     },
@@ -1728,12 +1725,12 @@
         "total_gt_matches": 27,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.10927557945251465,
+        "matching_time": 0.022618532180786133,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.10927557945251465,
+      "matching_time": 0.022618532180786133,
       "num_solutions": 1,
       "success": false
     },
@@ -1764,12 +1761,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014913558959960938,
+        "matching_time": 0.024355411529541016,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014913558959960938,
+      "matching_time": 0.024355411529541016,
       "num_solutions": 1,
       "success": false
     },
@@ -1800,12 +1797,12 @@
         "total_gt_matches": 23,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06903886795043945,
+        "matching_time": 0.0038297176361083984,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06903886795043945,
+      "matching_time": 0.0038297176361083984,
       "num_solutions": 1,
       "success": false
     },
@@ -1836,12 +1833,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013813257217407227,
+        "matching_time": 0.010936260223388672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013813257217407227,
+      "matching_time": 0.010936260223388672,
       "num_solutions": 1,
       "success": false
     },
@@ -1872,12 +1869,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006768703460693359,
+        "matching_time": 0.00787806510925293,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006768703460693359,
+      "matching_time": 0.00787806510925293,
       "num_solutions": 1,
       "success": false
     },
@@ -1908,12 +1905,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029067039489746094,
+        "matching_time": 0.0074253082275390625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029067039489746094,
+      "matching_time": 0.0074253082275390625,
       "num_solutions": 1,
       "success": false
     },
@@ -1944,12 +1941,12 @@
         "total_gt_matches": 56,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008362531661987305,
+        "matching_time": 0.013218402862548828,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008362531661987305,
+      "matching_time": 0.013218402862548828,
       "num_solutions": 1,
       "success": false
     },
@@ -1980,12 +1977,12 @@
         "total_gt_matches": 76,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017630338668823242,
+        "matching_time": 0.02121758460998535,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017630338668823242,
+      "matching_time": 0.02121758460998535,
       "num_solutions": 1,
       "success": false
     },
@@ -2016,12 +2013,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006011486053466797,
+        "matching_time": 0.007503986358642578,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006011486053466797,
+      "matching_time": 0.007503986358642578,
       "num_solutions": 1,
       "success": false
     },
@@ -2052,12 +2049,12 @@
         "total_gt_matches": 25,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004951953887939453,
+        "matching_time": 0.005288124084472656,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004951953887939453,
+      "matching_time": 0.005288124084472656,
       "num_solutions": 1,
       "success": false
     },
@@ -2088,12 +2085,12 @@
         "total_gt_matches": 63,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02278590202331543,
+        "matching_time": 0.009630918502807617,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02278590202331543,
+      "matching_time": 0.009630918502807617,
       "num_solutions": 1,
       "success": false
     },
@@ -2124,12 +2121,12 @@
         "total_gt_matches": 35,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007235527038574219,
+        "matching_time": 0.0060498714447021484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007235527038574219,
+      "matching_time": 0.0060498714447021484,
       "num_solutions": 1,
       "success": false
     },
@@ -2160,12 +2157,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.037687063217163086,
+        "matching_time": 0.004116058349609375,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.037687063217163086,
+      "matching_time": 0.004116058349609375,
       "num_solutions": 1,
       "success": false
     },
@@ -2196,12 +2193,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006438493728637695,
+        "matching_time": 0.009247303009033203,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006438493728637695,
+      "matching_time": 0.009247303009033203,
       "num_solutions": 1,
       "success": false
     },
@@ -2232,12 +2229,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02606654167175293,
+        "matching_time": 0.028446674346923828,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02606654167175293,
+      "matching_time": 0.028446674346923828,
       "num_solutions": 1,
       "success": false
     },
@@ -2268,12 +2265,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010561227798461914,
+        "matching_time": 0.008718013763427734,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010561227798461914,
+      "matching_time": 0.008718013763427734,
       "num_solutions": 1,
       "success": false
     },
@@ -2304,12 +2301,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005907535552978516,
+        "matching_time": 0.008927345275878906,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005907535552978516,
+      "matching_time": 0.008927345275878906,
       "num_solutions": 1,
       "success": false
     },
@@ -2340,12 +2337,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0042765140533447266,
+        "matching_time": 0.004809379577636719,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0042765140533447266,
+      "matching_time": 0.004809379577636719,
       "num_solutions": 1,
       "success": false
     },
@@ -2376,12 +2373,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.023208141326904297,
+        "matching_time": 0.0044972896575927734,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.023208141326904297,
+      "matching_time": 0.0044972896575927734,
       "num_solutions": 1,
       "success": false
     },
@@ -2412,12 +2409,12 @@
         "total_gt_matches": 60,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.042696237564086914,
+        "matching_time": 0.009599924087524414,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.042696237564086914,
+      "matching_time": 0.009599924087524414,
       "num_solutions": 1,
       "success": false
     },
@@ -2448,12 +2445,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009109973907470703,
+        "matching_time": 0.05552506446838379,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009109973907470703,
+      "matching_time": 0.05552506446838379,
       "num_solutions": 1,
       "success": false
     },
@@ -2484,12 +2481,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0061855316162109375,
+        "matching_time": 0.009285926818847656,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0061855316162109375,
+      "matching_time": 0.009285926818847656,
       "num_solutions": 1,
       "success": false
     },
@@ -2520,12 +2517,12 @@
         "total_gt_matches": 76,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.016409873962402344,
+        "matching_time": 0.019421100616455078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.016409873962402344,
+      "matching_time": 0.019421100616455078,
       "num_solutions": 1,
       "success": false
     },
@@ -2556,12 +2553,12 @@
         "total_gt_matches": 48,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0063397884368896484,
+        "matching_time": 0.03272366523742676,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0063397884368896484,
+      "matching_time": 0.03272366523742676,
       "num_solutions": 1,
       "success": false
     },
@@ -2592,12 +2589,12 @@
         "total_gt_matches": 43,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00478053092956543,
+        "matching_time": 0.0047986507415771484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00478053092956543,
+      "matching_time": 0.0047986507415771484,
       "num_solutions": 1,
       "success": false
     },
@@ -2628,12 +2625,12 @@
         "total_gt_matches": 83,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012054681777954102,
+        "matching_time": 0.021139144897460938,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012054681777954102,
+      "matching_time": 0.021139144897460938,
       "num_solutions": 1,
       "success": false
     },
@@ -2664,12 +2661,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007486104965209961,
+        "matching_time": 0.08466863632202148,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007486104965209961,
+      "matching_time": 0.08466863632202148,
       "num_solutions": 1,
       "success": false
     },
@@ -2700,12 +2697,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008232831954956055,
+        "matching_time": 0.009311676025390625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008232831954956055,
+      "matching_time": 0.009311676025390625,
       "num_solutions": 1,
       "success": false
     },
@@ -2736,12 +2733,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005048036575317383,
+        "matching_time": 0.0287015438079834,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005048036575317383,
+      "matching_time": 0.0287015438079834,
       "num_solutions": 1,
       "success": false
     },
@@ -2772,12 +2769,12 @@
         "total_gt_matches": 53,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07922959327697754,
+        "matching_time": 0.018794775009155273,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07922959327697754,
+      "matching_time": 0.018794775009155273,
       "num_solutions": 1,
       "success": false
     },
@@ -2808,12 +2805,12 @@
         "total_gt_matches": 73,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010925769805908203,
+        "matching_time": 0.011534929275512695,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010925769805908203,
+      "matching_time": 0.011534929275512695,
       "num_solutions": 1,
       "success": false
     },
@@ -2844,12 +2841,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01940131187438965,
+        "matching_time": 0.006356716156005859,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01940131187438965,
+      "matching_time": 0.006356716156005859,
       "num_solutions": 1,
       "success": false
     },
@@ -2880,12 +2877,12 @@
         "total_gt_matches": 81,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09682726860046387,
+        "matching_time": 0.06947898864746094,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09682726860046387,
+      "matching_time": 0.06947898864746094,
       "num_solutions": 1,
       "success": false
     },
@@ -2916,12 +2913,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008345842361450195,
+        "matching_time": 0.008092641830444336,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008345842361450195,
+      "matching_time": 0.008092641830444336,
       "num_solutions": 1,
       "success": false
     },
@@ -2952,12 +2949,12 @@
         "total_gt_matches": 24,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012391328811645508,
+        "matching_time": 0.0067789554595947266,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012391328811645508,
+      "matching_time": 0.0067789554595947266,
       "num_solutions": 1,
       "success": false
     },
@@ -2988,12 +2985,12 @@
         "total_gt_matches": 40,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00814366340637207,
+        "matching_time": 0.007387638092041016,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00814366340637207,
+      "matching_time": 0.007387638092041016,
       "num_solutions": 1,
       "success": false
     },
@@ -3024,12 +3021,12 @@
         "total_gt_matches": 66,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008793830871582031,
+        "matching_time": 0.07420635223388672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008793830871582031,
+      "matching_time": 0.07420635223388672,
       "num_solutions": 1,
       "success": false
     },
@@ -3060,12 +3057,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011771678924560547,
+        "matching_time": 0.02188849449157715,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011771678924560547,
+      "matching_time": 0.02188849449157715,
       "num_solutions": 1,
       "success": false
     },
@@ -3096,12 +3093,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0065991878509521484,
+        "matching_time": 0.00863194465637207,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0065991878509521484,
+      "matching_time": 0.00863194465637207,
       "num_solutions": 1,
       "success": false
     },
@@ -3132,12 +3129,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007843494415283203,
+        "matching_time": 0.007086992263793945,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007843494415283203,
+      "matching_time": 0.007086992263793945,
       "num_solutions": 1,
       "success": false
     },
@@ -3168,12 +3165,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007730722427368164,
+        "matching_time": 0.004358768463134766,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007730722427368164,
+      "matching_time": 0.004358768463134766,
       "num_solutions": 1,
       "success": false
     },
@@ -3204,12 +3201,12 @@
         "total_gt_matches": 83,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.022562026977539062,
+        "matching_time": 0.012562990188598633,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.022562026977539062,
+      "matching_time": 0.012562990188598633,
       "num_solutions": 1,
       "success": false
     },
@@ -3240,12 +3237,12 @@
         "total_gt_matches": 74,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010287761688232422,
+        "matching_time": 0.013068199157714844,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010287761688232422,
+      "matching_time": 0.013068199157714844,
       "num_solutions": 1,
       "success": false
     },
@@ -3276,12 +3273,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0054264068603515625,
+        "matching_time": 0.007592678070068359,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0054264068603515625,
+      "matching_time": 0.007592678070068359,
       "num_solutions": 1,
       "success": false
     },
@@ -3312,12 +3309,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006365060806274414,
+        "matching_time": 0.008269548416137695,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006365060806274414,
+      "matching_time": 0.008269548416137695,
       "num_solutions": 1,
       "success": false
     },
@@ -3348,12 +3345,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010111570358276367,
+        "matching_time": 0.010015010833740234,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010111570358276367,
+      "matching_time": 0.010015010833740234,
       "num_solutions": 1,
       "success": false
     },
@@ -3384,12 +3381,12 @@
         "total_gt_matches": 53,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005852460861206055,
+        "matching_time": 0.007214546203613281,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005852460861206055,
+      "matching_time": 0.007214546203613281,
       "num_solutions": 1,
       "success": false
     },
@@ -3420,12 +3417,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02837967872619629,
+        "matching_time": 0.006296873092651367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02837967872619629,
+      "matching_time": 0.006296873092651367,
       "num_solutions": 1,
       "success": false
     },
@@ -3456,12 +3453,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008787393569946289,
+        "matching_time": 0.011377096176147461,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008787393569946289,
+      "matching_time": 0.011377096176147461,
       "num_solutions": 1,
       "success": false
     },
@@ -3492,12 +3489,12 @@
         "total_gt_matches": 101,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0201263427734375,
+        "matching_time": 0.02410745620727539,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0201263427734375,
+      "matching_time": 0.02410745620727539,
       "num_solutions": 1,
       "success": false
     },
@@ -3528,12 +3525,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008214235305786133,
+        "matching_time": 0.015058040618896484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008214235305786133,
+      "matching_time": 0.015058040618896484,
       "num_solutions": 1,
       "success": false
     },
@@ -3564,12 +3561,12 @@
         "total_gt_matches": 69,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010599851608276367,
+        "matching_time": 0.010687589645385742,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010599851608276367,
+      "matching_time": 0.010687589645385742,
       "num_solutions": 1,
       "success": false
     },
@@ -3600,12 +3597,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011163473129272461,
+        "matching_time": 0.027990102767944336,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011163473129272461,
+      "matching_time": 0.027990102767944336,
       "num_solutions": 1,
       "success": false
     },
@@ -3636,12 +3633,12 @@
         "total_gt_matches": 28,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07487607002258301,
+        "matching_time": 0.004289388656616211,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07487607002258301,
+      "matching_time": 0.004289388656616211,
       "num_solutions": 1,
       "success": false
     },
@@ -3672,12 +3669,12 @@
         "total_gt_matches": 76,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012204408645629883,
+        "matching_time": 0.012357234954833984,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012204408645629883,
+      "matching_time": 0.012357234954833984,
       "num_solutions": 1,
       "success": false
     },
@@ -3708,12 +3705,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02287769317626953,
+        "matching_time": 0.005647897720336914,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02287769317626953,
+      "matching_time": 0.005647897720336914,
       "num_solutions": 1,
       "success": false
     },
@@ -3744,12 +3741,12 @@
         "total_gt_matches": 66,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011451482772827148,
+        "matching_time": 0.010265588760375977,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011451482772827148,
+      "matching_time": 0.010265588760375977,
       "num_solutions": 1,
       "success": false
     },
@@ -3780,12 +3777,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02080845832824707,
+        "matching_time": 0.006664752960205078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02080845832824707,
+      "matching_time": 0.006664752960205078,
       "num_solutions": 1,
       "success": false
     },
@@ -3816,12 +3813,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00723576545715332,
+        "matching_time": 0.006781578063964844,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00723576545715332,
+      "matching_time": 0.006781578063964844,
       "num_solutions": 1,
       "success": false
     },
@@ -3852,12 +3849,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.024013280868530273,
+        "matching_time": 0.030083179473876953,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.024013280868530273,
+      "matching_time": 0.030083179473876953,
       "num_solutions": 1,
       "success": false
     },
@@ -3888,12 +3885,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008682489395141602,
+        "matching_time": 0.008773326873779297,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008682489395141602,
+      "matching_time": 0.008773326873779297,
       "num_solutions": 1,
       "success": false
     },
@@ -3924,12 +3921,12 @@
         "total_gt_matches": 60,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007990360260009766,
+        "matching_time": 0.007920980453491211,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007990360260009766,
+      "matching_time": 0.007920980453491211,
       "num_solutions": 1,
       "success": false
     },
@@ -3960,12 +3957,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014200210571289062,
+        "matching_time": 0.014469146728515625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014200210571289062,
+      "matching_time": 0.014469146728515625,
       "num_solutions": 1,
       "success": false
     },
@@ -3996,12 +3993,12 @@
         "total_gt_matches": 105,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02021956443786621,
+        "matching_time": 0.05988907814025879,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02021956443786621,
+      "matching_time": 0.05988907814025879,
       "num_solutions": 1,
       "success": false
     },
@@ -4032,12 +4029,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005382061004638672,
+        "matching_time": 0.0063648223876953125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005382061004638672,
+      "matching_time": 0.0063648223876953125,
       "num_solutions": 1,
       "success": false
     },
@@ -4068,12 +4065,12 @@
         "total_gt_matches": 40,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012588024139404297,
+        "matching_time": 0.004975557327270508,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012588024139404297,
+      "matching_time": 0.004975557327270508,
       "num_solutions": 1,
       "success": false
     },
@@ -4104,12 +4101,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006159543991088867,
+        "matching_time": 0.007598876953125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006159543991088867,
+      "matching_time": 0.007598876953125,
       "num_solutions": 1,
       "success": false
     },
@@ -4140,12 +4137,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009174108505249023,
+        "matching_time": 0.009550809860229492,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009174108505249023,
+      "matching_time": 0.009550809860229492,
       "num_solutions": 1,
       "success": false
     },
@@ -4176,12 +4173,12 @@
         "total_gt_matches": 102,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.021371126174926758,
+        "matching_time": 0.02543163299560547,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.021371126174926758,
+      "matching_time": 0.02543163299560547,
       "num_solutions": 1,
       "success": false
     },
@@ -4212,12 +4209,12 @@
         "total_gt_matches": 45,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011373519897460938,
+        "matching_time": 0.007908821105957031,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011373519897460938,
+      "matching_time": 0.007908821105957031,
       "num_solutions": 1,
       "success": false
     },
@@ -4248,12 +4245,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0047855377197265625,
+        "matching_time": 0.006837606430053711,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0047855377197265625,
+      "matching_time": 0.006837606430053711,
       "num_solutions": 1,
       "success": false
     },
@@ -4284,12 +4281,12 @@
         "total_gt_matches": 21,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005706310272216797,
+        "matching_time": 0.006434440612792969,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005706310272216797,
+      "matching_time": 0.006434440612792969,
       "num_solutions": 1,
       "success": false
     },
@@ -4320,12 +4317,12 @@
         "total_gt_matches": 80,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013198375701904297,
+        "matching_time": 0.015666484832763672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013198375701904297,
+      "matching_time": 0.015666484832763672,
       "num_solutions": 1,
       "success": false
     },
@@ -4356,12 +4353,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007399797439575195,
+        "matching_time": 0.007107257843017578,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007399797439575195,
+      "matching_time": 0.007107257843017578,
       "num_solutions": 1,
       "success": false
     },
@@ -4392,12 +4389,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010382652282714844,
+        "matching_time": 0.033914804458618164,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010382652282714844,
+      "matching_time": 0.033914804458618164,
       "num_solutions": 1,
       "success": false
     },
@@ -4428,12 +4425,12 @@
         "total_gt_matches": 35,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00870966911315918,
+        "matching_time": 0.00475311279296875,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00870966911315918,
+      "matching_time": 0.00475311279296875,
       "num_solutions": 1,
       "success": false
     },
@@ -4464,12 +4461,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014384746551513672,
+        "matching_time": 0.008131027221679688,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014384746551513672,
+      "matching_time": 0.008131027221679688,
       "num_solutions": 1,
       "success": false
     },
@@ -4500,12 +4497,12 @@
         "total_gt_matches": 70,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009633302688598633,
+        "matching_time": 0.010281801223754883,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009633302688598633,
+      "matching_time": 0.010281801223754883,
       "num_solutions": 1,
       "success": false
     },
@@ -4536,12 +4533,12 @@
         "total_gt_matches": 25,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006278038024902344,
+        "matching_time": 0.004456520080566406,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006278038024902344,
+      "matching_time": 0.004456520080566406,
       "num_solutions": 1,
       "success": false
     },
@@ -4572,12 +4569,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011404752731323242,
+        "matching_time": 0.023259878158569336,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011404752731323242,
+      "matching_time": 0.023259878158569336,
       "num_solutions": 1,
       "success": false
     },
@@ -4608,12 +4605,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010486841201782227,
+        "matching_time": 0.012165069580078125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010486841201782227,
+      "matching_time": 0.012165069580078125,
       "num_solutions": 1,
       "success": false
     },
@@ -4644,12 +4641,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.003954410552978516,
+        "matching_time": 0.01595139503479004,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.003954410552978516,
+      "matching_time": 0.01595139503479004,
       "num_solutions": 1,
       "success": false
     },
@@ -4680,12 +4677,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.025823354721069336,
+        "matching_time": 0.0036003589630126953,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.025823354721069336,
+      "matching_time": 0.0036003589630126953,
       "num_solutions": 1,
       "success": false
     },
@@ -4716,12 +4713,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010242700576782227,
+        "matching_time": 0.009265899658203125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010242700576782227,
+      "matching_time": 0.009265899658203125,
       "num_solutions": 1,
       "success": false
     },
@@ -4752,12 +4749,12 @@
         "total_gt_matches": 105,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017660140991210938,
+        "matching_time": 0.04355311393737793,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017660140991210938,
+      "matching_time": 0.04355311393737793,
       "num_solutions": 1,
       "success": false
     },
@@ -4788,12 +4785,12 @@
         "total_gt_matches": 31,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005776882171630859,
+        "matching_time": 0.004941225051879883,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005776882171630859,
+      "matching_time": 0.004941225051879883,
       "num_solutions": 1,
       "success": false
     },
@@ -4824,12 +4821,12 @@
         "total_gt_matches": 71,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011136770248413086,
+        "matching_time": 0.029549837112426758,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011136770248413086,
+      "matching_time": 0.029549837112426758,
       "num_solutions": 1,
       "success": false
     },
@@ -4860,12 +4857,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07460832595825195,
+        "matching_time": 0.012647867202758789,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07460832595825195,
+      "matching_time": 0.012647867202758789,
       "num_solutions": 1,
       "success": false
     },
@@ -4896,12 +4893,12 @@
         "total_gt_matches": 92,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.043886423110961914,
+        "matching_time": 0.01477670669555664,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.043886423110961914,
+      "matching_time": 0.01477670669555664,
       "num_solutions": 1,
       "success": false
     },
@@ -4932,12 +4929,12 @@
         "total_gt_matches": 79,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010848522186279297,
+        "matching_time": 0.010264158248901367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010848522186279297,
+      "matching_time": 0.010264158248901367,
       "num_solutions": 1,
       "success": false
     },
@@ -4968,12 +4965,12 @@
         "total_gt_matches": 28,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004211902618408203,
+        "matching_time": 0.004782676696777344,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004211902618408203,
+      "matching_time": 0.004782676696777344,
       "num_solutions": 1,
       "success": false
     },
@@ -5004,12 +5001,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0057332515716552734,
+        "matching_time": 0.015858888626098633,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0057332515716552734,
+      "matching_time": 0.015858888626098633,
       "num_solutions": 1,
       "success": false
     },
@@ -5040,12 +5037,12 @@
         "total_gt_matches": 65,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015537500381469727,
+        "matching_time": 0.031471967697143555,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015537500381469727,
+      "matching_time": 0.031471967697143555,
       "num_solutions": 1,
       "success": false
     },
@@ -5076,12 +5073,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02400374412536621,
+        "matching_time": 0.006657838821411133,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02400374412536621,
+      "matching_time": 0.006657838821411133,
       "num_solutions": 1,
       "success": false
     },
@@ -5112,12 +5109,12 @@
         "total_gt_matches": 61,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.020669937133789062,
+        "matching_time": 0.009745359420776367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.020669937133789062,
+      "matching_time": 0.009745359420776367,
       "num_solutions": 1,
       "success": false
     },
@@ -5148,12 +5145,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05327749252319336,
+        "matching_time": 0.00496363639831543,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05327749252319336,
+      "matching_time": 0.00496363639831543,
       "num_solutions": 1,
       "success": false
     },
@@ -5184,12 +5181,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04794812202453613,
+        "matching_time": 0.04146409034729004,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04794812202453613,
+      "matching_time": 0.04146409034729004,
       "num_solutions": 1,
       "success": false
     },
@@ -5220,12 +5217,12 @@
         "total_gt_matches": 81,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03380441665649414,
+        "matching_time": 0.01119542121887207,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03380441665649414,
+      "matching_time": 0.01119542121887207,
       "num_solutions": 1,
       "success": false
     },
@@ -5256,12 +5253,12 @@
         "total_gt_matches": 61,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014897346496582031,
+        "matching_time": 0.009285449981689453,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014897346496582031,
+      "matching_time": 0.009285449981689453,
       "num_solutions": 1,
       "success": false
     },
@@ -5292,12 +5289,12 @@
         "total_gt_matches": 43,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006299018859863281,
+        "matching_time": 0.005162715911865234,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006299018859863281,
+      "matching_time": 0.005162715911865234,
       "num_solutions": 1,
       "success": false
     },
@@ -5328,12 +5325,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01391744613647461,
+        "matching_time": 0.013543844223022461,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01391744613647461,
+      "matching_time": 0.013543844223022461,
       "num_solutions": 1,
       "success": false
     },
@@ -5364,12 +5361,12 @@
         "total_gt_matches": 39,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004241943359375,
+        "matching_time": 0.0042591094970703125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004241943359375,
+      "matching_time": 0.0042591094970703125,
       "num_solutions": 1,
       "success": false
     },
@@ -5400,12 +5397,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007914066314697266,
+        "matching_time": 0.029311418533325195,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007914066314697266,
+      "matching_time": 0.029311418533325195,
       "num_solutions": 1,
       "success": false
     },
@@ -5436,12 +5433,12 @@
         "total_gt_matches": 88,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01505136489868164,
+        "matching_time": 0.015576601028442383,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01505136489868164,
+      "matching_time": 0.015576601028442383,
       "num_solutions": 1,
       "success": false
     }

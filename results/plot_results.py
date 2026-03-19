@@ -183,8 +183,15 @@ def _attach_expand_on_dblclick(fig):
     fig.canvas.mpl_connect('button_press_event', on_dblclick)
 
 
-def create_3d_plots(raw_points, metadata, save_path=None, show_scatter=True):
-    """3D surface plots: X = n_rooms_s, Y = n_rooms_a, Z = metric."""
+def create_3d_plots(raw_points, metadata, save_path=None, show_scatter=True,
+                    threshold_points=None):
+    """3D surface plots: X = n_rooms_s, Y = n_rooms_a, Z = metric.
+
+    If *threshold_points* is provided (list of dicts with keys 'threshold',
+    'accuracy', 'recall'), a 9th 3D subplot is added:
+        X = score_threshold, Y = accuracy, Z = recall.
+    The grid is extended from 3×3 to 3×4 to accommodate it.
+    """
     plot_specs = [
         ('precision',     'Precision'),
         ('recall',        'Recall'),
@@ -197,11 +204,15 @@ def create_3d_plots(raw_points, metadata, save_path=None, show_scatter=True):
     ]
     NUM_SOLUTIONS_THRESHOLD = 1.5
 
-    fig = plt.figure(figsize=(28, 20))
+    has_threshold = bool(threshold_points)
+    ncols = 4 if has_threshold else 3
+    figw  = 36 if has_threshold else 28
+
+    fig = plt.figure(figsize=(figw, 20))
     fig.suptitle('Graph Matching: 3D View  (S-Rooms × A-Rooms)', fontsize=16)
 
     for plot_idx, (field, zlabel) in enumerate(plot_specs):
-        ax = fig.add_subplot(3, 3, plot_idx + 1, projection='3d')
+        ax = fig.add_subplot(3, ncols, plot_idx + 1, projection='3d')
 
         xs = np.array([p['n_rooms_s'] for p in raw_points], dtype=float)
         ys = np.array([p['n_rooms_a'] for p in raw_points], dtype=float)
@@ -252,8 +263,48 @@ def create_3d_plots(raw_points, metadata, save_path=None, show_scatter=True):
         ax.set_zlabel(zlabel,    fontsize=8, labelpad=3)
         ax.set_title(zlabel, fontsize=10, fontweight='bold')
 
-    # Summary info in cell 9
-    ax_info = fig.add_subplot(3, 3, 9)
+    # ── Threshold subplot (slot 9 in the 3×4 grid) ───────────────────────────
+    if has_threshold:
+        ax_t = fig.add_subplot(3, ncols, 9, projection='3d')
+
+        xs_t = np.array([p['threshold'] for p in threshold_points], dtype=float)
+        ys_t = np.array([p['accuracy']  for p in threshold_points], dtype=float)
+        zs_t = np.array([p['recall']    for p in threshold_points], dtype=float)
+
+        valid_t = ~(np.isnan(xs_t) | np.isnan(ys_t) | np.isnan(zs_t))
+        xs_tv, ys_tv, zs_tv = xs_t[valid_t], ys_t[valid_t], zs_t[valid_t]
+
+        if len(xs_tv) > 0:
+            unique_xy_t = np.unique(np.column_stack([xs_tv, ys_tv]), axis=0)
+            if (len(unique_xy_t) >= 6
+                    and len(np.unique(xs_tv)) >= 2
+                    and len(np.unique(ys_tv)) >= 2):
+                xi_t = np.linspace(xs_tv.min(), xs_tv.max(), 30)
+                yi_t = np.linspace(ys_tv.min(), ys_tv.max(), 30)
+                Xi_t, Yi_t = np.meshgrid(xi_t, yi_t)
+                try:
+                    xy_to_zs_t = defaultdict(list)
+                    for x, y, z in zip(xs_tv, ys_tv, zs_tv):
+                        xy_to_zs_t[(x, y)].append(z)
+                    xs_agg_t = np.array([k[0] for k in xy_to_zs_t])
+                    ys_agg_t = np.array([k[1] for k in xy_to_zs_t])
+                    zs_agg_t = np.array([np.mean(v) for v in xy_to_zs_t.values()])
+                    Zi_t = griddata((xs_agg_t, ys_agg_t), zs_agg_t, (Xi_t, Yi_t), method='linear')
+                    ax_t.plot_surface(Xi_t, Yi_t, Zi_t, alpha=0.35, color='#d62728',
+                                      linewidth=0, antialiased=True)
+                except Exception:
+                    pass
+
+            ax_t.scatter(xs_tv, ys_tv, zs_tv, color='#d62728', s=20, depthshade=True)
+
+        ax_t.set_xlabel('Threshold', fontsize=8, labelpad=3)
+        ax_t.set_ylabel('Accuracy',  fontsize=8, labelpad=3)
+        ax_t.set_zlabel('Recall',    fontsize=8, labelpad=3)
+        ax_t.set_title('Recall vs Accuracy vs Threshold', fontsize=10, fontweight='bold')
+
+    # ── Summary info (last cell) ──────────────────────────────────────────────
+    summary_slot = 3 * ncols  # bottom-right cell
+    ax_info = fig.add_subplot(3, ncols, summary_slot)
     ax_info.axis('off')
     ax_info.text(0.05, 0.95, 'Experiment Summary', transform=ax_info.transAxes,
                  fontsize=11, weight='bold', va='top')
@@ -343,6 +394,46 @@ def save_summary_statistics(room_counts, metric_names, metric_labels,
     print(f"Summary statistics saved to: {save_path}")
 
 
+def collect_threshold_points(results_dir, current_dataset=None):
+    """Scan result JSON files and return one dict per experiment with threshold info.
+
+    Each returned dict has keys: 'threshold', 'accuracy', 'recall'.
+    Files without 'score_threshold' in metadata are skipped.
+    A None threshold is mapped to -0.05 so numpy can handle it as a float.
+    """
+    import glob
+
+    raw_points = []
+    for fpath in sorted(glob.glob(os.path.join(results_dir, 'graph_matching_results_*.json'))):
+        try:
+            with open(fpath) as f:
+                data = json.load(f)
+        except Exception:
+            continue
+
+        meta = data.get('metadata', {})
+        if 'score_threshold' not in meta:
+            continue
+
+        threshold = meta['score_threshold']
+        if current_dataset is not None and meta.get('dataset') != current_dataset:
+            continue
+
+        t_val = float(threshold) if threshold is not None else -0.05
+        for exp in data.get('experiments', []):
+            m = exp.get('metrics') or {}
+            acc = m.get('accuracy')
+            rec = m.get('recall')
+            if acc is not None and rec is not None:
+                raw_points.append({
+                    'threshold': t_val,
+                    'accuracy':  float(acc),
+                    'recall':    float(rec),
+                })
+
+    return raw_points
+
+
 def main():
     parser = argparse.ArgumentParser(description='Plot graph matching results from JSON file')
     parser.add_argument('json_file', nargs='?', default='latest_results.json',
@@ -375,13 +466,17 @@ def main():
     plot_path    = os.path.join(results_dir, f"graph_matching_3d_{timestamp}.png")
     summary_path = os.path.join(results_dir, f"graph_matching_summary_{timestamp}.txt")
 
-    fig = create_3d_plots(raw_points, metadata, plot_path,
-                          show_scatter=not args.no_scatter)
-
     save_summary_statistics(room_counts, metric_names, metric_labels,
                             stats, metrics_by_rooms, metadata, summary_path)
     print_numerical_summary(room_counts, metric_names, metric_labels,
                             stats, metrics_by_rooms)
+
+    current_dataset  = metadata.get('dataset')
+    threshold_points = collect_threshold_points(results_dir, current_dataset=current_dataset)
+
+    fig = create_3d_plots(raw_points, metadata, plot_path,
+                          show_scatter=not args.no_scatter,
+                          threshold_points=threshold_points)
 
     if not args.no_display:
         plt.show()

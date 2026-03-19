@@ -15,12 +15,13 @@ from tqdm import tqdm
 USE_PGM = True
 
 # Dataset selection — pick one: "synthetic", "msd", "real"
-DATASET = "real"
+DATASET = "msd"
 
-# # Post soft-topk threshold (commented out — see affinity threshold below):
-# # Matches whose soft score is below this value are rejected after soft-topk.
-# # Drawback: a rejected node loses its match entirely (FN risk).
-# SCORE_THRESHOLD = 0.3  # e.g. 0.3, 0.5, 0.7
+# Post soft-topk threshold.
+# Matches whose soft score is below this value are rejected after soft-topk.
+# Drawback: a rejected node loses its match entirely (FN risk).
+# Set to None to disable.
+SCORE_THRESHOLD = None  # e.g. 0.3, 0.5, 0.7
 
 # Pre-Sinkhorn affinity threshold (PGM only).
 # Affinity entries below this value are masked before Sinkhorn normalization,
@@ -333,7 +334,7 @@ def compute_metrics(ground_truth_matches, predicted_matches, log_level=0):
     return metrics
 
 
-def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_name_suffix="", affinity_threshold=None):
+def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_name_suffix="", affinity_threshold=None, score_threshold=None):
     """
     Run a single graph matching experiment using the GNN-based PGM matcher.
 
@@ -356,7 +357,7 @@ def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_nam
     g2 = s_graph.graph if hasattr(s_graph, 'graph') else s_graph
 
     start_time = time.time()
-    matching_matrix = pgm_model.infer_matching(g1, g2, discrete=True, affinity_threshold=affinity_threshold)  # binary [N1, N2]
+    matching_matrix = pgm_model.infer_matching(g1, g2, discrete=True, affinity_threshold=affinity_threshold, score_threshold=score_threshold)  # binary [N1, N2]
     matching_time = time.time() - start_time
 
     g1_nodes = list(g1.nodes())
@@ -382,7 +383,7 @@ def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_nam
     }
 
 
-def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, affinity_threshold=None):
+def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, affinity_threshold=None, score_threshold=None):
     """
     Run a matching experiment on a MSD dataset pair (already in PyG format).
 
@@ -394,7 +395,7 @@ def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, affinity_threshold=
         dict with the same keys as run_pgm_matching_experiment
     """
     start_time = time.time()
-    matching_matrix = predict_matching_matrix(pgm_model.model, data1, data2, discrete=True, affinity_threshold=affinity_threshold)
+    matching_matrix = predict_matching_matrix(pgm_model.model, data1, data2, discrete=True, affinity_threshold=affinity_threshold, score_threshold=score_threshold)
     matching_time = time.time() - start_time
 
     rows, cols = np.where(matching_matrix.cpu().numpy() > 0)
@@ -446,7 +447,7 @@ if DATASET == "msd":
     print(f"MSD test set loaded: {len(msd_test_list)} pairs")
 
     for data1, data2, gt_perm in tqdm(msd_test_list, desc="MSD matching", colour="green"):
-        results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, affinity_threshold=AFFINITY_THRESHOLD)
+        results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, affinity_threshold=AFFINITY_THRESHOLD, score_threshold=SCORE_THRESHOLD)
 
         metrics = results['metrics'].copy() if results['metrics'] else {}
         metrics['experiment_type'] = 'pgm_msd'
@@ -502,7 +503,7 @@ elif DATASET == "synthetic":
                 results_no_objects = run_pgm_matching_experiment(
                     pgm_model_instance, a_graph_no_objects, s_graph_no_objects, gt_match,
                     graph_name_suffix=f"pgm_{n_rooms_s_graphs}_rooms",
-                    affinity_threshold=AFFINITY_THRESHOLD
+                    affinity_threshold=AFFINITY_THRESHOLD, score_threshold=SCORE_THRESHOLD
                 )
             else:
                 results_no_objects = run_graph_matching_experiment(
@@ -543,7 +544,7 @@ elif DATASET == "real":
         results = run_pgm_matching_experiment(
             pgm_model_instance, a_graph, s_graph, gt_match,
             graph_name_suffix=exp_type,
-            affinity_threshold=AFFINITY_THRESHOLD
+            affinity_threshold=AFFINITY_THRESHOLD, score_threshold=SCORE_THRESHOLD
         )
     else:
         results = run_graph_matching_experiment(
@@ -612,7 +613,10 @@ if all_metrics_data:
             'msd':       'Graph matching performance metrics collected from MSD dataset experiments',
             'synthetic': 'Graph matching performance metrics collected from synthetic dataset experiments',
             'real':      'Graph matching performance metrics collected from real environment dataset experiments',
-        }.get(DATASET, f'Graph matching performance metrics collected from {DATASET} dataset experiments')
+        }.get(DATASET, f'Graph matching performance metrics collected from {DATASET} dataset experiments'),
+        'score_threshold': SCORE_THRESHOLD,
+        'affinity_threshold': AFFINITY_THRESHOLD,
+        'dataset': DATASET,
     }
     
     # Combine data and metadata

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-03-18T16:05:30.110008",
+    "timestamp": "2026-03-18T16:04:10.622015",
     "total_experiments": 151,
     "dataset_file": "/root/workspace/src/graph_matching_gnn/GNN/preprocessed/partial_graph_matching/ws_room_dropout_noise/test_dataset.pkl",
     "description": "Graph matching performance metrics collected from MSD dataset experiments",
-    "score_threshold": 1.0,
+    "score_threshold": 0.8,
     "affinity_threshold": null,
     "dataset": "msd"
   },
@@ -36,12 +36,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09792542457580566,
+        "matching_time": 0.057364702224731445,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09792542457580566,
+      "matching_time": 0.057364702224731445,
       "num_solutions": 1,
       "success": false
     },
@@ -72,12 +72,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009999513626098633,
+        "matching_time": 0.016175270080566406,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009999513626098633,
+      "matching_time": 0.016175270080566406,
       "num_solutions": 1,
       "success": false
     },
@@ -87,35 +87,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7310,
-            0
+            7735,
+            5
           ],
           [
-            86,
-            0
+            10,
+            76
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 7310.0,
-        "false_positives": 0.0,
-        "false_negatives": 86.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9883720930232558,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 76.0,
+        "true_negatives": 7735.0,
+        "false_positives": 5.0,
+        "false_negatives": 10.0,
+        "precision": 0.9382716049382716,
+        "recall": 0.8837209302325582,
+        "f1_score": 0.9101796407185628,
+        "accuracy": 0.9980833120368005,
+        "specificity": 0.9993540051679587,
+        "correct_matches": 76,
         "total_gt_matches": 86,
-        "total_pred_matches": 0,
+        "total_pred_matches": 81,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06658554077148438,
+        "matching_time": 0.018038511276245117,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06658554077148438,
+      "matching_time": 0.018038511276245117,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 10,
@@ -144,12 +144,12 @@
         "total_gt_matches": 84,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012069940567016602,
+        "matching_time": 0.0303955078125,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012069940567016602,
+      "matching_time": 0.0303955078125,
       "num_solutions": 1,
       "success": false
     },
@@ -180,12 +180,12 @@
         "total_gt_matches": 100,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03480362892150879,
+        "matching_time": 0.017265796661376953,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03480362892150879,
+      "matching_time": 0.017265796661376953,
       "num_solutions": 1,
       "success": false
     },
@@ -216,12 +216,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010456323623657227,
+        "matching_time": 0.012106180191040039,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010456323623657227,
+      "matching_time": 0.012106180191040039,
       "num_solutions": 1,
       "success": false
     },
@@ -235,31 +235,31 @@
             0
           ],
           [
-            47,
-            0
+            0,
+            47
           ]
         ],
-        "true_positives": 0.0,
+        "true_positives": 47.0,
         "true_negatives": 2162.0,
         "false_positives": 0.0,
-        "false_negatives": 47.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9787234042553191,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
         "specificity": 1.0,
-        "correct_matches": 0,
+        "correct_matches": 47,
         "total_gt_matches": 47,
-        "total_pred_matches": 0,
+        "total_pred_matches": 47,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0049059391021728516,
+        "matching_time": 0.006083011627197266,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0049059391021728516,
+      "matching_time": 0.006083011627197266,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 4,
@@ -288,12 +288,12 @@
         "total_gt_matches": 26,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0034415721893310547,
+        "matching_time": 0.004584312438964844,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0034415721893310547,
+      "matching_time": 0.004584312438964844,
       "num_solutions": 1,
       "success": false
     },
@@ -324,12 +324,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010595083236694336,
+        "matching_time": 0.05354499816894531,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010595083236694336,
+      "matching_time": 0.05354499816894531,
       "num_solutions": 1,
       "success": false
     },
@@ -360,12 +360,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010732889175415039,
+        "matching_time": 0.011073112487792969,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010732889175415039,
+      "matching_time": 0.011073112487792969,
       "num_solutions": 1,
       "success": false
     },
@@ -396,12 +396,12 @@
         "total_gt_matches": 90,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014026641845703125,
+        "matching_time": 0.02191305160522461,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014026641845703125,
+      "matching_time": 0.02191305160522461,
       "num_solutions": 1,
       "success": false
     },
@@ -432,12 +432,12 @@
         "total_gt_matches": 74,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010215520858764648,
+        "matching_time": 0.017297029495239258,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010215520858764648,
+      "matching_time": 0.017297029495239258,
       "num_solutions": 1,
       "success": false
     },
@@ -468,12 +468,12 @@
         "total_gt_matches": 64,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00893855094909668,
+        "matching_time": 0.010087728500366211,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00893855094909668,
+      "matching_time": 0.010087728500366211,
       "num_solutions": 1,
       "success": false
     },
@@ -504,12 +504,12 @@
         "total_gt_matches": 64,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008971214294433594,
+        "matching_time": 0.009583473205566406,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008971214294433594,
+      "matching_time": 0.009583473205566406,
       "num_solutions": 1,
       "success": false
     },
@@ -540,12 +540,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008188724517822266,
+        "matching_time": 0.008117198944091797,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008188724517822266,
+      "matching_time": 0.008117198944091797,
       "num_solutions": 1,
       "success": false
     },
@@ -576,12 +576,12 @@
         "total_gt_matches": 89,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017824411392211914,
+        "matching_time": 0.012954235076904297,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017824411392211914,
+      "matching_time": 0.012954235076904297,
       "num_solutions": 1,
       "success": false
     },
@@ -612,12 +612,12 @@
         "total_gt_matches": 88,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013000965118408203,
+        "matching_time": 0.01119232177734375,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013000965118408203,
+      "matching_time": 0.01119232177734375,
       "num_solutions": 1,
       "success": false
     },
@@ -627,35 +627,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1722,
-            0
+            1804,
+            2
           ],
           [
-            42,
-            0
+            3,
+            39
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 1722.0,
-        "false_positives": 0.0,
-        "false_negatives": 42.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9761904761904762,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 39.0,
+        "true_negatives": 1804.0,
+        "false_positives": 2.0,
+        "false_negatives": 3.0,
+        "precision": 0.9512195121951219,
+        "recall": 0.9285714285714286,
+        "f1_score": 0.9397590361445782,
+        "accuracy": 0.9972943722943723,
+        "specificity": 0.9988925802879292,
+        "correct_matches": 39,
         "total_gt_matches": 42,
-        "total_pred_matches": 0,
+        "total_pred_matches": 41,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004730701446533203,
+        "matching_time": 0.005537986755371094,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004730701446533203,
+      "matching_time": 0.005537986755371094,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 5,
@@ -684,12 +684,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007951974868774414,
+        "matching_time": 0.011260032653808594,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007951974868774414,
+      "matching_time": 0.011260032653808594,
       "num_solutions": 1,
       "success": false
     },
@@ -720,12 +720,12 @@
         "total_gt_matches": 12,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0028371810913085938,
+        "matching_time": 0.0031845569610595703,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0028371810913085938,
+      "matching_time": 0.0031845569610595703,
       "num_solutions": 1,
       "success": false
     },
@@ -756,12 +756,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01033329963684082,
+        "matching_time": 0.008560895919799805,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01033329963684082,
+      "matching_time": 0.008560895919799805,
       "num_solutions": 1,
       "success": false
     },
@@ -771,35 +771,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4290,
-            0
+            4485,
+            3
           ],
           [
-            66,
-            0
+            9,
+            57
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 4290.0,
-        "false_positives": 0.0,
-        "false_negatives": 66.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9848484848484849,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 57.0,
+        "true_negatives": 4485.0,
+        "false_positives": 3.0,
+        "false_negatives": 9.0,
+        "precision": 0.95,
+        "recall": 0.8636363636363636,
+        "f1_score": 0.9047619047619048,
+        "accuracy": 0.997364953886693,
+        "specificity": 0.9993315508021391,
+        "correct_matches": 57,
         "total_gt_matches": 66,
-        "total_pred_matches": 0,
+        "total_pred_matches": 60,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008572578430175781,
+        "matching_time": 0.01709914207458496,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008572578430175781,
+      "matching_time": 0.01709914207458496,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 9,
@@ -828,12 +828,12 @@
         "total_gt_matches": 112,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02112746238708496,
+        "matching_time": 0.014565467834472656,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02112746238708496,
+      "matching_time": 0.014565467834472656,
       "num_solutions": 1,
       "success": false
     },
@@ -864,12 +864,12 @@
         "total_gt_matches": 70,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010264396667480469,
+        "matching_time": 0.009327173233032227,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010264396667480469,
+      "matching_time": 0.009327173233032227,
       "num_solutions": 1,
       "success": false
     },
@@ -900,12 +900,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007548093795776367,
+        "matching_time": 0.006257772445678711,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007548093795776367,
+      "matching_time": 0.006257772445678711,
       "num_solutions": 1,
       "success": false
     },
@@ -936,12 +936,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004320383071899414,
+        "matching_time": 0.004036664962768555,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004320383071899414,
+      "matching_time": 0.004036664962768555,
       "num_solutions": 1,
       "success": false
     },
@@ -972,12 +972,12 @@
         "total_gt_matches": 34,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0064280033111572266,
+        "matching_time": 0.006523609161376953,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0064280033111572266,
+      "matching_time": 0.006523609161376953,
       "num_solutions": 1,
       "success": false
     },
@@ -1008,12 +1008,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007598161697387695,
+        "matching_time": 0.0070629119873046875,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007598161697387695,
+      "matching_time": 0.0070629119873046875,
       "num_solutions": 1,
       "success": false
     },
@@ -1044,12 +1044,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04901003837585449,
+        "matching_time": 0.014440298080444336,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04901003837585449,
+      "matching_time": 0.014440298080444336,
       "num_solutions": 1,
       "success": false
     },
@@ -1080,12 +1080,12 @@
         "total_gt_matches": 69,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.027771949768066406,
+        "matching_time": 0.00942683219909668,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.027771949768066406,
+      "matching_time": 0.00942683219909668,
       "num_solutions": 1,
       "success": false
     },
@@ -1116,12 +1116,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008836030960083008,
+        "matching_time": 0.008415937423706055,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008836030960083008,
+      "matching_time": 0.008415937423706055,
       "num_solutions": 1,
       "success": false
     },
@@ -1152,12 +1152,12 @@
         "total_gt_matches": 33,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004382133483886719,
+        "matching_time": 0.10383796691894531,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004382133483886719,
+      "matching_time": 0.10383796691894531,
       "num_solutions": 1,
       "success": false
     },
@@ -1188,12 +1188,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009614229202270508,
+        "matching_time": 0.009869098663330078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009614229202270508,
+      "matching_time": 0.009869098663330078,
       "num_solutions": 1,
       "success": false
     },
@@ -1203,35 +1203,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5256,
-            0
+            5544,
+            4
           ],
           [
-            73,
-            0
+            4,
+            69
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 5256.0,
-        "false_positives": 0.0,
-        "false_negatives": 73.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9863013698630136,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 69.0,
+        "true_negatives": 5544.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9452054794520548,
+        "recall": 0.9452054794520548,
+        "f1_score": 0.9452054794520548,
+        "accuracy": 0.9985767657000534,
+        "specificity": 0.9992790194664743,
+        "correct_matches": 69,
         "total_gt_matches": 73,
-        "total_pred_matches": 0,
+        "total_pred_matches": 73,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010824203491210938,
+        "matching_time": 0.025667905807495117,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010824203491210938,
+      "matching_time": 0.025667905807495117,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 12,
@@ -1260,12 +1260,12 @@
         "total_gt_matches": 165,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04690718650817871,
+        "matching_time": 0.028992652893066406,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04690718650817871,
+      "matching_time": 0.028992652893066406,
       "num_solutions": 1,
       "success": false
     },
@@ -1296,12 +1296,12 @@
         "total_gt_matches": 70,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009730100631713867,
+        "matching_time": 0.008562088012695312,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009730100631713867,
+      "matching_time": 0.008562088012695312,
       "num_solutions": 1,
       "success": false
     },
@@ -1332,12 +1332,12 @@
         "total_gt_matches": 71,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010646820068359375,
+        "matching_time": 0.010379791259765625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010646820068359375,
+      "matching_time": 0.010379791259765625,
       "num_solutions": 1,
       "success": false
     },
@@ -1368,12 +1368,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009857416152954102,
+        "matching_time": 0.008753299713134766,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009857416152954102,
+      "matching_time": 0.008753299713134766,
       "num_solutions": 1,
       "success": false
     },
@@ -1404,12 +1404,12 @@
         "total_gt_matches": 52,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006725788116455078,
+        "matching_time": 0.012020587921142578,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006725788116455078,
+      "matching_time": 0.012020587921142578,
       "num_solutions": 1,
       "success": false
     },
@@ -1440,12 +1440,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0059642791748046875,
+        "matching_time": 0.008363485336303711,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0059642791748046875,
+      "matching_time": 0.008363485336303711,
       "num_solutions": 1,
       "success": false
     },
@@ -1476,12 +1476,12 @@
         "total_gt_matches": 98,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01629924774169922,
+        "matching_time": 0.014290094375610352,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01629924774169922,
+      "matching_time": 0.014290094375610352,
       "num_solutions": 1,
       "success": false
     },
@@ -1512,12 +1512,12 @@
         "total_gt_matches": 107,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015850543975830078,
+        "matching_time": 0.016904115676879883,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015850543975830078,
+      "matching_time": 0.016904115676879883,
       "num_solutions": 1,
       "success": false
     },
@@ -1531,31 +1531,31 @@
             0
           ],
           [
-            33,
-            0
+            0,
+            33
           ]
         ],
-        "true_positives": 0.0,
+        "true_positives": 33.0,
         "true_negatives": 1056.0,
         "false_positives": 0.0,
-        "false_negatives": 33.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9696969696969697,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
         "specificity": 1.0,
-        "correct_matches": 0,
+        "correct_matches": 33,
         "total_gt_matches": 33,
-        "total_pred_matches": 0,
+        "total_pred_matches": 33,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004136323928833008,
+        "matching_time": 0.0041544437408447266,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004136323928833008,
+      "matching_time": 0.0041544437408447266,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 8,
@@ -1584,12 +1584,12 @@
         "total_gt_matches": 80,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013044357299804688,
+        "matching_time": 0.017538070678710938,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013044357299804688,
+      "matching_time": 0.017538070678710938,
       "num_solutions": 1,
       "success": false
     },
@@ -1620,12 +1620,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006494760513305664,
+        "matching_time": 0.04621243476867676,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006494760513305664,
+      "matching_time": 0.04621243476867676,
       "num_solutions": 1,
       "success": false
     },
@@ -1656,12 +1656,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0719754695892334,
+        "matching_time": 0.004557371139526367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0719754695892334,
+      "matching_time": 0.004557371139526367,
       "num_solutions": 1,
       "success": false
     },
@@ -1692,12 +1692,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013002872467041016,
+        "matching_time": 0.005823612213134766,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013002872467041016,
+      "matching_time": 0.005823612213134766,
       "num_solutions": 1,
       "success": false
     },
@@ -1728,12 +1728,12 @@
         "total_gt_matches": 27,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.10927557945251465,
+        "matching_time": 0.007193326950073242,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.10927557945251465,
+      "matching_time": 0.007193326950073242,
       "num_solutions": 1,
       "success": false
     },
@@ -1764,12 +1764,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014913558959960938,
+        "matching_time": 0.061504364013671875,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014913558959960938,
+      "matching_time": 0.061504364013671875,
       "num_solutions": 1,
       "success": false
     },
@@ -1800,12 +1800,12 @@
         "total_gt_matches": 23,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06903886795043945,
+        "matching_time": 0.0033941268920898438,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06903886795043945,
+      "matching_time": 0.0033941268920898438,
       "num_solutions": 1,
       "success": false
     },
@@ -1836,12 +1836,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013813257217407227,
+        "matching_time": 0.009246587753295898,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013813257217407227,
+      "matching_time": 0.009246587753295898,
       "num_solutions": 1,
       "success": false
     },
@@ -1872,12 +1872,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006768703460693359,
+        "matching_time": 0.006864786148071289,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006768703460693359,
+      "matching_time": 0.006864786148071289,
       "num_solutions": 1,
       "success": false
     },
@@ -1908,12 +1908,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029067039489746094,
+        "matching_time": 0.02327752113342285,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029067039489746094,
+      "matching_time": 0.02327752113342285,
       "num_solutions": 1,
       "success": false
     },
@@ -1923,35 +1923,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3080,
-            0
+            3355,
+            5
           ],
           [
-            56,
-            0
+            10,
+            46
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 3080.0,
-        "false_positives": 0.0,
-        "false_negatives": 56.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9821428571428571,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 46.0,
+        "true_negatives": 3355.0,
+        "false_positives": 5.0,
+        "false_negatives": 10.0,
+        "precision": 0.9019607843137255,
+        "recall": 0.8214285714285714,
+        "f1_score": 0.8598130841121495,
+        "accuracy": 0.9956088992974239,
+        "specificity": 0.9985119047619048,
+        "correct_matches": 46,
         "total_gt_matches": 56,
-        "total_pred_matches": 0,
+        "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008362531661987305,
+        "matching_time": 0.02042078971862793,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008362531661987305,
+      "matching_time": 0.02042078971862793,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 9,
@@ -1959,35 +1959,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5700,
-            0
+            5775,
+            1
           ],
           [
-            76,
-            0
+            1,
+            75
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 5700.0,
-        "false_positives": 0.0,
-        "false_negatives": 76.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9868421052631579,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 75.0,
+        "true_negatives": 5775.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9868421052631579,
+        "recall": 0.9868421052631579,
+        "f1_score": 0.9868421052631579,
+        "accuracy": 0.9996582365003418,
+        "specificity": 0.9998268698060941,
+        "correct_matches": 75,
         "total_gt_matches": 76,
-        "total_pred_matches": 0,
+        "total_pred_matches": 76,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017630338668823242,
+        "matching_time": 0.010607719421386719,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017630338668823242,
+      "matching_time": 0.010607719421386719,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 6,
@@ -2016,12 +2016,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006011486053466797,
+        "matching_time": 0.007224559783935547,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006011486053466797,
+      "matching_time": 0.007224559783935547,
       "num_solutions": 1,
       "success": false
     },
@@ -2052,12 +2052,12 @@
         "total_gt_matches": 25,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004951953887939453,
+        "matching_time": 0.005002260208129883,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004951953887939453,
+      "matching_time": 0.005002260208129883,
       "num_solutions": 1,
       "success": false
     },
@@ -2088,12 +2088,12 @@
         "total_gt_matches": 63,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02278590202331543,
+        "matching_time": 0.009433507919311523,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02278590202331543,
+      "matching_time": 0.009433507919311523,
       "num_solutions": 1,
       "success": false
     },
@@ -2124,12 +2124,12 @@
         "total_gt_matches": 35,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007235527038574219,
+        "matching_time": 0.038695573806762695,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007235527038574219,
+      "matching_time": 0.038695573806762695,
       "num_solutions": 1,
       "success": false
     },
@@ -2160,12 +2160,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.037687063217163086,
+        "matching_time": 0.00556492805480957,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.037687063217163086,
+      "matching_time": 0.00556492805480957,
       "num_solutions": 1,
       "success": false
     },
@@ -2196,12 +2196,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006438493728637695,
+        "matching_time": 0.008252859115600586,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006438493728637695,
+      "matching_time": 0.008252859115600586,
       "num_solutions": 1,
       "success": false
     },
@@ -2232,12 +2232,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02606654167175293,
+        "matching_time": 0.005344390869140625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02606654167175293,
+      "matching_time": 0.005344390869140625,
       "num_solutions": 1,
       "success": false
     },
@@ -2268,12 +2268,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010561227798461914,
+        "matching_time": 0.006603717803955078,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010561227798461914,
+      "matching_time": 0.006603717803955078,
       "num_solutions": 1,
       "success": false
     },
@@ -2304,12 +2304,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005907535552978516,
+        "matching_time": 0.007491588592529297,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005907535552978516,
+      "matching_time": 0.007491588592529297,
       "num_solutions": 1,
       "success": false
     },
@@ -2340,12 +2340,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0042765140533447266,
+        "matching_time": 0.03704690933227539,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0042765140533447266,
+      "matching_time": 0.03704690933227539,
       "num_solutions": 1,
       "success": false
     },
@@ -2376,12 +2376,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.023208141326904297,
+        "matching_time": 0.007932901382446289,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.023208141326904297,
+      "matching_time": 0.007932901382446289,
       "num_solutions": 1,
       "success": false
     },
@@ -2412,12 +2412,12 @@
         "total_gt_matches": 60,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.042696237564086914,
+        "matching_time": 0.01184225082397461,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.042696237564086914,
+      "matching_time": 0.01184225082397461,
       "num_solutions": 1,
       "success": false
     },
@@ -2448,12 +2448,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009109973907470703,
+        "matching_time": 0.008992910385131836,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009109973907470703,
+      "matching_time": 0.008992910385131836,
       "num_solutions": 1,
       "success": false
     },
@@ -2484,12 +2484,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0061855316162109375,
+        "matching_time": 0.008271932601928711,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0061855316162109375,
+      "matching_time": 0.008271932601928711,
       "num_solutions": 1,
       "success": false
     },
@@ -2520,12 +2520,12 @@
         "total_gt_matches": 76,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.016409873962402344,
+        "matching_time": 0.03553342819213867,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.016409873962402344,
+      "matching_time": 0.03553342819213867,
       "num_solutions": 1,
       "success": false
     },
@@ -2556,12 +2556,12 @@
         "total_gt_matches": 48,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0063397884368896484,
+        "matching_time": 0.025066137313842773,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0063397884368896484,
+      "matching_time": 0.025066137313842773,
       "num_solutions": 1,
       "success": false
     },
@@ -2571,35 +2571,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1806,
-            0
+            1848,
+            1
           ],
           [
-            43,
-            0
+            2,
+            41
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 1806.0,
-        "false_positives": 0.0,
-        "false_negatives": 43.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9767441860465116,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 41.0,
+        "true_negatives": 1848.0,
+        "false_positives": 1.0,
+        "false_negatives": 2.0,
+        "precision": 0.9761904761904762,
+        "recall": 0.9534883720930233,
+        "f1_score": 0.9647058823529412,
+        "accuracy": 0.9984143763213531,
+        "specificity": 0.9994591671173607,
+        "correct_matches": 41,
         "total_gt_matches": 43,
-        "total_pred_matches": 0,
+        "total_pred_matches": 42,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00478053092956543,
+        "matching_time": 0.005852699279785156,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00478053092956543,
+      "matching_time": 0.005852699279785156,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 11,
@@ -2607,35 +2607,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6806,
-            0
+            7133,
+            5
           ],
           [
-            83,
-            0
+            14,
+            69
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 6806.0,
-        "false_positives": 0.0,
-        "false_negatives": 83.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9879518072289156,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 69.0,
+        "true_negatives": 7133.0,
+        "false_positives": 5.0,
+        "false_negatives": 14.0,
+        "precision": 0.9324324324324325,
+        "recall": 0.8313253012048193,
+        "f1_score": 0.8789808917197452,
+        "accuracy": 0.9973687854867747,
+        "specificity": 0.9992995236760998,
+        "correct_matches": 69,
         "total_gt_matches": 83,
-        "total_pred_matches": 0,
+        "total_pred_matches": 74,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012054681777954102,
+        "matching_time": 0.012057781219482422,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012054681777954102,
+      "matching_time": 0.012057781219482422,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 7,
@@ -2664,12 +2664,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007486104965209961,
+        "matching_time": 0.01367807388305664,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007486104965209961,
+      "matching_time": 0.01367807388305664,
       "num_solutions": 1,
       "success": false
     },
@@ -2679,35 +2679,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5550,
-            0
+            6067,
+            8
           ],
           [
-            75,
-            0
+            12,
+            63
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 5550.0,
-        "false_positives": 0.0,
-        "false_negatives": 75.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9866666666666667,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 63.0,
+        "true_negatives": 6067.0,
+        "false_positives": 8.0,
+        "false_negatives": 12.0,
+        "precision": 0.8873239436619719,
+        "recall": 0.84,
+        "f1_score": 0.863013698630137,
+        "accuracy": 0.9967479674796748,
+        "specificity": 0.9986831275720165,
+        "correct_matches": 63,
         "total_gt_matches": 75,
-        "total_pred_matches": 0,
+        "total_pred_matches": 71,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008232831954956055,
+        "matching_time": 0.025649309158325195,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008232831954956055,
+      "matching_time": 0.025649309158325195,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 4,
@@ -2736,12 +2736,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005048036575317383,
+        "matching_time": 0.00510716438293457,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005048036575317383,
+      "matching_time": 0.00510716438293457,
       "num_solutions": 1,
       "success": false
     },
@@ -2772,12 +2772,12 @@
         "total_gt_matches": 53,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07922959327697754,
+        "matching_time": 0.012660503387451172,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07922959327697754,
+      "matching_time": 0.012660503387451172,
       "num_solutions": 1,
       "success": false
     },
@@ -2808,12 +2808,12 @@
         "total_gt_matches": 73,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010925769805908203,
+        "matching_time": 0.010576248168945312,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010925769805908203,
+      "matching_time": 0.010576248168945312,
       "num_solutions": 1,
       "success": false
     },
@@ -2844,12 +2844,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01940131187438965,
+        "matching_time": 0.008655071258544922,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01940131187438965,
+      "matching_time": 0.008655071258544922,
       "num_solutions": 1,
       "success": false
     },
@@ -2880,12 +2880,12 @@
         "total_gt_matches": 81,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09682726860046387,
+        "matching_time": 0.03275299072265625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09682726860046387,
+      "matching_time": 0.03275299072265625,
       "num_solutions": 1,
       "success": false
     },
@@ -2895,35 +2895,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3422,
-            0
+            3538,
+            2
           ],
           [
-            59,
-            0
+            2,
+            57
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 3422.0,
-        "false_positives": 0.0,
-        "false_negatives": 59.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9830508474576272,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 57.0,
+        "true_negatives": 3538.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9661016949152542,
+        "recall": 0.9661016949152542,
+        "f1_score": 0.9661016949152542,
+        "accuracy": 0.9988885801611559,
+        "specificity": 0.9994350282485875,
+        "correct_matches": 57,
         "total_gt_matches": 59,
-        "total_pred_matches": 0,
+        "total_pred_matches": 59,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008345842361450195,
+        "matching_time": 0.007545948028564453,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008345842361450195,
+      "matching_time": 0.007545948028564453,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 3,
@@ -2952,12 +2952,12 @@
         "total_gt_matches": 24,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012391328811645508,
+        "matching_time": 0.004984617233276367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012391328811645508,
+      "matching_time": 0.004984617233276367,
       "num_solutions": 1,
       "success": false
     },
@@ -2988,12 +2988,12 @@
         "total_gt_matches": 40,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00814366340637207,
+        "matching_time": 0.00709080696105957,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00814366340637207,
+      "matching_time": 0.00709080696105957,
       "num_solutions": 1,
       "success": false
     },
@@ -3024,12 +3024,12 @@
         "total_gt_matches": 66,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008793830871582031,
+        "matching_time": 0.00696110725402832,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008793830871582031,
+      "matching_time": 0.00696110725402832,
       "num_solutions": 1,
       "success": false
     },
@@ -3060,12 +3060,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011771678924560547,
+        "matching_time": 0.04668879508972168,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011771678924560547,
+      "matching_time": 0.04668879508972168,
       "num_solutions": 1,
       "success": false
     },
@@ -3096,12 +3096,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0065991878509521484,
+        "matching_time": 0.005441427230834961,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0065991878509521484,
+      "matching_time": 0.005441427230834961,
       "num_solutions": 1,
       "success": false
     },
@@ -3111,35 +3111,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2550,
-            0
+            2700,
+            3
           ],
           [
-            51,
-            0
+            10,
+            41
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 2550.0,
-        "false_positives": 0.0,
-        "false_negatives": 51.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9803921568627451,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 41.0,
+        "true_negatives": 2700.0,
+        "false_positives": 3.0,
+        "false_negatives": 10.0,
+        "precision": 0.9318181818181818,
+        "recall": 0.803921568627451,
+        "f1_score": 0.8631578947368421,
+        "accuracy": 0.995279593318809,
+        "specificity": 0.9988901220865705,
+        "correct_matches": 41,
         "total_gt_matches": 51,
-        "total_pred_matches": 0,
+        "total_pred_matches": 44,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007843494415283203,
+        "matching_time": 0.009603738784790039,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007843494415283203,
+      "matching_time": 0.009603738784790039,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 6,
@@ -3168,12 +3168,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007730722427368164,
+        "matching_time": 0.03896665573120117,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007730722427368164,
+      "matching_time": 0.03896665573120117,
       "num_solutions": 1,
       "success": false
     },
@@ -3204,12 +3204,12 @@
         "total_gt_matches": 83,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.022562026977539062,
+        "matching_time": 0.010968923568725586,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.022562026977539062,
+      "matching_time": 0.010968923568725586,
       "num_solutions": 1,
       "success": false
     },
@@ -3240,12 +3240,12 @@
         "total_gt_matches": 74,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010287761688232422,
+        "matching_time": 0.008588314056396484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010287761688232422,
+      "matching_time": 0.008588314056396484,
       "num_solutions": 1,
       "success": false
     },
@@ -3276,12 +3276,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0054264068603515625,
+        "matching_time": 0.0063092708587646484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0054264068603515625,
+      "matching_time": 0.0063092708587646484,
       "num_solutions": 1,
       "success": false
     },
@@ -3312,12 +3312,12 @@
         "total_gt_matches": 36,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006365060806274414,
+        "matching_time": 0.006823301315307617,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006365060806274414,
+      "matching_time": 0.006823301315307617,
       "num_solutions": 1,
       "success": false
     },
@@ -3348,12 +3348,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010111570358276367,
+        "matching_time": 0.019688844680786133,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010111570358276367,
+      "matching_time": 0.019688844680786133,
       "num_solutions": 1,
       "success": false
     },
@@ -3384,12 +3384,12 @@
         "total_gt_matches": 53,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005852460861206055,
+        "matching_time": 0.05040788650512695,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005852460861206055,
+      "matching_time": 0.05040788650512695,
       "num_solutions": 1,
       "success": false
     },
@@ -3420,12 +3420,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02837967872619629,
+        "matching_time": 0.05177044868469238,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02837967872619629,
+      "matching_time": 0.05177044868469238,
       "num_solutions": 1,
       "success": false
     },
@@ -3456,12 +3456,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008787393569946289,
+        "matching_time": 0.035016536712646484,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008787393569946289,
+      "matching_time": 0.035016536712646484,
       "num_solutions": 1,
       "success": false
     },
@@ -3492,12 +3492,12 @@
         "total_gt_matches": 101,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0201263427734375,
+        "matching_time": 0.02907419204711914,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0201263427734375,
+      "matching_time": 0.02907419204711914,
       "num_solutions": 1,
       "success": false
     },
@@ -3528,12 +3528,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008214235305786133,
+        "matching_time": 0.008352518081665039,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008214235305786133,
+      "matching_time": 0.008352518081665039,
       "num_solutions": 1,
       "success": false
     },
@@ -3564,12 +3564,12 @@
         "total_gt_matches": 69,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010599851608276367,
+        "matching_time": 0.011440038681030273,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010599851608276367,
+      "matching_time": 0.011440038681030273,
       "num_solutions": 1,
       "success": false
     },
@@ -3600,12 +3600,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011163473129272461,
+        "matching_time": 0.01204371452331543,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011163473129272461,
+      "matching_time": 0.01204371452331543,
       "num_solutions": 1,
       "success": false
     },
@@ -3636,12 +3636,12 @@
         "total_gt_matches": 28,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07487607002258301,
+        "matching_time": 0.016241788864135742,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07487607002258301,
+      "matching_time": 0.016241788864135742,
       "num_solutions": 1,
       "success": false
     },
@@ -3672,12 +3672,12 @@
         "total_gt_matches": 76,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012204408645629883,
+        "matching_time": 0.014560699462890625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012204408645629883,
+      "matching_time": 0.014560699462890625,
       "num_solutions": 1,
       "success": false
     },
@@ -3708,12 +3708,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02287769317626953,
+        "matching_time": 0.006989955902099609,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02287769317626953,
+      "matching_time": 0.006989955902099609,
       "num_solutions": 1,
       "success": false
     },
@@ -3744,12 +3744,12 @@
         "total_gt_matches": 66,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011451482772827148,
+        "matching_time": 0.01148533821105957,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011451482772827148,
+      "matching_time": 0.01148533821105957,
       "num_solutions": 1,
       "success": false
     },
@@ -3780,12 +3780,12 @@
         "total_gt_matches": 54,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02080845832824707,
+        "matching_time": 0.008201837539672852,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02080845832824707,
+      "matching_time": 0.008201837539672852,
       "num_solutions": 1,
       "success": false
     },
@@ -3816,12 +3816,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00723576545715332,
+        "matching_time": 0.02279353141784668,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00723576545715332,
+      "matching_time": 0.02279353141784668,
       "num_solutions": 1,
       "success": false
     },
@@ -3852,12 +3852,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.024013280868530273,
+        "matching_time": 0.010807514190673828,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.024013280868530273,
+      "matching_time": 0.010807514190673828,
       "num_solutions": 1,
       "success": false
     },
@@ -3888,12 +3888,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008682489395141602,
+        "matching_time": 0.008835554122924805,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008682489395141602,
+      "matching_time": 0.008835554122924805,
       "num_solutions": 1,
       "success": false
     },
@@ -3924,12 +3924,12 @@
         "total_gt_matches": 60,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007990360260009766,
+        "matching_time": 0.010631084442138672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007990360260009766,
+      "matching_time": 0.010631084442138672,
       "num_solutions": 1,
       "success": false
     },
@@ -3960,12 +3960,12 @@
         "total_gt_matches": 75,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014200210571289062,
+        "matching_time": 0.02488398551940918,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014200210571289062,
+      "matching_time": 0.02488398551940918,
       "num_solutions": 1,
       "success": false
     },
@@ -3996,12 +3996,12 @@
         "total_gt_matches": 105,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02021956443786621,
+        "matching_time": 0.017442703247070312,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02021956443786621,
+      "matching_time": 0.017442703247070312,
       "num_solutions": 1,
       "success": false
     },
@@ -4011,35 +4011,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2070,
-            0
+            2160,
+            2
           ],
           [
-            46,
-            0
+            2,
+            44
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 2070.0,
-        "false_positives": 0.0,
-        "false_negatives": 46.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9782608695652174,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 44.0,
+        "true_negatives": 2160.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9565217391304348,
+        "recall": 0.9565217391304348,
+        "f1_score": 0.9565217391304348,
+        "accuracy": 0.9981884057971014,
+        "specificity": 0.9990749306197965,
+        "correct_matches": 44,
         "total_gt_matches": 46,
-        "total_pred_matches": 0,
+        "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005382061004638672,
+        "matching_time": 0.00637507438659668,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005382061004638672,
+      "matching_time": 0.00637507438659668,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 5,
@@ -4068,12 +4068,12 @@
         "total_gt_matches": 40,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012588024139404297,
+        "matching_time": 0.0062062740325927734,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012588024139404297,
+      "matching_time": 0.0062062740325927734,
       "num_solutions": 1,
       "success": false
     },
@@ -4104,12 +4104,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006159543991088867,
+        "matching_time": 0.00823831558227539,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006159543991088867,
+      "matching_time": 0.00823831558227539,
       "num_solutions": 1,
       "success": false
     },
@@ -4123,31 +4123,31 @@
             0
           ],
           [
-            62,
-            0
+            8,
+            54
           ]
         ],
-        "true_positives": 0.0,
+        "true_positives": 54.0,
         "true_negatives": 3782.0,
         "false_positives": 0.0,
-        "false_negatives": 62.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9838709677419355,
+        "false_negatives": 8.0,
+        "precision": 1.0,
+        "recall": 0.8709677419354839,
+        "f1_score": 0.9310344827586207,
+        "accuracy": 0.9979188345473465,
         "specificity": 1.0,
-        "correct_matches": 0,
+        "correct_matches": 54,
         "total_gt_matches": 62,
-        "total_pred_matches": 0,
+        "total_pred_matches": 54,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009174108505249023,
+        "matching_time": 0.017287015914916992,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009174108505249023,
+      "matching_time": 0.017287015914916992,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 8,
@@ -4155,35 +4155,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            10302,
-            0
+            10706,
+            4
           ],
           [
-            102,
-            0
+            15,
+            87
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 10302.0,
-        "false_positives": 0.0,
-        "false_negatives": 102.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9901960784313726,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 87.0,
+        "true_negatives": 10706.0,
+        "false_positives": 4.0,
+        "false_negatives": 15.0,
+        "precision": 0.9560439560439561,
+        "recall": 0.8529411764705882,
+        "f1_score": 0.9015544041450777,
+        "accuracy": 0.9982426933037366,
+        "specificity": 0.9996265172735761,
+        "correct_matches": 87,
         "total_gt_matches": 102,
-        "total_pred_matches": 0,
+        "total_pred_matches": 91,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.021371126174926758,
+        "matching_time": 0.014484405517578125,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.021371126174926758,
+      "matching_time": 0.014484405517578125,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 5,
@@ -4212,12 +4212,12 @@
         "total_gt_matches": 45,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011373519897460938,
+        "matching_time": 0.006572246551513672,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011373519897460938,
+      "matching_time": 0.006572246551513672,
       "num_solutions": 1,
       "success": false
     },
@@ -4231,31 +4231,31 @@
             0
           ],
           [
-            46,
-            0
+            1,
+            45
           ]
         ],
-        "true_positives": 0.0,
+        "true_positives": 45.0,
         "true_negatives": 2070.0,
         "false_positives": 0.0,
-        "false_negatives": 46.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9782608695652174,
+        "false_negatives": 1.0,
+        "precision": 1.0,
+        "recall": 0.9782608695652174,
+        "f1_score": 0.989010989010989,
+        "accuracy": 0.9995274102079396,
         "specificity": 1.0,
-        "correct_matches": 0,
+        "correct_matches": 45,
         "total_gt_matches": 46,
-        "total_pred_matches": 0,
+        "total_pred_matches": 45,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0047855377197265625,
+        "matching_time": 0.018148183822631836,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0047855377197265625,
+      "matching_time": 0.018148183822631836,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 2,
@@ -4284,12 +4284,12 @@
         "total_gt_matches": 21,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005706310272216797,
+        "matching_time": 0.010501861572265625,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005706310272216797,
+      "matching_time": 0.010501861572265625,
       "num_solutions": 1,
       "success": false
     },
@@ -4320,12 +4320,12 @@
         "total_gt_matches": 80,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013198375701904297,
+        "matching_time": 0.013901472091674805,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013198375701904297,
+      "matching_time": 0.013901472091674805,
       "num_solutions": 1,
       "success": false
     },
@@ -4335,35 +4335,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2970,
-            0
+            3022,
+            3
           ],
           [
-            55,
-            0
+            4,
+            51
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 2970.0,
-        "false_positives": 0.0,
-        "false_negatives": 55.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9818181818181818,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 51.0,
+        "true_negatives": 3022.0,
+        "false_positives": 3.0,
+        "false_negatives": 4.0,
+        "precision": 0.9444444444444444,
+        "recall": 0.9272727272727272,
+        "f1_score": 0.9357798165137615,
+        "accuracy": 0.9977272727272727,
+        "specificity": 0.9990082644628099,
+        "correct_matches": 51,
         "total_gt_matches": 55,
-        "total_pred_matches": 0,
+        "total_pred_matches": 54,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007399797439575195,
+        "matching_time": 0.006873369216918945,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007399797439575195,
+      "matching_time": 0.006873369216918945,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 8,
@@ -4392,12 +4392,12 @@
         "total_gt_matches": 58,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010382652282714844,
+        "matching_time": 0.009338140487670898,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010382652282714844,
+      "matching_time": 0.009338140487670898,
       "num_solutions": 1,
       "success": false
     },
@@ -4428,12 +4428,12 @@
         "total_gt_matches": 35,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00870966911315918,
+        "matching_time": 0.012760400772094727,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00870966911315918,
+      "matching_time": 0.012760400772094727,
       "num_solutions": 1,
       "success": false
     },
@@ -4443,35 +4443,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2970,
-            0
+            3024,
+            1
           ],
           [
-            55,
-            0
+            5,
+            50
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 2970.0,
-        "false_positives": 0.0,
-        "false_negatives": 55.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9818181818181818,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 50.0,
+        "true_negatives": 3024.0,
+        "false_positives": 1.0,
+        "false_negatives": 5.0,
+        "precision": 0.9803921568627451,
+        "recall": 0.9090909090909091,
+        "f1_score": 0.9433962264150944,
+        "accuracy": 0.9980519480519481,
+        "specificity": 0.9996694214876033,
+        "correct_matches": 50,
         "total_gt_matches": 55,
-        "total_pred_matches": 0,
+        "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014384746551513672,
+        "matching_time": 0.026201486587524414,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014384746551513672,
+      "matching_time": 0.026201486587524414,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 10,
@@ -4479,35 +4479,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4830,
-            0
+            4968,
+            2
           ],
           [
-            70,
-            0
+            7,
+            63
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 4830.0,
-        "false_positives": 0.0,
-        "false_negatives": 70.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9857142857142858,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 63.0,
+        "true_negatives": 4968.0,
+        "false_positives": 2.0,
+        "false_negatives": 7.0,
+        "precision": 0.9692307692307692,
+        "recall": 0.9,
+        "f1_score": 0.9333333333333333,
+        "accuracy": 0.9982142857142857,
+        "specificity": 0.9995975855130784,
+        "correct_matches": 63,
         "total_gt_matches": 70,
-        "total_pred_matches": 0,
+        "total_pred_matches": 65,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009633302688598633,
+        "matching_time": 0.0156402587890625,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009633302688598633,
+      "matching_time": 0.0156402587890625,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 4,
@@ -4536,12 +4536,12 @@
         "total_gt_matches": 25,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006278038024902344,
+        "matching_time": 0.004180192947387695,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006278038024902344,
+      "matching_time": 0.004180192947387695,
       "num_solutions": 1,
       "success": false
     },
@@ -4572,12 +4572,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011404752731323242,
+        "matching_time": 0.010645866394042969,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011404752731323242,
+      "matching_time": 0.010645866394042969,
       "num_solutions": 1,
       "success": false
     },
@@ -4608,12 +4608,12 @@
         "total_gt_matches": 59,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010486841201782227,
+        "matching_time": 0.07474851608276367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010486841201782227,
+      "matching_time": 0.07474851608276367,
       "num_solutions": 1,
       "success": false
     },
@@ -4644,12 +4644,12 @@
         "total_gt_matches": 30,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.003954410552978516,
+        "matching_time": 0.004302024841308594,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.003954410552978516,
+      "matching_time": 0.004302024841308594,
       "num_solutions": 1,
       "success": false
     },
@@ -4659,35 +4659,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            992,
-            0
+            1023,
+            1
           ],
           [
-            32,
-            0
+            3,
+            29
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 992.0,
-        "false_positives": 0.0,
-        "false_negatives": 32.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.96875,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 29.0,
+        "true_negatives": 1023.0,
+        "false_positives": 1.0,
+        "false_negatives": 3.0,
+        "precision": 0.9666666666666667,
+        "recall": 0.90625,
+        "f1_score": 0.9354838709677419,
+        "accuracy": 0.9962121212121212,
+        "specificity": 0.9990234375,
+        "correct_matches": 29,
         "total_gt_matches": 32,
-        "total_pred_matches": 0,
+        "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.025823354721069336,
+        "matching_time": 0.003314495086669922,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.025823354721069336,
+      "matching_time": 0.003314495086669922,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 6,
@@ -4716,12 +4716,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010242700576782227,
+        "matching_time": 0.007562160491943359,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010242700576782227,
+      "matching_time": 0.007562160491943359,
       "num_solutions": 1,
       "success": false
     },
@@ -4752,12 +4752,12 @@
         "total_gt_matches": 105,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017660140991210938,
+        "matching_time": 0.01601552963256836,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017660140991210938,
+      "matching_time": 0.01601552963256836,
       "num_solutions": 1,
       "success": false
     },
@@ -4788,12 +4788,12 @@
         "total_gt_matches": 31,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005776882171630859,
+        "matching_time": 0.03812742233276367,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005776882171630859,
+      "matching_time": 0.03812742233276367,
       "num_solutions": 1,
       "success": false
     },
@@ -4824,12 +4824,12 @@
         "total_gt_matches": 71,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011136770248413086,
+        "matching_time": 0.010901212692260742,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011136770248413086,
+      "matching_time": 0.010901212692260742,
       "num_solutions": 1,
       "success": false
     },
@@ -4860,12 +4860,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07460832595825195,
+        "matching_time": 0.006001710891723633,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07460832595825195,
+      "matching_time": 0.006001710891723633,
       "num_solutions": 1,
       "success": false
     },
@@ -4896,12 +4896,12 @@
         "total_gt_matches": 92,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.043886423110961914,
+        "matching_time": 0.018482446670532227,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.043886423110961914,
+      "matching_time": 0.018482446670532227,
       "num_solutions": 1,
       "success": false
     },
@@ -4932,12 +4932,12 @@
         "total_gt_matches": 79,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010848522186279297,
+        "matching_time": 0.010079145431518555,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010848522186279297,
+      "matching_time": 0.010079145431518555,
       "num_solutions": 1,
       "success": false
     },
@@ -4968,12 +4968,12 @@
         "total_gt_matches": 28,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004211902618408203,
+        "matching_time": 0.008887052536010742,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004211902618408203,
+      "matching_time": 0.008887052536010742,
       "num_solutions": 1,
       "success": false
     },
@@ -5004,12 +5004,12 @@
         "total_gt_matches": 38,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0057332515716552734,
+        "matching_time": 0.01682138442993164,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0057332515716552734,
+      "matching_time": 0.01682138442993164,
       "num_solutions": 1,
       "success": false
     },
@@ -5040,12 +5040,12 @@
         "total_gt_matches": 65,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015537500381469727,
+        "matching_time": 0.014168500900268555,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015537500381469727,
+      "matching_time": 0.014168500900268555,
       "num_solutions": 1,
       "success": false
     },
@@ -5076,12 +5076,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02400374412536621,
+        "matching_time": 0.004971742630004883,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02400374412536621,
+      "matching_time": 0.004971742630004883,
       "num_solutions": 1,
       "success": false
     },
@@ -5112,12 +5112,12 @@
         "total_gt_matches": 61,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.020669937133789062,
+        "matching_time": 0.012759685516357422,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.020669937133789062,
+      "matching_time": 0.012759685516357422,
       "num_solutions": 1,
       "success": false
     },
@@ -5131,31 +5131,31 @@
             0
           ],
           [
-            41,
-            0
+            1,
+            40
           ]
         ],
-        "true_positives": 0.0,
+        "true_positives": 40.0,
         "true_negatives": 1640.0,
         "false_positives": 0.0,
-        "false_negatives": 41.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.975609756097561,
+        "false_negatives": 1.0,
+        "precision": 1.0,
+        "recall": 0.975609756097561,
+        "f1_score": 0.9876543209876543,
+        "accuracy": 0.9994051160023796,
         "specificity": 1.0,
-        "correct_matches": 0,
+        "correct_matches": 40,
         "total_gt_matches": 41,
-        "total_pred_matches": 0,
+        "total_pred_matches": 40,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05327749252319336,
+        "matching_time": 0.00590205192565918,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05327749252319336,
+      "matching_time": 0.00590205192565918,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 9,
@@ -5184,12 +5184,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04794812202453613,
+        "matching_time": 0.014245271682739258,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04794812202453613,
+      "matching_time": 0.014245271682739258,
       "num_solutions": 1,
       "success": false
     },
@@ -5199,35 +5199,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6480,
-            0
+            6720,
+            3
           ],
           [
-            81,
-            0
+            8,
+            73
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 6480.0,
-        "false_positives": 0.0,
-        "false_negatives": 81.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9876543209876543,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 73.0,
+        "true_negatives": 6720.0,
+        "false_positives": 3.0,
+        "false_negatives": 8.0,
+        "precision": 0.9605263157894737,
+        "recall": 0.9012345679012346,
+        "f1_score": 0.9299363057324841,
+        "accuracy": 0.9983833039388595,
+        "specificity": 0.999553770638108,
+        "correct_matches": 73,
         "total_gt_matches": 81,
-        "total_pred_matches": 0,
+        "total_pred_matches": 76,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03380441665649414,
+        "matching_time": 0.012739181518554688,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03380441665649414,
+      "matching_time": 0.012739181518554688,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 7,
@@ -5256,12 +5256,12 @@
         "total_gt_matches": 61,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014897346496582031,
+        "matching_time": 0.010725736618041992,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014897346496582031,
+      "matching_time": 0.010725736618041992,
       "num_solutions": 1,
       "success": false
     },
@@ -5292,12 +5292,12 @@
         "total_gt_matches": 43,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006299018859863281,
+        "matching_time": 0.00626683235168457,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006299018859863281,
+      "matching_time": 0.00626683235168457,
       "num_solutions": 1,
       "success": false
     },
@@ -5328,12 +5328,12 @@
         "total_gt_matches": 57,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01391744613647461,
+        "matching_time": 0.015121221542358398,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01391744613647461,
+      "matching_time": 0.015121221542358398,
       "num_solutions": 1,
       "success": false
     },
@@ -5343,35 +5343,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1482,
-            0
+            1596,
+            3
           ],
           [
-            39,
-            0
+            6,
+            33
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 1482.0,
-        "false_positives": 0.0,
-        "false_negatives": 39.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9743589743589743,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 33.0,
+        "true_negatives": 1596.0,
+        "false_positives": 3.0,
+        "false_negatives": 6.0,
+        "precision": 0.9166666666666666,
+        "recall": 0.8461538461538461,
+        "f1_score": 0.8799999999999999,
+        "accuracy": 0.9945054945054945,
+        "specificity": 0.99812382739212,
+        "correct_matches": 33,
         "total_gt_matches": 39,
-        "total_pred_matches": 0,
+        "total_pred_matches": 36,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004241943359375,
+        "matching_time": 0.004330635070800781,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004241943359375,
+      "matching_time": 0.004330635070800781,
       "num_solutions": 1,
-      "success": false
+      "success": true
     },
     {
       "n_rooms_s_graphs": 5,
@@ -5400,12 +5400,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 0,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007914066314697266,
+        "matching_time": 0.010409832000732422,
         "num_solutions": 1,
         "success": false
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007914066314697266,
+      "matching_time": 0.010409832000732422,
       "num_solutions": 1,
       "success": false
     },
@@ -5415,35 +5415,35 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7656,
-            0
+            8089,
+            7
           ],
           [
-            88,
-            0
+            13,
+            75
           ]
         ],
-        "true_positives": 0.0,
-        "true_negatives": 7656.0,
-        "false_positives": 0.0,
-        "false_negatives": 88.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
-        "accuracy": 0.9886363636363636,
-        "specificity": 1.0,
-        "correct_matches": 0,
+        "true_positives": 75.0,
+        "true_negatives": 8089.0,
+        "false_positives": 7.0,
+        "false_negatives": 13.0,
+        "precision": 0.9146341463414634,
+        "recall": 0.8522727272727273,
+        "f1_score": 0.8823529411764706,
+        "accuracy": 0.9975562072336266,
+        "specificity": 0.9991353754940712,
+        "correct_matches": 75,
         "total_gt_matches": 88,
-        "total_pred_matches": 0,
+        "total_pred_matches": 82,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01505136489868164,
+        "matching_time": 0.013794660568237305,
         "num_solutions": 1,
-        "success": false
+        "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01505136489868164,
+      "matching_time": 0.013794660568237305,
       "num_solutions": 1,
-      "success": false
+      "success": true
     }
   ]
 }
