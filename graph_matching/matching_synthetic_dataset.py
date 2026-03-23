@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import sys, json, os, copy
+import curses
 import numpy as np
 import time
 import pickle
@@ -39,6 +40,95 @@ class FakeLogger(object):
     def info(self, msg):
         print(f"FakeLogger: {msg}")
 fake_logger = FakeLogger()
+
+
+def select_pickle_file(pickle_dir, requested_file=None, default_file=None):
+    """Resolve dataset pickle path, optionally prompting the user to choose."""
+    if requested_file:
+        if not os.path.dirname(requested_file):
+            return os.path.join(pickle_dir, requested_file)
+        return requested_file
+
+    pickle_files = sorted(
+        [f for f in os.listdir(pickle_dir) if f.endswith('.pkl') and os.path.isfile(os.path.join(pickle_dir, f))]
+    )
+
+    if not pickle_files:
+        raise FileNotFoundError(f"No .pkl files found in: {pickle_dir}")
+
+    default_idx = 0
+    if default_file and default_file in pickle_files:
+        default_idx = pickle_files.index(default_file)
+
+    def _arrow_menu(files, selected_idx):
+        """Arrow-key picker UI using curses. Returns selected index."""
+
+        def _run(stdscr):
+            current = selected_idx
+            curses.curs_set(0)
+            stdscr.keypad(True)
+
+            while True:
+                stdscr.erase()
+                h, w = stdscr.getmaxyx()
+                title = "Select a dataset .pkl file (Up/Down, Enter)"
+                hint = "Press q to use default selection."
+
+                stdscr.addnstr(0, 0, title, max(w - 1, 1), curses.A_BOLD)
+                stdscr.addnstr(1, 0, hint, max(w - 1, 1), curses.A_DIM)
+
+                max_visible = max(h - 3, 1)
+                start = max(0, min(current - max_visible // 2, len(files) - max_visible))
+                end = min(len(files), start + max_visible)
+
+                for row, i in enumerate(range(start, end), start=3):
+                    prefix = "> " if i == current else "  "
+                    line = f"{prefix}{files[i]}"
+                    attr = curses.A_REVERSE if i == current else curses.A_NORMAL
+                    stdscr.addnstr(row, 0, line, max(w - 1, 1), attr)
+
+                stdscr.refresh()
+                key = stdscr.getch()
+
+                if key in (curses.KEY_UP, ord('k')):
+                    current = (current - 1) % len(files)
+                elif key in (curses.KEY_DOWN, ord('j')):
+                    current = (current + 1) % len(files)
+                elif key in (10, 13, curses.KEY_ENTER):
+                    return current
+                elif key in (ord('q'), 27):
+                    return selected_idx
+
+        return curses.wrapper(_run)
+
+    selected_idx = default_idx
+    used_arrow_menu = False
+    if sys.stdin.isatty() and sys.stdout.isatty():
+        try:
+            selected_idx = _arrow_menu(pickle_files, default_idx)
+            used_arrow_menu = True
+        except Exception:
+            used_arrow_menu = False
+
+    if not used_arrow_menu:
+        print("Select a dataset .pkl file:")
+        for idx, name in enumerate(pickle_files, start=1):
+            print(f"  {idx}. {name}")
+        default_choice = default_idx + 1
+        prompt = f"Enter number [default {default_choice}]: "
+        choice = input(prompt).strip()
+        if not choice:
+            selected_idx = default_idx
+        else:
+            try:
+                selected_idx = int(choice) - 1
+                if selected_idx < 0 or selected_idx >= len(pickle_files):
+                    raise ValueError
+            except ValueError:
+                print(f"Invalid choice '{choice}'. Using default: {pickle_files[default_idx]}")
+                selected_idx = default_idx
+
+    return os.path.join(pickle_dir, pickle_files[selected_idx])
 
 # # GENERATE DATASET
 
@@ -268,7 +358,11 @@ def compute_metrics(ground_truth_matches, predicted_matches, log_level=0):
 
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
-full_dataset = pickle.load(open(os.path.join(pickle_datasets_path, "incremental_translation.pkl"), "rb"))
+default_pickle_filename = "incremental_global_symmetries_translation_small.pkl"
+pickle_filepath = select_pickle_file(pickle_datasets_path, default_file=default_pickle_filename)
+pickle_filename = os.path.basename(pickle_filepath)
+print(f"Using dataset file: {pickle_filename}")
+full_dataset = pickle.load(open(pickle_filepath, "rb"))
 
 # Initialize data collection for visualization
 all_metrics_data = []  # List to store (n_rooms, metrics_dict) tuples
@@ -384,7 +478,7 @@ if all_metrics_data:
     metadata = {
         'timestamp': datetime.datetime.now().isoformat(),
         'total_experiments': len(all_metrics_data),
-        'dataset_file': 'incremental_translation.pkl',
+        'dataset_file': pickle_filename,
         'description': 'Graph matching performance metrics collected from synthetic dataset experiments'
     }
     
@@ -394,9 +488,8 @@ if all_metrics_data:
         'experiments': serializable_data
     }
     
-    # Save to JSON file with timestamp
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    json_filename = f"graph_matching_results_{timestamp}.json"
+    # Save JSON using the same base filename as the pickle dataset
+    json_filename = f"{os.path.splitext(pickle_filename)[0]}.json"
     json_filepath = os.path.join(results_dir, json_filename)
     
     with open(json_filepath, 'w') as f:

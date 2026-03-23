@@ -7,20 +7,23 @@ comprehensive visualizations of performance metrics.
 
 Usage:
     python plot_results.py [results_file.json]
-    
-If no file is specified, it will look for 'latest_results.json'
+    python plot_results.py --json-file results_file.json
+
+If no file is specified, the script prompts you to select one from the results directory
+with arrow keys (or numeric fallback if the terminal does not support it).
 """
 
 import json
 import os
 import sys
 import argparse
+import curses
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+from matplotlib.ticker import MaxNLocator
 from scipy.interpolate import griddata
 from collections import defaultdict
-import datetime
 
 
 def load_results(json_filepath):
@@ -32,9 +35,98 @@ def load_results(json_filepath):
     except FileNotFoundError:
         print(f"Error: File {json_filepath} not found!")
         return None
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in {json_filepath}")
-        return None
+
+
+def select_results_file(results_dir, requested_file=None):
+    """Resolve JSON results file path, optionally prompting the user to choose."""
+    if requested_file:
+        if not os.path.dirname(requested_file):
+            return os.path.join(results_dir, requested_file)
+        return requested_file
+
+    json_files = sorted(
+        [f for f in os.listdir(results_dir) if f.endswith('.json') and os.path.isfile(os.path.join(results_dir, f))]
+    )
+
+    if not json_files:
+        return os.path.join(results_dir, 'latest_results.json')
+
+    default_idx = 0
+    for idx, name in enumerate(json_files, start=1):
+        if name == 'latest_results.json':
+            default_idx = idx - 1
+
+    def _arrow_menu(files, selected_idx):
+        """Arrow-key picker UI using curses. Returns selected index."""
+
+        def _run(stdscr):
+            current = selected_idx
+            curses.curs_set(0)
+            stdscr.keypad(True)
+
+            while True:
+                stdscr.erase()
+                h, w = stdscr.getmaxyx()
+                title = "Select a results JSON file (Up/Down, Enter)"
+                hint = "Press q to use default (latest_results.json if available)."
+
+                stdscr.addnstr(0, 0, title, max(w - 1, 1), curses.A_BOLD)
+                stdscr.addnstr(1, 0, hint, max(w - 1, 1), curses.A_DIM)
+
+                max_visible = max(h - 3, 1)
+                start = max(0, min(current - max_visible // 2, len(files) - max_visible))
+                end = min(len(files), start + max_visible)
+
+                for row, i in enumerate(range(start, end), start=3):
+                    prefix = "> " if i == current else "  "
+                    line = f"{prefix}{files[i]}"
+                    attr = curses.A_REVERSE if i == current else curses.A_NORMAL
+                    stdscr.addnstr(row, 0, line, max(w - 1, 1), attr)
+
+                stdscr.refresh()
+                key = stdscr.getch()
+
+                if key in (curses.KEY_UP, ord('k')):
+                    current = (current - 1) % len(files)
+                elif key in (curses.KEY_DOWN, ord('j')):
+                    current = (current + 1) % len(files)
+                elif key in (10, 13, curses.KEY_ENTER):
+                    return current
+                elif key in (ord('q'), 27):
+                    return selected_idx
+
+        return curses.wrapper(_run)
+
+    selected_idx = default_idx
+    used_arrow_menu = False
+    if sys.stdin.isatty() and sys.stdout.isatty():
+        try:
+            selected_idx = _arrow_menu(json_files, default_idx)
+            used_arrow_menu = True
+        except Exception:
+            used_arrow_menu = False
+
+    if not used_arrow_menu:
+        print("Select a results JSON file:")
+        for idx, name in enumerate(json_files, start=1):
+            print(f"  {idx}. {name}")
+        default_choice = default_idx + 1
+        prompt = f"Enter number [default {default_choice}]: "
+        choice = input(prompt).strip()
+        if not choice:
+            selected_idx = default_idx
+        else:
+            try:
+                selected_idx = int(choice) - 1
+                if selected_idx < 0 or selected_idx >= len(json_files):
+                    raise ValueError
+            except ValueError:
+                print(f"Invalid choice '{choice}'. Using default: {json_files[default_idx]}")
+                selected_idx = default_idx
+
+    selected = json_files[selected_idx]
+
+    return os.path.join(results_dir, selected)
 
 
 def process_data(data):
@@ -256,16 +348,29 @@ def _make_3d_subplots(raw_points_by_type, fig_title, xlabel, ylabel,
         ('specificity',   'Specificity'),
         ('success',       'Success (0/1)'),
         ('time',          'Matching Time (s)'),
-        ('num_solutions', 'Num Solutions'),
+        ('num_solutions', '#Solutions'),
     ]
-    NUM_SOLUTIONS_THRESHOLD = 1.5  # highlight points at or below this value
 
     fig = plt.figure(figsize=(28, 20))
+    fig.patch.set_facecolor('white')
     fig.suptitle(fig_title, fontsize=16)
     experiment_types = sorted(raw_points_by_type.keys())
 
     for plot_idx, (field, zlabel) in enumerate(plot_specs):
         ax = fig.add_subplot(3, 3, plot_idx + 1, projection='3d')
+        ax.patch.set_facecolor('white')
+        
+        # Set 3D axes panes to white with light grey grid lines
+        ax.xaxis.pane.set_facecolor('white')
+        ax.yaxis.pane.set_facecolor('white')
+        ax.zaxis.pane.set_facecolor('white')
+        
+        # Set grid line colors to light grey for visibility
+        ax.xaxis.pane.set_edgecolor('#cccccc')
+        ax.yaxis.pane.set_edgecolor('#cccccc')
+        ax.zaxis.pane.set_edgecolor('#cccccc')
+        field_x_values = []
+        field_y_values = []
 
         for exp_type in experiment_types:
             points = raw_points_by_type[exp_type]
@@ -280,6 +385,11 @@ def _make_3d_subplots(raw_points_by_type, fig_title, xlabel, ylabel,
             xs_v, ys_v, zs_v = xs[valid], ys[valid], zs[valid]
             if len(xs_v) == 0:
                 continue
+
+            field_x_values.extend(xs_v.tolist())
+            field_y_values.extend(ys_v.tolist())
+
+            surface_drawn = False
 
             # Attempt interpolated surface when data spans 2D
             unique_xy = np.unique(np.column_stack([xs_v, ys_v]), axis=0)
@@ -299,36 +409,53 @@ def _make_3d_subplots(raw_points_by_type, fig_title, xlabel, ylabel,
                     ys_agg = np.array([k[1] for k in xy_to_zs])
                     zs_agg = np.array([np.mean(v) for v in xy_to_zs.values()])
                     Zi = griddata((xs_agg, ys_agg), zs_agg, (Xi, Yi), method='linear')
+                    ax.plot_surface(Xi, Yi, Zi, alpha=0.35, color=color,
+                                    linewidth=0, antialiased=True)
+                    surface_drawn = True
+
+                    # For num_solutions field, plot intersection at z=1.2
                     if field == 'num_solutions':
-                        # Use a two-tone colormap: red below threshold, normal color above
-                        import matplotlib.colors as mcolors
-                        cmap_colors = ['#d62728', '#d62728', color, color]
-                        cmap_nodes = [0.0, NUM_SOLUTIONS_THRESHOLD, NUM_SOLUTIONS_THRESHOLD, max(zs_agg.max(), NUM_SOLUTIONS_THRESHOLD + 0.01)]
-                        norm_max = cmap_nodes[-1]
-                        norm_nodes = [v / norm_max for v in cmap_nodes]
-                        cmap = mcolors.LinearSegmentedColormap.from_list(
-                            'thresh', list(zip(norm_nodes, cmap_colors)))
-                        z_norm = mcolors.Normalize(vmin=0, vmax=norm_max)
-                        fcolors = cmap(z_norm(Zi))
-                        ax.plot_surface(Xi, Yi, Zi, facecolors=fcolors, alpha=0.5,
-                                        linewidth=0, antialiased=True)
-                    else:
-                        ax.plot_surface(Xi, Yi, Zi, alpha=0.35, color=color,
-                                        linewidth=0, antialiased=True)
+                        try:
+                            contours = ax.contour(Xi, Yi, Zi, levels=[1.2], colors=[color],
+                                                 linewidths=2, alpha=0.8)
+                            for collection in contours.collections:
+                                for path in collection.get_paths():
+                                    vertices = path.vertices
+                                    if len(vertices) > 1:
+                                        ax.plot(vertices[:, 0], vertices[:, 1],
+                                               [1.2] * len(vertices),
+                                               color=color, linewidth=2.5, alpha=0.8)
+                        except Exception:
+                            pass
                 except Exception:
                     pass
 
             if show_scatter:
                 ax.scatter(xs_v, ys_v, zs_v, color=color, s=20,
                            label=label, depthshade=True)
+            elif not surface_drawn:
+                # Surface interpolation can fail for sparse/degenerate point sets.
+                # In no-scatter mode, draw a minimal fallback so plots are not blank.
+                ax.scatter(xs_v, ys_v, zs_v, color=color, s=10,
+                           label=label, depthshade=True, alpha=0.8)
             elif plot_idx == 0:
                 # Still need a handle for the legend when scatter is hidden
                 ax.scatter([], [], [], color=color, s=20, label=label)
 
-        ax.set_xlabel(xlabel, fontsize=8, labelpad=3)
-        ax.set_ylabel(ylabel, fontsize=8, labelpad=3)
-        ax.set_zlabel(zlabel, fontsize=8, labelpad=3)
+        if field == 'num_solutions':
+            # Keep the solutions axis grounded at zero for easier comparison.
+            _, current_z_max = ax.get_zlim()
+            ax.set_zlim(bottom=0.0, top=max(current_z_max, 1.5))
+
+        ax.set_xlabel(xlabel, fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
+        ax.set_zlabel(zlabel, fontsize=8)
         ax.set_title(zlabel, fontsize=10, fontweight='bold')
+        
+        # For num_solutions plot, use integer-only z-axis ticks
+        if field == 'num_solutions':
+            ax.zaxis.set_major_locator(MaxNLocator(integer=True))
+        
         if plot_idx == 0:
             ax.legend(fontsize=7)
 
@@ -339,9 +466,9 @@ def create_3d_plots(raw_points_by_type, metadata, save_path=None, show_scatter=T
     """3D surface plots: X = n_rooms_s, Y = n_rooms_a, Z = metric."""
     fig = _make_3d_subplots(
         raw_points_by_type,
-        fig_title='Graph Matching: 3D View  (S-Rooms \u00d7 A-Rooms)',
-        xlabel='S-Rooms',
-        ylabel='A-Rooms',
+        fig_title='Graph Matching: 3D View  (#S-Rooms \u00d7 #A-Rooms)',
+        xlabel='#S-Rooms',
+        ylabel='#A-Rooms',
         x_getter=lambda p: p['n_rooms_s'],
         y_getter=lambda p: p['n_rooms_a'],
         save_path=None,
@@ -350,6 +477,7 @@ def create_3d_plots(raw_points_by_type, metadata, save_path=None, show_scatter=T
 
     # Summary info in the 9th cell
     ax_info = fig.add_subplot(3, 3, 9)
+    ax_info.patch.set_facecolor('white')
     ax_info.axis('off')
     ax_info.text(0.05, 0.95, 'Experiment Summary', transform=ax_info.transAxes,
                  fontsize=11, weight='bold', va='top')
@@ -389,6 +517,7 @@ def create_3d_normalized_plots(raw_points_by_type, metadata, save_path=None, sho
     )
 
     ax_info = fig.add_subplot(3, 3, 9)
+    ax_info.patch.set_facecolor('white')
     ax_info.axis('off')
     ax_info.text(0.05, 0.95, 'Experiment Summary', transform=ax_info.transAxes,
                  fontsize=11, weight='bold', va='top')
@@ -526,9 +655,11 @@ def save_summary_statistics(room_counts, metric_names, metric_labels,
 def main():
     parser = argparse.ArgumentParser(description='Plot graph matching results from JSON file')
     parser.add_argument('json_file', nargs='?', default='latest_results.json',
-                       help='JSON file containing results (default: latest_results.json)')
+                       help='JSON file containing results (legacy positional argument)')
+    parser.add_argument('--json-file', dest='json_file_opt', default=None,
+                       help='JSON file containing results; if omitted, select interactively with arrows')
     parser.add_argument('--no-display', action='store_true',
-                       help='Do not display plots (only save them)')
+                       help='Do not display plots (generate in memory only)')
     parser.add_argument('--no-scatter', action='store_true',
                        help='Hide individual data-point spheres; show surfaces only')
 
@@ -538,11 +669,12 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     results_dir = script_dir
     
-    # If only filename provided, look in results directory
-    if not os.path.dirname(args.json_file):
-        json_filepath = os.path.join(results_dir, args.json_file)
-    else:
-        json_filepath = args.json_file
+    requested_file = args.json_file_opt
+    if requested_file is None and args.json_file != 'latest_results.json':
+        # Preserve compatibility for explicit positional usage.
+        requested_file = args.json_file
+
+    json_filepath = select_results_file(results_dir, requested_file)
     
     # Load and process data
     print(f"Loading results from: {json_filepath}")
@@ -559,31 +691,13 @@ def main():
     room_counts, metric_names, metric_labels, stats_by_type, experiment_types = calculate_statistics(
         metrics_by_rooms_and_type, success_data, timing_data, solution_count_data)
     
-    # Create output filenames with timestamp
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    plot_3d_filename      = f"graph_matching_3d_{timestamp}.png"
-    plot_norm_filename    = f"graph_matching_3d_normalized_{timestamp}.png"
-    summary_filename      = f"graph_matching_summary_{timestamp}.txt"
-    
-    plot_3d_path   = os.path.join(results_dir, plot_3d_filename)
-    plot_norm_path = os.path.join(results_dir, plot_norm_filename)
-    summary_path   = os.path.join(results_dir, summary_filename)
-    
-    # Ensure results directory exists
-    os.makedirs(results_dir, exist_ok=True)
-    
     show_scatter = not args.no_scatter
 
     # Figure 1 – absolute room counts (X=S-rooms, Y=A-rooms, Z=metric)
-    fig1 = create_3d_plots(raw_points, metadata, plot_3d_path, show_scatter=show_scatter)
+    fig1 = create_3d_plots(raw_points, metadata, save_path=None, show_scatter=show_scatter)
 
     # Figure 2 – normalised axes (X=S/A ratio, Y=%obj nodes, Z=metric)
-    fig2 = create_3d_normalized_plots(raw_points, metadata, plot_norm_path, show_scatter=show_scatter)
-    
-    # Save summary statistics
-    save_summary_statistics(room_counts, metric_names, metric_labels,
-                           stats_by_type, experiment_types, metrics_by_rooms_and_type,
-                           metadata, summary_path)
+    fig2 = create_3d_normalized_plots(raw_points, metadata, save_path=None, show_scatter=show_scatter)
     
     # Print numerical summary
     print_numerical_summary(room_counts, metric_names, metric_labels,
@@ -595,12 +709,10 @@ def main():
     else:
         plt.close(fig1)
         plt.close(fig2)
-        print("Plots saved but not displayed (--no-display flag used)")
+        print("Plots generated but not displayed (--no-display flag used)")
     
     print(f"\nResults processed successfully!")
-    print(f"  - 3D plot (abs rooms): {plot_3d_path}")
-    print(f"  - 3D plot (normalized): {plot_norm_path}")
-    print(f"  - Summary: {summary_path}")
+    print("  - No .png/.txt files were saved")
 
 
 if __name__ == "__main__":
