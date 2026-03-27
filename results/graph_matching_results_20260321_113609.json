@@ -1,12 +1,11 @@
 {
   "metadata": {
-    "timestamp": "2026-03-27T08:22:40.687543",
+    "timestamp": "2026-03-21T11:36:09.568003",
     "total_experiments": 151,
     "dataset_file": "/root/workspace/src/graph_matching_gnn/GNN/preprocessed/partial_graph_matching/ws_room_dropout_noise/test_dataset.pkl",
     "description": "Graph matching performance metrics collected from MSD dataset experiments",
     "score_threshold": null,
-    "sinkhorn_threshold": 0.99,
-    "acc_threshold": null,
+    "affinity_threshold": 0.0,
     "dataset": "msd"
   },
   "experiments": [
@@ -16,33 +15,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2448,
-            2
+            2544,
+            4
           ],
           [
-            2,
-            47
+            4,
+            45
           ]
         ],
-        "true_positives": 47.0,
-        "true_negatives": 2448.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9591836734693877,
-        "recall": 0.9591836734693877,
-        "f1_score": 0.9591836734693877,
-        "accuracy": 0.9983993597438976,
-        "specificity": 0.9991836734693877,
-        "correct_matches": 47,
+        "true_positives": 45.0,
+        "true_negatives": 2544.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9183673469387755,
+        "recall": 0.9183673469387755,
+        "f1_score": 0.9183673469387755,
+        "accuracy": 0.9969195225259915,
+        "specificity": 0.9984301412872841,
+        "correct_matches": 45,
         "total_gt_matches": 49,
         "total_pred_matches": 49,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.30944371223449707,
+        "matching_time": 0.13707256317138672,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.30944371223449707,
+      "matching_time": 0.13707256317138672,
       "num_solutions": 1,
       "success": true
     },
@@ -52,69 +51,69 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1760,
+            1960,
+            8
+          ],
+          [
+            8,
+            33
+          ]
+        ],
+        "true_positives": 33.0,
+        "true_negatives": 1960.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8048780487804879,
+        "recall": 0.8048780487804879,
+        "f1_score": 0.8048780487804877,
+        "accuracy": 0.9920358387257342,
+        "specificity": 0.9959349593495935,
+        "correct_matches": 33,
+        "total_gt_matches": 41,
+        "total_pred_matches": 41,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009478569030761719,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009478569030761719,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7565,
             3
           ],
           [
             3,
-            38
+            83
           ]
         ],
-        "true_positives": 38.0,
-        "true_negatives": 1760.0,
+        "true_positives": 83.0,
+        "true_negatives": 7565.0,
         "false_positives": 3.0,
         "false_negatives": 3.0,
-        "precision": 0.926829268292683,
-        "recall": 0.926829268292683,
-        "f1_score": 0.926829268292683,
-        "accuracy": 0.9966740576496674,
-        "specificity": 0.998298355076574,
-        "correct_matches": 38,
-        "total_gt_matches": 41,
-        "total_pred_matches": 41,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.011716604232788086,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.011716604232788086,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 10,
-      "n_rooms_a_graphs": 10,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            7735,
-            5
-          ],
-          [
-            5,
-            81
-          ]
-        ],
-        "true_positives": 81.0,
-        "true_negatives": 7735.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9418604651162791,
-        "recall": 0.9418604651162791,
-        "f1_score": 0.9418604651162791,
-        "accuracy": 0.9987222080245336,
-        "specificity": 0.9993540051679587,
-        "correct_matches": 81,
+        "precision": 0.9651162790697675,
+        "recall": 0.9651162790697675,
+        "f1_score": 0.9651162790697675,
+        "accuracy": 0.9992160961588712,
+        "specificity": 0.9996035940803383,
+        "correct_matches": 83,
         "total_gt_matches": 86,
         "total_pred_matches": 86,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.023328781127929688,
+        "matching_time": 0.11150884628295898,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.023328781127929688,
+      "matching_time": 0.11150884628295898,
       "num_solutions": 1,
       "success": true
     },
@@ -124,33 +123,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7387,
-            5
+            7719,
+            9
           ],
           [
-            5,
-            79
+            9,
+            75
           ]
         ],
-        "true_positives": 79.0,
-        "true_negatives": 7387.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9404761904761905,
-        "recall": 0.9404761904761905,
-        "f1_score": 0.9404761904761905,
-        "accuracy": 0.9986623863028358,
-        "specificity": 0.9993235930735931,
-        "correct_matches": 79,
+        "true_positives": 75.0,
+        "true_negatives": 7719.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8928571428571429,
+        "recall": 0.8928571428571429,
+        "f1_score": 0.8928571428571429,
+        "accuracy": 0.9976958525345622,
+        "specificity": 0.9988354037267081,
+        "correct_matches": 75,
         "total_gt_matches": 84,
         "total_pred_matches": 84,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.024203777313232422,
+        "matching_time": 0.03805208206176758,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.024203777313232422,
+      "matching_time": 0.03805208206176758,
       "num_solutions": 1,
       "success": true
     },
@@ -160,33 +159,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            12176,
-            24
+            11581,
+            19
           ],
           [
-            24,
-            76
+            19,
+            81
           ]
         ],
-        "true_positives": 76.0,
-        "true_negatives": 12176.0,
-        "false_positives": 24.0,
-        "false_negatives": 24.0,
-        "precision": 0.76,
-        "recall": 0.76,
-        "f1_score": 0.76,
-        "accuracy": 0.9960975609756098,
-        "specificity": 0.9980327868852459,
-        "correct_matches": 76,
+        "true_positives": 81.0,
+        "true_negatives": 11581.0,
+        "false_positives": 19.0,
+        "false_negatives": 19.0,
+        "precision": 0.81,
+        "recall": 0.81,
+        "f1_score": 0.81,
+        "accuracy": 0.9967521367521367,
+        "specificity": 0.9983620689655173,
+        "correct_matches": 81,
         "total_gt_matches": 100,
         "total_pred_matches": 100,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.1393566131591797,
+        "matching_time": 0.02839517593383789,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.1393566131591797,
+      "matching_time": 0.02839517593383789,
       "num_solutions": 1,
       "success": true
     },
@@ -196,33 +195,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3761,
-            9
+            3987,
+            15
           ],
           [
-            9,
-            49
+            15,
+            43
           ]
         ],
-        "true_positives": 49.0,
-        "true_negatives": 3761.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8448275862068966,
-        "recall": 0.8448275862068966,
-        "f1_score": 0.8448275862068967,
-        "accuracy": 0.9952978056426333,
-        "specificity": 0.9976127320954907,
-        "correct_matches": 49,
+        "true_positives": 43.0,
+        "true_negatives": 3987.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.7413793103448276,
+        "recall": 0.7413793103448276,
+        "f1_score": 0.7413793103448276,
+        "accuracy": 0.9926108374384236,
+        "specificity": 0.9962518740629686,
+        "correct_matches": 43,
         "total_gt_matches": 58,
         "total_pred_matches": 58,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.027807950973510742,
+        "matching_time": 0.08492827415466309,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.027807950973510742,
+      "matching_time": 0.08492827415466309,
       "num_solutions": 1,
       "success": true
     },
@@ -232,33 +231,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2346,
-            4
+            2162,
+            0
           ],
           [
-            4,
-            43
+            0,
+            47
           ]
         ],
-        "true_positives": 43.0,
-        "true_negatives": 2346.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9148936170212766,
-        "recall": 0.9148936170212766,
-        "f1_score": 0.9148936170212766,
-        "accuracy": 0.9966624947851481,
-        "specificity": 0.9982978723404256,
-        "correct_matches": 43,
+        "true_positives": 47.0,
+        "true_negatives": 2162.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 47,
         "total_gt_matches": 47,
         "total_pred_matches": 47,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009480953216552734,
+        "matching_time": 0.035378456115722656,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009480953216552734,
+      "matching_time": 0.035378456115722656,
       "num_solutions": 1,
       "success": true
     },
@@ -268,33 +267,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            650,
-            0
+            750,
+            4
           ],
           [
-            0,
-            26
+            4,
+            22
           ]
         ],
-        "true_positives": 26.0,
-        "true_negatives": 650.0,
-        "false_positives": 0.0,
-        "false_negatives": 0.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1_score": 1.0,
-        "accuracy": 1.0,
-        "specificity": 1.0,
-        "correct_matches": 26,
+        "true_positives": 22.0,
+        "true_negatives": 750.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.8461538461538461,
+        "recall": 0.8461538461538461,
+        "f1_score": 0.8461538461538461,
+        "accuracy": 0.9897435897435898,
+        "specificity": 0.9946949602122016,
+        "correct_matches": 22,
         "total_gt_matches": 26,
         "total_pred_matches": 26,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009047985076904297,
+        "matching_time": 0.01049661636352539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009047985076904297,
+      "matching_time": 0.01049661636352539,
       "num_solutions": 1,
       "success": true
     },
@@ -304,33 +303,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4949,
-            9
+            4884,
+            7
           ],
           [
-            9,
-            58
+            7,
+            60
           ]
         ],
-        "true_positives": 58.0,
-        "true_negatives": 4949.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8656716417910447,
-        "recall": 0.8656716417910447,
-        "f1_score": 0.8656716417910447,
-        "accuracy": 0.9964179104477612,
-        "specificity": 0.9981847519160952,
-        "correct_matches": 58,
+        "true_positives": 60.0,
+        "true_negatives": 4884.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.8955223880597015,
+        "recall": 0.8955223880597015,
+        "f1_score": 0.8955223880597015,
+        "accuracy": 0.9971762807583703,
+        "specificity": 0.9985687998364343,
+        "correct_matches": 60,
         "total_gt_matches": 67,
         "total_pred_matches": 67,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01762700080871582,
+        "matching_time": 0.039345741271972656,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01762700080871582,
+      "matching_time": 0.039345741271972656,
       "num_solutions": 1,
       "success": true
     },
@@ -340,33 +339,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6435,
-            15
+            6287,
+            13
           ],
           [
-            15,
-            60
+            13,
+            62
           ]
         ],
-        "true_positives": 60.0,
-        "true_negatives": 6435.0,
-        "false_positives": 15.0,
-        "false_negatives": 15.0,
-        "precision": 0.8,
-        "recall": 0.8,
-        "f1_score": 0.8000000000000002,
-        "accuracy": 0.9954022988505747,
-        "specificity": 0.9976744186046511,
-        "correct_matches": 60,
+        "true_positives": 62.0,
+        "true_negatives": 6287.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.8266666666666667,
+        "recall": 0.8266666666666667,
+        "f1_score": 0.8266666666666667,
+        "accuracy": 0.995921568627451,
+        "specificity": 0.9979365079365079,
+        "correct_matches": 62,
         "total_gt_matches": 75,
         "total_pred_matches": 75,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.024204730987548828,
+        "matching_time": 0.024251937866210938,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.024204730987548828,
+      "matching_time": 0.024251937866210938,
       "num_solutions": 1,
       "success": true
     },
@@ -376,33 +375,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            8630,
-            10
+            8631,
+            9
           ],
           [
-            10,
-            80
+            9,
+            81
           ]
         ],
-        "true_positives": 80.0,
-        "true_negatives": 8630.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.8888888888888888,
-        "recall": 0.8888888888888888,
-        "f1_score": 0.8888888888888888,
-        "accuracy": 0.997709049255441,
-        "specificity": 0.9988425925925926,
-        "correct_matches": 80,
+        "true_positives": 81.0,
+        "true_negatives": 8631.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9979381443298969,
+        "specificity": 0.9989583333333333,
+        "correct_matches": 81,
         "total_gt_matches": 90,
         "total_pred_matches": 90,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.39244794845581055,
+        "matching_time": 0.028595447540283203,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.39244794845581055,
+      "matching_time": 0.028595447540283203,
       "num_solutions": 1,
       "success": true
     },
@@ -412,7 +411,7 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5838,
+            5986,
             8
           ],
           [
@@ -421,24 +420,24 @@
           ]
         ],
         "true_positives": 66.0,
-        "true_negatives": 5838.0,
+        "true_negatives": 5986.0,
         "false_positives": 8.0,
         "false_negatives": 8.0,
         "precision": 0.8918918918918919,
         "recall": 0.8918918918918919,
         "f1_score": 0.8918918918918919,
-        "accuracy": 0.9972972972972973,
-        "specificity": 0.9986315429353404,
+        "accuracy": 0.997363216875412,
+        "specificity": 0.9986653319986654,
         "correct_matches": 66,
         "total_gt_matches": 74,
         "total_pred_matches": 74,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.019302845001220703,
+        "matching_time": 0.01893901824951172,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.019302845001220703,
+      "matching_time": 0.01893901824951172,
       "num_solutions": 1,
       "success": true
     },
@@ -448,33 +447,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4410,
-            6
+            4473,
+            7
           ],
           [
-            6,
-            58
+            7,
+            57
           ]
         ],
-        "true_positives": 58.0,
-        "true_negatives": 4410.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.90625,
-        "recall": 0.90625,
-        "f1_score": 0.90625,
-        "accuracy": 0.9973214285714286,
-        "specificity": 0.998641304347826,
-        "correct_matches": 58,
+        "true_positives": 57.0,
+        "true_negatives": 4473.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.890625,
+        "recall": 0.890625,
+        "f1_score": 0.890625,
+        "accuracy": 0.996919014084507,
+        "specificity": 0.9984375,
+        "correct_matches": 57,
         "total_gt_matches": 64,
         "total_pred_matches": 64,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014894247055053711,
+        "matching_time": 0.15888381004333496,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014894247055053711,
+      "matching_time": 0.15888381004333496,
       "num_solutions": 1,
       "success": true
     },
@@ -484,33 +483,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4347,
-            5
+            4473,
+            7
           ],
           [
-            5,
-            59
+            7,
+            57
           ]
         ],
-        "true_positives": 59.0,
-        "true_negatives": 4347.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.921875,
-        "recall": 0.921875,
-        "f1_score": 0.921875,
-        "accuracy": 0.9977355072463768,
-        "specificity": 0.9988511029411765,
-        "correct_matches": 59,
+        "true_positives": 57.0,
+        "true_negatives": 4473.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.890625,
+        "recall": 0.890625,
+        "f1_score": 0.890625,
+        "accuracy": 0.996919014084507,
+        "specificity": 0.9984375,
+        "correct_matches": 57,
         "total_gt_matches": 64,
         "total_pred_matches": 64,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.16935944557189941,
+        "matching_time": 0.0897834300994873,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.16935944557189941,
+      "matching_time": 0.0897834300994873,
       "num_solutions": 1,
       "success": true
     },
@@ -520,33 +519,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3696,
-            9
+            3752,
+            10
           ],
           [
-            9,
-            48
+            10,
+            47
           ]
         ],
-        "true_positives": 48.0,
-        "true_negatives": 3696.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8421052631578947,
-        "recall": 0.8421052631578947,
-        "f1_score": 0.8421052631578947,
-        "accuracy": 0.9952153110047847,
-        "specificity": 0.9975708502024292,
-        "correct_matches": 48,
+        "true_positives": 47.0,
+        "true_negatives": 3752.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.8245614035087719,
+        "recall": 0.8245614035087719,
+        "f1_score": 0.8245614035087719,
+        "accuracy": 0.9947630269704111,
+        "specificity": 0.9973418394471026,
+        "correct_matches": 47,
         "total_gt_matches": 57,
         "total_pred_matches": 57,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015677452087402344,
+        "matching_time": 0.057115793228149414,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015677452087402344,
+      "matching_time": 0.057115793228149414,
       "num_solutions": 1,
       "success": true
     },
@@ -556,33 +555,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            8536,
-            8
+            8712,
+            10
           ],
           [
-            8,
-            81
+            10,
+            79
           ]
         ],
-        "true_positives": 81.0,
-        "true_negatives": 8536.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.9101123595505618,
-        "recall": 0.9101123595505618,
-        "f1_score": 0.9101123595505618,
-        "accuracy": 0.9981466465886714,
-        "specificity": 0.9990636704119851,
-        "correct_matches": 81,
+        "true_positives": 79.0,
+        "true_negatives": 8712.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.8876404494382022,
+        "recall": 0.8876404494382022,
+        "f1_score": 0.8876404494382022,
+        "accuracy": 0.9977301100896606,
+        "specificity": 0.9988534739738592,
+        "correct_matches": 79,
         "total_gt_matches": 89,
         "total_pred_matches": 89,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.053076744079589844,
+        "matching_time": 0.05594444274902344,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.053076744079589844,
+      "matching_time": 0.05594444274902344,
       "num_solutions": 1,
       "success": true
     },
@@ -613,12 +612,12 @@
         "total_gt_matches": 88,
         "total_pred_matches": 88,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.020778656005859375,
+        "matching_time": 0.02821946144104004,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.020778656005859375,
+      "matching_time": 0.02821946144104004,
       "num_solutions": 1,
       "success": true
     },
@@ -628,33 +627,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1886,
-            4
+            1804,
+            2
           ],
           [
-            4,
-            38
+            2,
+            40
           ]
         ],
-        "true_positives": 38.0,
-        "true_negatives": 1886.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9047619047619048,
-        "recall": 0.9047619047619048,
-        "f1_score": 0.9047619047619048,
-        "accuracy": 0.9958592132505176,
-        "specificity": 0.9978835978835979,
-        "correct_matches": 38,
+        "true_positives": 40.0,
+        "true_negatives": 1804.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9523809523809523,
+        "recall": 0.9523809523809523,
+        "f1_score": 0.9523809523809523,
+        "accuracy": 0.9978354978354979,
+        "specificity": 0.9988925802879292,
+        "correct_matches": 40,
         "total_gt_matches": 42,
         "total_pred_matches": 42,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017120361328125,
+        "matching_time": 0.09685826301574707,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017120361328125,
+      "matching_time": 0.09685826301574707,
       "num_solutions": 1,
       "success": true
     },
@@ -664,33 +663,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2039,
-            11
+            2119,
+            13
           ],
           [
-            11,
-            30
+            13,
+            28
           ]
         ],
-        "true_positives": 30.0,
-        "true_negatives": 2039.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.7317073170731707,
-        "recall": 0.7317073170731707,
-        "f1_score": 0.7317073170731707,
-        "accuracy": 0.989478718316595,
-        "specificity": 0.9946341463414634,
-        "correct_matches": 30,
+        "true_positives": 28.0,
+        "true_negatives": 2119.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.6829268292682927,
+        "recall": 0.6829268292682927,
+        "f1_score": 0.6829268292682927,
+        "accuracy": 0.9880349746893695,
+        "specificity": 0.9939024390243902,
+        "correct_matches": 28,
         "total_gt_matches": 41,
         "total_pred_matches": 41,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.047162771224975586,
+        "matching_time": 0.010430097579956055,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.047162771224975586,
+      "matching_time": 0.010430097579956055,
       "num_solutions": 1,
       "success": true
     },
@@ -721,12 +720,12 @@
         "total_gt_matches": 12,
         "total_pred_matches": 12,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00444340705871582,
+        "matching_time": 0.05060148239135742,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00444340705871582,
+      "matching_time": 0.05060148239135742,
       "num_solutions": 1,
       "success": true
     },
@@ -757,12 +756,12 @@
         "total_gt_matches": 62,
         "total_pred_matches": 62,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029736995697021484,
+        "matching_time": 0.022008657455444336,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029736995697021484,
+      "matching_time": 0.022008657455444336,
       "num_solutions": 1,
       "success": true
     },
@@ -772,33 +771,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4680,
-            6
+            4550,
+            4
           ],
           [
-            6,
-            60
+            4,
+            62
           ]
         ],
-        "true_positives": 60.0,
-        "true_negatives": 4680.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9090909090909091,
-        "recall": 0.9090909090909091,
-        "f1_score": 0.9090909090909091,
-        "accuracy": 0.9974747474747475,
-        "specificity": 0.998719590268886,
-        "correct_matches": 60,
+        "true_positives": 62.0,
+        "true_negatives": 4550.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9393939393939394,
+        "recall": 0.9393939393939394,
+        "f1_score": 0.9393939393939394,
+        "accuracy": 0.9982683982683983,
+        "specificity": 0.9991216512955643,
+        "correct_matches": 62,
         "total_gt_matches": 66,
         "total_pred_matches": 66,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029659032821655273,
+        "matching_time": 0.03300666809082031,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029659032821655273,
+      "matching_time": 0.03300666809082031,
       "num_solutions": 1,
       "success": true
     },
@@ -808,33 +807,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            13653,
-            11
+            14097,
+            15
           ],
           [
-            11,
-            101
+            15,
+            97
           ]
         ],
-        "true_positives": 101.0,
-        "true_negatives": 13653.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.9017857142857143,
-        "recall": 0.9017857142857143,
-        "f1_score": 0.9017857142857143,
-        "accuracy": 0.9984030197444832,
-        "specificity": 0.9991949648711944,
-        "correct_matches": 101,
+        "true_positives": 97.0,
+        "true_negatives": 14097.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.8660714285714286,
+        "recall": 0.8660714285714286,
+        "f1_score": 0.8660714285714286,
+        "accuracy": 0.9978908886389202,
+        "specificity": 0.998937074829932,
+        "correct_matches": 97,
         "total_gt_matches": 112,
         "total_pred_matches": 112,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.033454179763793945,
+        "matching_time": 0.05500507354736328,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.033454179763793945,
+      "matching_time": 0.05500507354736328,
       "num_solutions": 1,
       "success": true
     },
@@ -844,33 +843,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5106,
-            4
+            4968,
+            2
           ],
           [
-            4,
-            66
+            2,
+            68
           ]
         ],
-        "true_positives": 66.0,
-        "true_negatives": 5106.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9428571428571428,
-        "recall": 0.9428571428571428,
-        "f1_score": 0.9428571428571428,
-        "accuracy": 0.9984555984555985,
-        "specificity": 0.9992172211350293,
-        "correct_matches": 66,
+        "true_positives": 68.0,
+        "true_negatives": 4968.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9714285714285714,
+        "recall": 0.9714285714285714,
+        "f1_score": 0.9714285714285714,
+        "accuracy": 0.9992063492063492,
+        "specificity": 0.9995975855130784,
+        "correct_matches": 68,
         "total_gt_matches": 70,
         "total_pred_matches": 70,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03682875633239746,
+        "matching_time": 0.014172792434692383,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03682875633239746,
+      "matching_time": 0.014172792434692383,
       "num_solutions": 1,
       "success": true
     },
@@ -901,12 +900,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011650800704956055,
+        "matching_time": 0.008768320083618164,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011650800704956055,
+      "matching_time": 0.008768320083618164,
       "num_solutions": 1,
       "success": true
     },
@@ -916,33 +915,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1044,
-            6
+            1073,
+            7
           ],
           [
-            6,
-            24
+            7,
+            23
           ]
         ],
-        "true_positives": 24.0,
-        "true_negatives": 1044.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8,
-        "recall": 0.8,
-        "f1_score": 0.8000000000000002,
-        "accuracy": 0.9888888888888889,
-        "specificity": 0.9942857142857143,
-        "correct_matches": 24,
+        "true_positives": 23.0,
+        "true_negatives": 1073.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.7666666666666667,
+        "recall": 0.7666666666666667,
+        "f1_score": 0.7666666666666667,
+        "accuracy": 0.9873873873873874,
+        "specificity": 0.9935185185185185,
+        "correct_matches": 23,
         "total_gt_matches": 30,
         "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.018103599548339844,
+        "matching_time": 0.005436897277832031,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.018103599548339844,
+      "matching_time": 0.005436897277832031,
       "num_solutions": 1,
       "success": true
     },
@@ -952,33 +951,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1383,
-            11
+            1318,
+            8
           ],
           [
-            11,
-            23
+            8,
+            26
           ]
         ],
-        "true_positives": 23.0,
-        "true_negatives": 1383.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.6764705882352942,
-        "recall": 0.6764705882352942,
-        "f1_score": 0.6764705882352942,
-        "accuracy": 0.9845938375350141,
-        "specificity": 0.9921090387374462,
-        "correct_matches": 23,
+        "true_positives": 26.0,
+        "true_negatives": 1318.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.7647058823529411,
+        "recall": 0.7647058823529411,
+        "f1_score": 0.7647058823529412,
+        "accuracy": 0.9882352941176471,
+        "specificity": 0.9939668174962293,
+        "correct_matches": 26,
         "total_gt_matches": 34,
         "total_pred_matches": 34,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01902461051940918,
+        "matching_time": 0.010219335556030273,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01902461051940918,
+      "matching_time": 0.010219335556030273,
       "num_solutions": 1,
       "success": true
     },
@@ -988,33 +987,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2650,
-            2
+            2700,
+            3
           ],
           [
-            2,
-            49
+            3,
+            48
           ]
         ],
-        "true_positives": 49.0,
-        "true_negatives": 2650.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9607843137254902,
-        "recall": 0.9607843137254902,
-        "f1_score": 0.9607843137254902,
-        "accuracy": 0.998520162782094,
-        "specificity": 0.9992458521870287,
-        "correct_matches": 49,
+        "true_positives": 48.0,
+        "true_negatives": 2700.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9411764705882353,
+        "recall": 0.9411764705882353,
+        "f1_score": 0.9411764705882353,
+        "accuracy": 0.9978213507625272,
+        "specificity": 0.9988901220865705,
+        "correct_matches": 48,
         "total_gt_matches": 51,
         "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009752035140991211,
+        "matching_time": 0.01203298568725586,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009752035140991211,
+      "matching_time": 0.01203298568725586,
       "num_solutions": 1,
       "success": true
     },
@@ -1024,33 +1023,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            955,
-            5
+            1157,
+            13
           ],
           [
-            5,
-            25
+            13,
+            17
           ]
         ],
-        "true_positives": 25.0,
-        "true_negatives": 955.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.8333333333333334,
-        "recall": 0.8333333333333334,
-        "f1_score": 0.8333333333333334,
-        "accuracy": 0.98989898989899,
-        "specificity": 0.9947916666666666,
-        "correct_matches": 25,
+        "true_positives": 17.0,
+        "true_negatives": 1157.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.5666666666666667,
+        "recall": 0.5666666666666667,
+        "f1_score": 0.5666666666666667,
+        "accuracy": 0.9783333333333334,
+        "specificity": 0.9888888888888889,
+        "correct_matches": 17,
         "total_gt_matches": 30,
         "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006481170654296875,
+        "matching_time": 0.0058062076568603516,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006481170654296875,
+      "matching_time": 0.0058062076568603516,
       "num_solutions": 1,
       "success": true
     },
@@ -1060,33 +1059,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5032,
-            5
+            5236,
+            8
           ],
           [
-            5,
-            64
+            8,
+            61
           ]
         ],
-        "true_positives": 64.0,
-        "true_negatives": 5032.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.927536231884058,
-        "recall": 0.927536231884058,
-        "f1_score": 0.927536231884058,
-        "accuracy": 0.9980415197806503,
-        "specificity": 0.9990073456422474,
-        "correct_matches": 64,
+        "true_positives": 61.0,
+        "true_negatives": 5236.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8840579710144928,
+        "recall": 0.8840579710144928,
+        "f1_score": 0.8840579710144928,
+        "accuracy": 0.9969885187276492,
+        "specificity": 0.9984744469870328,
+        "correct_matches": 61,
         "total_gt_matches": 69,
         "total_pred_matches": 69,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02411365509033203,
+        "matching_time": 0.04019522666931152,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02411365509033203,
+      "matching_time": 0.04019522666931152,
       "num_solutions": 1,
       "success": true
     },
@@ -1117,12 +1116,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.027931928634643555,
+        "matching_time": 0.025116443634033203,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.027931928634643555,
+      "matching_time": 0.025116443634033203,
       "num_solutions": 1,
       "success": true
     },
@@ -1132,33 +1131,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1152,
-            3
+            1280,
+            7
           ],
           [
-            3,
-            30
+            7,
+            26
           ]
         ],
-        "true_positives": 30.0,
-        "true_negatives": 1152.0,
-        "false_positives": 3.0,
-        "false_negatives": 3.0,
-        "precision": 0.9090909090909091,
-        "recall": 0.9090909090909091,
-        "f1_score": 0.9090909090909091,
-        "accuracy": 0.9949494949494949,
-        "specificity": 0.9974025974025974,
-        "correct_matches": 30,
+        "true_positives": 26.0,
+        "true_negatives": 1280.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.7878787878787878,
+        "recall": 0.7878787878787878,
+        "f1_score": 0.7878787878787878,
+        "accuracy": 0.9893939393939394,
+        "specificity": 0.9945609945609946,
+        "correct_matches": 26,
         "total_gt_matches": 33,
         "total_pred_matches": 33,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.14899206161499023,
+        "matching_time": 0.006671428680419922,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.14899206161499023,
+      "matching_time": 0.006671428680419922,
       "num_solutions": 1,
       "success": true
     },
@@ -1189,12 +1188,12 @@
         "total_gt_matches": 72,
         "total_pred_matches": 72,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.15969276428222656,
+        "matching_time": 0.14088892936706543,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.15969276428222656,
+      "matching_time": 0.14088892936706543,
       "num_solutions": 1,
       "success": true
     },
@@ -1204,33 +1203,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5472,
-            3
+            5544,
+            4
           ],
           [
-            3,
-            70
+            4,
+            69
           ]
         ],
-        "true_positives": 70.0,
-        "true_negatives": 5472.0,
-        "false_positives": 3.0,
-        "false_negatives": 3.0,
-        "precision": 0.958904109589041,
-        "recall": 0.958904109589041,
-        "f1_score": 0.958904109589041,
-        "accuracy": 0.9989185291997116,
-        "specificity": 0.9994520547945206,
-        "correct_matches": 70,
+        "true_positives": 69.0,
+        "true_negatives": 5544.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9452054794520548,
+        "recall": 0.9452054794520548,
+        "f1_score": 0.9452054794520548,
+        "accuracy": 0.9985767657000534,
+        "specificity": 0.9992790194664743,
+        "correct_matches": 69,
         "total_gt_matches": 73,
         "total_pred_matches": 73,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07410192489624023,
+        "matching_time": 0.026060819625854492,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07410192489624023,
+      "matching_time": 0.026060819625854492,
       "num_solutions": 1,
       "success": true
     },
@@ -1240,33 +1239,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            31648,
-            32
+            31320,
+            30
           ],
           [
-            32,
-            133
+            30,
+            135
           ]
         ],
-        "true_positives": 133.0,
-        "true_negatives": 31648.0,
-        "false_positives": 32.0,
-        "false_negatives": 32.0,
-        "precision": 0.806060606060606,
-        "recall": 0.806060606060606,
-        "f1_score": 0.8060606060606059,
-        "accuracy": 0.9979902653477783,
-        "specificity": 0.998989898989899,
-        "correct_matches": 133,
+        "true_positives": 135.0,
+        "true_negatives": 31320.0,
+        "false_positives": 30.0,
+        "false_negatives": 30.0,
+        "precision": 0.8181818181818182,
+        "recall": 0.8181818181818182,
+        "f1_score": 0.8181818181818182,
+        "accuracy": 0.9980961446930033,
+        "specificity": 0.999043062200957,
+        "correct_matches": 135,
         "total_gt_matches": 165,
         "total_pred_matches": 165,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09339261054992676,
+        "matching_time": 0.05118203163146973,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09339261054992676,
+      "matching_time": 0.05118203163146973,
       "num_solutions": 1,
       "success": true
     },
@@ -1276,33 +1275,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5104,
-            6
+            5173,
+            7
           ],
           [
-            6,
-            64
+            7,
+            63
           ]
         ],
-        "true_positives": 64.0,
-        "true_negatives": 5104.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9142857142857143,
-        "recall": 0.9142857142857143,
-        "f1_score": 0.9142857142857143,
-        "accuracy": 0.9976833976833976,
-        "specificity": 0.998825831702544,
-        "correct_matches": 64,
+        "true_positives": 63.0,
+        "true_negatives": 5173.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9973333333333333,
+        "specificity": 0.9986486486486487,
+        "correct_matches": 63,
         "total_gt_matches": 70,
         "total_pred_matches": 70,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.020394325256347656,
+        "matching_time": 0.012418031692504883,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.020394325256347656,
+      "matching_time": 0.012418031692504883,
       "num_solutions": 1,
       "success": true
     },
@@ -1312,33 +1311,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5949,
-            15
+            5948,
+            16
           ],
           [
-            15,
-            56
+            16,
+            55
           ]
         ],
-        "true_positives": 56.0,
-        "true_negatives": 5949.0,
-        "false_positives": 15.0,
-        "false_negatives": 15.0,
-        "precision": 0.7887323943661971,
-        "recall": 0.7887323943661971,
-        "f1_score": 0.7887323943661971,
-        "accuracy": 0.9950289975144988,
-        "specificity": 0.9974849094567404,
-        "correct_matches": 56,
+        "true_positives": 55.0,
+        "true_negatives": 5948.0,
+        "false_positives": 16.0,
+        "false_negatives": 16.0,
+        "precision": 0.7746478873239436,
+        "recall": 0.7746478873239436,
+        "f1_score": 0.7746478873239436,
+        "accuracy": 0.9946975973487987,
+        "specificity": 0.9973172367538564,
+        "correct_matches": 55,
         "total_gt_matches": 71,
         "total_pred_matches": 71,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.036414146423339844,
+        "matching_time": 0.01848912239074707,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.036414146423339844,
+      "matching_time": 0.01848912239074707,
       "num_solutions": 1,
       "success": true
     },
@@ -1348,33 +1347,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6216,
-            9
+            6068,
+            7
           ],
           [
-            9,
-            66
+            7,
+            68
           ]
         ],
-        "true_positives": 66.0,
-        "true_negatives": 6216.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.88,
-        "recall": 0.88,
-        "f1_score": 0.88,
-        "accuracy": 0.9971428571428571,
-        "specificity": 0.9985542168674699,
-        "correct_matches": 66,
+        "true_positives": 68.0,
+        "true_negatives": 6068.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9066666666666666,
+        "recall": 0.9066666666666666,
+        "f1_score": 0.9066666666666666,
+        "accuracy": 0.9977235772357723,
+        "specificity": 0.9988477366255144,
+        "correct_matches": 68,
         "total_gt_matches": 75,
         "total_pred_matches": 75,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.021282196044921875,
+        "matching_time": 0.014745950698852539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.021282196044921875,
+      "matching_time": 0.014745950698852539,
       "num_solutions": 1,
       "success": true
     },
@@ -1405,12 +1404,12 @@
         "total_gt_matches": 52,
         "total_pred_matches": 52,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015587329864501953,
+        "matching_time": 0.01362466812133789,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015587329864501953,
+      "matching_time": 0.01362466812133789,
       "num_solutions": 1,
       "success": true
     },
@@ -1420,33 +1419,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2597,
-            3
+            2744,
+            6
           ],
           [
-            3,
-            47
+            6,
+            44
           ]
         ],
-        "true_positives": 47.0,
-        "true_negatives": 2597.0,
-        "false_positives": 3.0,
-        "false_negatives": 3.0,
-        "precision": 0.94,
-        "recall": 0.94,
-        "f1_score": 0.94,
-        "accuracy": 0.9977358490566037,
-        "specificity": 0.9988461538461538,
-        "correct_matches": 47,
+        "true_positives": 44.0,
+        "true_negatives": 2744.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.88,
+        "recall": 0.88,
+        "f1_score": 0.88,
+        "accuracy": 0.9957142857142857,
+        "specificity": 0.9978181818181818,
+        "correct_matches": 44,
         "total_gt_matches": 50,
         "total_pred_matches": 50,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05859851837158203,
+        "matching_time": 0.010136842727661133,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05859851837158203,
+      "matching_time": 0.010136842727661133,
       "num_solutions": 1,
       "success": true
     },
@@ -1456,33 +1455,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            10183,
-            9
+            10086,
+            8
           ],
           [
-            9,
-            89
+            8,
+            90
           ]
         ],
-        "true_positives": 89.0,
-        "true_negatives": 10183.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.9081632653061225,
-        "recall": 0.9081632653061225,
-        "f1_score": 0.9081632653061225,
-        "accuracy": 0.9982507288629737,
-        "specificity": 0.9991169544740973,
-        "correct_matches": 89,
+        "true_positives": 90.0,
+        "true_negatives": 10086.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.9183673469387755,
+        "recall": 0.9183673469387755,
+        "f1_score": 0.9183673469387755,
+        "accuracy": 0.9984301412872841,
+        "specificity": 0.9992074499702793,
+        "correct_matches": 90,
         "total_gt_matches": 98,
         "total_pred_matches": 98,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06451082229614258,
+        "matching_time": 0.03427696228027344,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06451082229614258,
+      "matching_time": 0.03427696228027344,
       "num_solutions": 1,
       "success": true
     },
@@ -1492,33 +1491,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            12296,
-            9
+            12190,
+            8
           ],
           [
-            9,
-            98
+            8,
+            99
           ]
         ],
-        "true_positives": 98.0,
-        "true_negatives": 12296.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.9158878504672897,
-        "recall": 0.9158878504672897,
-        "f1_score": 0.9158878504672897,
-        "accuracy": 0.9985497905252981,
-        "specificity": 0.9992685900040634,
-        "correct_matches": 98,
+        "true_positives": 99.0,
+        "true_negatives": 12190.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.9252336448598131,
+        "recall": 0.9252336448598131,
+        "f1_score": 0.9252336448598131,
+        "accuracy": 0.9986997155627794,
+        "specificity": 0.999344154779472,
+        "correct_matches": 99,
         "total_gt_matches": 107,
         "total_pred_matches": 107,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.031172752380371094,
+        "matching_time": 0.12287092208862305,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.031172752380371094,
+      "matching_time": 0.12287092208862305,
       "num_solutions": 1,
       "success": true
     },
@@ -1549,12 +1548,12 @@
         "total_gt_matches": 33,
         "total_pred_matches": 33,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005836963653564453,
+        "matching_time": 0.00958108901977539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005836963653564453,
+      "matching_time": 0.00958108901977539,
       "num_solutions": 1,
       "success": true
     },
@@ -1564,33 +1563,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6792,
-            8
+            7028,
+            12
           ],
           [
-            8,
-            72
+            12,
+            68
           ]
         ],
-        "true_positives": 72.0,
-        "true_negatives": 6792.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.9,
-        "recall": 0.9,
-        "f1_score": 0.9,
-        "accuracy": 0.9976744186046511,
-        "specificity": 0.9988235294117647,
-        "correct_matches": 72,
+        "true_positives": 68.0,
+        "true_negatives": 7028.0,
+        "false_positives": 12.0,
+        "false_negatives": 12.0,
+        "precision": 0.85,
+        "recall": 0.85,
+        "f1_score": 0.85,
+        "accuracy": 0.996629213483146,
+        "specificity": 0.9982954545454545,
+        "correct_matches": 68,
         "total_gt_matches": 80,
         "total_pred_matches": 80,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0341801643371582,
+        "matching_time": 0.026851892471313477,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0341801643371582,
+      "matching_time": 0.026851892471313477,
       "num_solutions": 1,
       "success": true
     },
@@ -1600,33 +1599,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2295,
-            5
+            2250,
+            4
           ],
           [
-            5,
-            41
+            4,
+            42
           ]
         ],
-        "true_positives": 41.0,
-        "true_negatives": 2295.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.8913043478260869,
-        "recall": 0.8913043478260869,
-        "f1_score": 0.8913043478260869,
-        "accuracy": 0.9957374254049446,
-        "specificity": 0.9978260869565218,
-        "correct_matches": 41,
+        "true_positives": 42.0,
+        "true_negatives": 2250.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9130434782608695,
+        "recall": 0.9130434782608695,
+        "f1_score": 0.9130434782608695,
+        "accuracy": 0.9965217391304347,
+        "specificity": 0.9982253771073647,
+        "correct_matches": 42,
         "total_gt_matches": 46,
         "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011301517486572266,
+        "matching_time": 0.011768579483032227,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011301517486572266,
+      "matching_time": 0.011768579483032227,
       "num_solutions": 1,
       "success": true
     },
@@ -1636,33 +1635,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            898,
-            2
+            1072,
+            8
           ],
           [
-            2,
-            28
+            8,
+            22
           ]
         ],
-        "true_positives": 28.0,
-        "true_negatives": 898.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9333333333333333,
-        "recall": 0.9333333333333333,
-        "f1_score": 0.9333333333333333,
-        "accuracy": 0.9956989247311828,
-        "specificity": 0.9977777777777778,
-        "correct_matches": 28,
+        "true_positives": 22.0,
+        "true_negatives": 1072.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.7333333333333333,
+        "recall": 0.7333333333333333,
+        "f1_score": 0.7333333333333333,
+        "accuracy": 0.9855855855855856,
+        "specificity": 0.9925925925925926,
+        "correct_matches": 22,
         "total_gt_matches": 30,
         "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006525278091430664,
+        "matching_time": 0.008516788482666016,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006525278091430664,
+      "matching_time": 0.008516788482666016,
       "num_solutions": 1,
       "success": true
     },
@@ -1672,33 +1671,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1750,
-            14
+            1470,
+            6
           ],
           [
-            14,
-            22
+            6,
+            30
           ]
         ],
-        "true_positives": 22.0,
-        "true_negatives": 1750.0,
-        "false_positives": 14.0,
-        "false_negatives": 14.0,
-        "precision": 0.6111111111111112,
-        "recall": 0.6111111111111112,
-        "f1_score": 0.6111111111111112,
-        "accuracy": 0.9844444444444445,
-        "specificity": 0.9920634920634921,
-        "correct_matches": 22,
+        "true_positives": 30.0,
+        "true_negatives": 1470.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "f1_score": 0.8333333333333334,
+        "accuracy": 0.9920634920634921,
+        "specificity": 0.9959349593495935,
+        "correct_matches": 30,
         "total_gt_matches": 36,
         "total_pred_matches": 36,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009828567504882812,
+        "matching_time": 0.0066585540771484375,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009828567504882812,
+      "matching_time": 0.0066585540771484375,
       "num_solutions": 1,
       "success": true
     },
@@ -1708,33 +1707,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            806,
-            4
+            884,
+            7
           ],
           [
-            4,
-            23
+            7,
+            20
           ]
         ],
-        "true_positives": 23.0,
-        "true_negatives": 806.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.8518518518518519,
-        "recall": 0.8518518518518519,
-        "f1_score": 0.8518518518518519,
-        "accuracy": 0.9904420549581839,
-        "specificity": 0.9950617283950617,
-        "correct_matches": 23,
+        "true_positives": 20.0,
+        "true_negatives": 884.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.7407407407407407,
+        "recall": 0.7407407407407407,
+        "f1_score": 0.7407407407407407,
+        "accuracy": 0.9847494553376906,
+        "specificity": 0.9921436588103255,
+        "correct_matches": 20,
         "total_gt_matches": 27,
         "total_pred_matches": 27,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04246187210083008,
+        "matching_time": 0.0067996978759765625,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04246187210083008,
+      "matching_time": 0.0067996978759765625,
       "num_solutions": 1,
       "success": true
     },
@@ -1744,33 +1743,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3289,
-            11
+            3505,
+            15
           ],
           [
-            11,
-            44
+            15,
+            40
           ]
         ],
-        "true_positives": 44.0,
-        "true_negatives": 3289.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.8,
-        "recall": 0.8,
-        "f1_score": 0.8000000000000002,
-        "accuracy": 0.9934426229508196,
-        "specificity": 0.9966666666666667,
-        "correct_matches": 44,
+        "true_positives": 40.0,
+        "true_negatives": 3505.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.7272727272727273,
+        "recall": 0.7272727272727273,
+        "f1_score": 0.7272727272727273,
+        "accuracy": 0.9916083916083916,
+        "specificity": 0.9957386363636364,
+        "correct_matches": 40,
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.016784191131591797,
+        "matching_time": 0.05706167221069336,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.016784191131591797,
+      "matching_time": 0.05706167221069336,
       "num_solutions": 1,
       "success": true
     },
@@ -1780,33 +1779,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            528,
-            1
+            638,
+            6
           ],
           [
-            1,
-            22
+            6,
+            17
           ]
         ],
-        "true_positives": 22.0,
-        "true_negatives": 528.0,
-        "false_positives": 1.0,
-        "false_negatives": 1.0,
-        "precision": 0.9565217391304348,
-        "recall": 0.9565217391304348,
-        "f1_score": 0.9565217391304348,
-        "accuracy": 0.9963768115942029,
-        "specificity": 0.998109640831758,
-        "correct_matches": 22,
+        "true_positives": 17.0,
+        "true_negatives": 638.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.7391304347826086,
+        "recall": 0.7391304347826086,
+        "f1_score": 0.7391304347826085,
+        "accuracy": 0.9820089955022488,
+        "specificity": 0.9906832298136646,
+        "correct_matches": 17,
         "total_gt_matches": 23,
         "total_pred_matches": 23,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.004916667938232422,
+        "matching_time": 0.008081197738647461,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.004916667938232422,
+      "matching_time": 0.008081197738647461,
       "num_solutions": 1,
       "success": true
     },
@@ -1816,33 +1815,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2685,
-            10
+            2733,
+            11
           ],
           [
-            10,
-            39
+            11,
+            38
           ]
         ],
-        "true_positives": 39.0,
-        "true_negatives": 2685.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.7959183673469388,
-        "recall": 0.7959183673469388,
-        "f1_score": 0.7959183673469388,
-        "accuracy": 0.9927113702623906,
-        "specificity": 0.9962894248608535,
-        "correct_matches": 39,
+        "true_positives": 38.0,
+        "true_negatives": 2733.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.7755102040816326,
+        "recall": 0.7755102040816326,
+        "f1_score": 0.7755102040816326,
+        "accuracy": 0.9921231650554959,
+        "specificity": 0.9959912536443148,
+        "correct_matches": 38,
         "total_gt_matches": 49,
         "total_pred_matches": 49,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.10114479064941406,
+        "matching_time": 0.015543699264526367,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.10114479064941406,
+      "matching_time": 0.015543699264526367,
       "num_solutions": 1,
       "success": true
     },
@@ -1852,33 +1851,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2695,
-            5
+            2793,
+            7
           ],
           [
-            5,
-            45
+            7,
+            43
           ]
         ],
-        "true_positives": 45.0,
-        "true_negatives": 2695.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9,
-        "recall": 0.9,
-        "f1_score": 0.9,
-        "accuracy": 0.9963636363636363,
-        "specificity": 0.9981481481481481,
-        "correct_matches": 45,
+        "true_positives": 43.0,
+        "true_negatives": 2793.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.86,
+        "recall": 0.86,
+        "f1_score": 0.8599999999999999,
+        "accuracy": 0.9950877192982456,
+        "specificity": 0.9975,
+        "correct_matches": 43,
         "total_gt_matches": 50,
         "total_pred_matches": 50,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.035379886627197266,
+        "matching_time": 0.018812179565429688,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.035379886627197266,
+      "matching_time": 0.018812179565429688,
       "num_solutions": 1,
       "success": true
     },
@@ -1909,12 +1908,12 @@
         "total_gt_matches": 50,
         "total_pred_matches": 50,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02557516098022461,
+        "matching_time": 0.011465311050415039,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02557516098022461,
+      "matching_time": 0.011465311050415039,
       "num_solutions": 1,
       "success": true
     },
@@ -1924,33 +1923,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3300,
-            4
+            3410,
+            6
           ],
           [
-            4,
-            52
+            6,
+            50
           ]
         ],
-        "true_positives": 52.0,
-        "true_negatives": 3300.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9285714285714286,
-        "recall": 0.9285714285714286,
-        "f1_score": 0.9285714285714286,
-        "accuracy": 0.9976190476190476,
-        "specificity": 0.9987893462469734,
-        "correct_matches": 52,
+        "true_positives": 50.0,
+        "true_negatives": 3410.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8928571428571429,
+        "recall": 0.8928571428571429,
+        "f1_score": 0.8928571428571429,
+        "accuracy": 0.9965437788018433,
+        "specificity": 0.9982435597189696,
+        "correct_matches": 50,
         "total_gt_matches": 56,
         "total_pred_matches": 56,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.017629384994506836,
+        "matching_time": 0.008367776870727539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.017629384994506836,
+      "matching_time": 0.008367776870727539,
       "num_solutions": 1,
       "success": true
     },
@@ -1960,33 +1959,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5700,
-            0
+            5775,
+            1
           ],
           [
-            0,
-            76
+            1,
+            75
           ]
         ],
-        "true_positives": 76.0,
-        "true_negatives": 5700.0,
-        "false_positives": 0.0,
-        "false_negatives": 0.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1_score": 1.0,
-        "accuracy": 1.0,
-        "specificity": 1.0,
-        "correct_matches": 76,
+        "true_positives": 75.0,
+        "true_negatives": 5775.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9868421052631579,
+        "recall": 0.9868421052631579,
+        "f1_score": 0.9868421052631579,
+        "accuracy": 0.9996582365003418,
+        "specificity": 0.9998268698060941,
+        "correct_matches": 75,
         "total_gt_matches": 76,
         "total_pred_matches": 76,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.039402008056640625,
+        "matching_time": 0.015408754348754883,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.039402008056640625,
+      "matching_time": 0.015408754348754883,
       "num_solutions": 1,
       "success": true
     },
@@ -2017,12 +2016,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015312910079956055,
+        "matching_time": 0.008566141128540039,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015312910079956055,
+      "matching_time": 0.008566141128540039,
       "num_solutions": 1,
       "success": true
     },
@@ -2032,33 +2031,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            911,
-            14
+            839,
+            11
           ],
           [
-            14,
-            11
+            11,
+            14
           ]
         ],
-        "true_positives": 11.0,
-        "true_negatives": 911.0,
-        "false_positives": 14.0,
-        "false_negatives": 14.0,
-        "precision": 0.44,
-        "recall": 0.44,
-        "f1_score": 0.44,
-        "accuracy": 0.9705263157894737,
-        "specificity": 0.9848648648648649,
-        "correct_matches": 11,
+        "true_positives": 14.0,
+        "true_negatives": 839.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.56,
+        "recall": 0.56,
+        "f1_score": 0.56,
+        "accuracy": 0.9748571428571429,
+        "specificity": 0.9870588235294118,
+        "correct_matches": 14,
         "total_gt_matches": 25,
         "total_pred_matches": 25,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007062673568725586,
+        "matching_time": 0.33597564697265625,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007062673568725586,
+      "matching_time": 0.33597564697265625,
       "num_solutions": 1,
       "success": true
     },
@@ -2068,33 +2067,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4216,
-            5
+            4154,
+            4
           ],
           [
-            5,
-            58
+            4,
+            59
           ]
         ],
-        "true_positives": 58.0,
-        "true_negatives": 4216.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9206349206349206,
-        "recall": 0.9206349206349206,
-        "f1_score": 0.9206349206349206,
-        "accuracy": 0.9976657329598506,
-        "specificity": 0.9988154465766406,
-        "correct_matches": 58,
+        "true_positives": 59.0,
+        "true_negatives": 4154.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9365079365079365,
+        "recall": 0.9365079365079365,
+        "f1_score": 0.9365079365079365,
+        "accuracy": 0.998104714522625,
+        "specificity": 0.9990379990379991,
+        "correct_matches": 59,
         "total_gt_matches": 63,
         "total_pred_matches": 63,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010684728622436523,
+        "matching_time": 0.018614530563354492,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010684728622436523,
+      "matching_time": 0.018614530563354492,
       "num_solutions": 1,
       "success": true
     },
@@ -2104,33 +2103,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1598,
-            12
+            1496,
+            9
           ],
           [
-            12,
-            23
+            9,
+            26
           ]
         ],
-        "true_positives": 23.0,
-        "true_negatives": 1598.0,
-        "false_positives": 12.0,
-        "false_negatives": 12.0,
-        "precision": 0.6571428571428571,
-        "recall": 0.6571428571428571,
-        "f1_score": 0.6571428571428571,
-        "accuracy": 0.9854103343465046,
-        "specificity": 0.9925465838509316,
-        "correct_matches": 23,
+        "true_positives": 26.0,
+        "true_negatives": 1496.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.7428571428571429,
+        "recall": 0.7428571428571429,
+        "f1_score": 0.7428571428571429,
+        "accuracy": 0.9883116883116884,
+        "specificity": 0.9940199335548173,
+        "correct_matches": 26,
         "total_gt_matches": 35,
         "total_pred_matches": 35,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.09372377395629883,
+        "matching_time": 0.009850263595581055,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.09372377395629883,
+      "matching_time": 0.009850263595581055,
       "num_solutions": 1,
       "success": true
     },
@@ -2140,7 +2139,7 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1053,
+            1085,
             3
           ],
           [
@@ -2149,24 +2148,24 @@
           ]
         ],
         "true_positives": 29.0,
-        "true_negatives": 1053.0,
+        "true_negatives": 1085.0,
         "false_positives": 3.0,
         "false_negatives": 3.0,
         "precision": 0.90625,
         "recall": 0.90625,
         "f1_score": 0.90625,
-        "accuracy": 0.9944852941176471,
-        "specificity": 0.9971590909090909,
+        "accuracy": 0.9946428571428572,
+        "specificity": 0.9972426470588235,
         "correct_matches": 29,
         "total_gt_matches": 32,
         "total_pred_matches": 32,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009909629821777344,
+        "matching_time": 0.03118586540222168,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009909629821777344,
+      "matching_time": 0.03118586540222168,
       "num_solutions": 1,
       "success": true
     },
@@ -2176,33 +2175,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2592,
-            5
+            2736,
+            8
           ],
           [
-            5,
-            44
+            8,
+            41
           ]
         ],
-        "true_positives": 44.0,
-        "true_negatives": 2592.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.8979591836734694,
-        "recall": 0.8979591836734694,
-        "f1_score": 0.8979591836734694,
-        "accuracy": 0.9962207105064248,
-        "specificity": 0.9980747015787447,
-        "correct_matches": 44,
+        "true_positives": 41.0,
+        "true_negatives": 2736.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8367346938775511,
+        "recall": 0.8367346938775511,
+        "f1_score": 0.8367346938775511,
+        "accuracy": 0.9942713927676333,
+        "specificity": 0.9970845481049563,
+        "correct_matches": 41,
         "total_gt_matches": 49,
         "total_pred_matches": 49,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0527806282043457,
+        "matching_time": 0.020641088485717773,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0527806282043457,
+      "matching_time": 0.020641088485717773,
       "num_solutions": 1,
       "success": true
     },
@@ -2212,33 +2211,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1575,
-            9
+            1470,
+            6
           ],
           [
-            9,
-            27
+            6,
+            30
           ]
         ],
-        "true_positives": 27.0,
-        "true_negatives": 1575.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.75,
-        "recall": 0.75,
-        "f1_score": 0.75,
-        "accuracy": 0.9888888888888889,
-        "specificity": 0.9943181818181818,
-        "correct_matches": 27,
+        "true_positives": 30.0,
+        "true_negatives": 1470.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "f1_score": 0.8333333333333334,
+        "accuracy": 0.9920634920634921,
+        "specificity": 0.9959349593495935,
+        "correct_matches": 30,
         "total_gt_matches": 36,
         "total_pred_matches": 36,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014841318130493164,
+        "matching_time": 0.011842489242553711,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014841318130493164,
+      "matching_time": 0.011842489242553711,
       "num_solutions": 1,
       "success": true
     },
@@ -2248,33 +2247,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3286,
-            8
+            3180,
+            6
           ],
           [
-            8,
-            46
+            6,
+            48
           ]
         ],
-        "true_positives": 46.0,
-        "true_negatives": 3286.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.8518518518518519,
-        "recall": 0.8518518518518519,
-        "f1_score": 0.8518518518518519,
-        "accuracy": 0.995221027479092,
-        "specificity": 0.9975713418336369,
-        "correct_matches": 46,
+        "true_positives": 48.0,
+        "true_negatives": 3180.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8888888888888888,
+        "recall": 0.8888888888888888,
+        "f1_score": 0.8888888888888888,
+        "accuracy": 0.9962962962962963,
+        "specificity": 0.9981167608286252,
+        "correct_matches": 48,
         "total_gt_matches": 54,
         "total_pred_matches": 54,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.025786399841308594,
+        "matching_time": 0.052774667739868164,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.025786399841308594,
+      "matching_time": 0.052774667739868164,
       "num_solutions": 1,
       "success": true
     },
@@ -2284,33 +2283,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2915,
-            1
+            2968,
+            2
           ],
           [
-            1,
-            53
+            2,
+            52
           ]
         ],
-        "true_positives": 53.0,
-        "true_negatives": 2915.0,
-        "false_positives": 1.0,
-        "false_negatives": 1.0,
-        "precision": 0.9814814814814815,
-        "recall": 0.9814814814814815,
-        "f1_score": 0.9814814814814815,
-        "accuracy": 0.9993265993265993,
-        "specificity": 0.9996570644718793,
-        "correct_matches": 53,
+        "true_positives": 52.0,
+        "true_negatives": 2968.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9629629629629629,
+        "recall": 0.9629629629629629,
+        "f1_score": 0.9629629629629629,
+        "accuracy": 0.9986772486772487,
+        "specificity": 0.9993265993265993,
+        "correct_matches": 52,
         "total_gt_matches": 54,
         "total_pred_matches": 54,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06144213676452637,
+        "matching_time": 0.009012699127197266,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06144213676452637,
+      "matching_time": 0.009012699127197266,
       "num_solutions": 1,
       "success": true
     },
@@ -2320,33 +2319,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1115,
-            5
+            1146,
+            6
           ],
           [
-            5,
-            27
+            6,
+            26
           ]
         ],
-        "true_positives": 27.0,
-        "true_negatives": 1115.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.84375,
-        "recall": 0.84375,
-        "f1_score": 0.84375,
-        "accuracy": 0.9913194444444444,
-        "specificity": 0.9955357142857143,
-        "correct_matches": 27,
+        "true_positives": 26.0,
+        "true_negatives": 1146.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8125,
+        "recall": 0.8125,
+        "f1_score": 0.8125,
+        "accuracy": 0.9898648648648649,
+        "specificity": 0.9947916666666666,
+        "correct_matches": 26,
         "total_gt_matches": 32,
         "total_pred_matches": 32,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011044740676879883,
+        "matching_time": 0.023366212844848633,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011044740676879883,
+      "matching_time": 0.023366212844848633,
       "num_solutions": 1,
       "success": true
     },
@@ -2356,33 +2355,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1102,
-            8
+            928,
+            2
           ],
           [
-            8,
-            22
+            2,
+            28
           ]
         ],
-        "true_positives": 22.0,
-        "true_negatives": 1102.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.7333333333333333,
-        "recall": 0.7333333333333333,
-        "f1_score": 0.7333333333333333,
-        "accuracy": 0.9859649122807017,
-        "specificity": 0.9927927927927928,
-        "correct_matches": 22,
+        "true_positives": 28.0,
+        "true_negatives": 928.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9333333333333333,
+        "recall": 0.9333333333333333,
+        "f1_score": 0.9333333333333333,
+        "accuracy": 0.9958333333333333,
+        "specificity": 0.9978494623655914,
+        "correct_matches": 28,
         "total_gt_matches": 30,
         "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.06818270683288574,
+        "matching_time": 0.025933027267456055,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.06818270683288574,
+      "matching_time": 0.025933027267456055,
       "num_solutions": 1,
       "success": true
     },
@@ -2392,33 +2391,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3833,
-            7
+            3951,
+            9
           ],
           [
-            7,
-            53
+            9,
+            51
           ]
         ],
-        "true_positives": 53.0,
-        "true_negatives": 3833.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.8833333333333333,
-        "recall": 0.8833333333333333,
-        "f1_score": 0.8833333333333333,
-        "accuracy": 0.9964102564102564,
-        "specificity": 0.9981770833333333,
-        "correct_matches": 53,
+        "true_positives": 51.0,
+        "true_negatives": 3951.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.85,
+        "recall": 0.85,
+        "f1_score": 0.85,
+        "accuracy": 0.9955223880597015,
+        "specificity": 0.9977272727272727,
+        "correct_matches": 51,
         "total_gt_matches": 60,
         "total_pred_matches": 60,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.018584728240966797,
+        "matching_time": 0.025360107421875,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.018584728240966797,
+      "matching_time": 0.025360107421875,
       "num_solutions": 1,
       "success": true
     },
@@ -2428,33 +2427,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5467,
-            5
+            5609,
+            7
           ],
           [
-            5,
-            67
+            7,
+            65
           ]
         ],
-        "true_positives": 67.0,
-        "true_negatives": 5467.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9305555555555556,
-        "recall": 0.9305555555555556,
-        "f1_score": 0.9305555555555556,
-        "accuracy": 0.9981962481962482,
-        "specificity": 0.9990862573099415,
-        "correct_matches": 67,
+        "true_positives": 65.0,
+        "true_negatives": 5609.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9027777777777778,
+        "recall": 0.9027777777777778,
+        "f1_score": 0.9027777777777778,
+        "accuracy": 0.9975386779184248,
+        "specificity": 0.9987535612535613,
+        "correct_matches": 65,
         "total_gt_matches": 72,
         "total_pred_matches": 72,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.08534383773803711,
+        "matching_time": 0.016298532485961914,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.08534383773803711,
+      "matching_time": 0.016298532485961914,
       "num_solutions": 1,
       "success": true
     },
@@ -2464,33 +2463,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3024,
-            14
+            2784,
+            9
           ],
           [
-            14,
-            35
+            9,
+            40
           ]
         ],
-        "true_positives": 35.0,
-        "true_negatives": 3024.0,
-        "false_positives": 14.0,
-        "false_negatives": 14.0,
-        "precision": 0.7142857142857143,
-        "recall": 0.7142857142857143,
-        "f1_score": 0.7142857142857143,
-        "accuracy": 0.9909297052154195,
-        "specificity": 0.9953917050691244,
-        "correct_matches": 35,
+        "true_positives": 40.0,
+        "true_negatives": 2784.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8163265306122449,
+        "recall": 0.8163265306122449,
+        "f1_score": 0.8163265306122449,
+        "accuracy": 0.9936664320900774,
+        "specificity": 0.9967776584317938,
+        "correct_matches": 40,
         "total_gt_matches": 49,
         "total_pred_matches": 49,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015352964401245117,
+        "matching_time": 0.027356386184692383,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015352964401245117,
+      "matching_time": 0.027356386184692383,
       "num_solutions": 1,
       "success": true
     },
@@ -2500,33 +2499,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6150,
-            6
+            6225,
+            7
           ],
           [
-            6,
-            70
+            7,
+            69
           ]
         ],
-        "true_positives": 70.0,
-        "true_negatives": 6150.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9210526315789473,
-        "recall": 0.9210526315789473,
-        "f1_score": 0.9210526315789473,
-        "accuracy": 0.9980744544287549,
-        "specificity": 0.9990253411306043,
-        "correct_matches": 70,
+        "true_positives": 69.0,
+        "true_negatives": 6225.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9078947368421053,
+        "recall": 0.9078947368421053,
+        "f1_score": 0.9078947368421053,
+        "accuracy": 0.9977805960684845,
+        "specificity": 0.9988767650834403,
+        "correct_matches": 69,
         "total_gt_matches": 76,
         "total_pred_matches": 76,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.1336374282836914,
+        "matching_time": 0.01658010482788086,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.1336374282836914,
+      "matching_time": 0.01658010482788086,
       "num_solutions": 1,
       "success": true
     },
@@ -2536,33 +2535,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2350,
-            2
+            2632,
+            8
           ],
           [
-            2,
-            46
+            8,
+            40
           ]
         ],
-        "true_positives": 46.0,
-        "true_negatives": 2350.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9583333333333334,
-        "recall": 0.9583333333333334,
-        "f1_score": 0.9583333333333334,
-        "accuracy": 0.9983333333333333,
-        "specificity": 0.9991496598639455,
-        "correct_matches": 46,
+        "true_positives": 40.0,
+        "true_negatives": 2632.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "f1_score": 0.8333333333333334,
+        "accuracy": 0.9940476190476191,
+        "specificity": 0.996969696969697,
+        "correct_matches": 40,
         "total_gt_matches": 48,
         "total_pred_matches": 48,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02958822250366211,
+        "matching_time": 0.009847879409790039,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02958822250366211,
+      "matching_time": 0.009847879409790039,
       "num_solutions": 1,
       "success": true
     },
@@ -2593,12 +2592,12 @@
         "total_gt_matches": 43,
         "total_pred_matches": 43,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007016897201538086,
+        "matching_time": 0.008500099182128906,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007016897201538086,
+      "matching_time": 0.008500099182128906,
       "num_solutions": 1,
       "success": true
     },
@@ -2608,33 +2607,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7050,
-            5
+            7214,
+            7
           ],
           [
-            5,
-            78
+            7,
+            76
           ]
         ],
-        "true_positives": 78.0,
-        "true_negatives": 7050.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9397590361445783,
-        "recall": 0.9397590361445783,
-        "f1_score": 0.9397590361445783,
-        "accuracy": 0.9985990473521995,
-        "specificity": 0.9992912827781715,
-        "correct_matches": 78,
+        "true_positives": 76.0,
+        "true_negatives": 7214.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9156626506024096,
+        "recall": 0.9156626506024096,
+        "f1_score": 0.9156626506024096,
+        "accuracy": 0.9980832420591457,
+        "specificity": 0.9990306051793381,
+        "correct_matches": 76,
         "total_gt_matches": 83,
         "total_pred_matches": 83,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.028499364852905273,
+        "matching_time": 0.0947105884552002,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.028499364852905273,
+      "matching_time": 0.0947105884552002,
       "num_solutions": 1,
       "success": true
     },
@@ -2644,33 +2643,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3477,
-            3
+            3534,
+            4
           ],
           [
-            3,
-            55
+            4,
+            54
           ]
         ],
-        "true_positives": 55.0,
-        "true_negatives": 3477.0,
-        "false_positives": 3.0,
-        "false_negatives": 3.0,
-        "precision": 0.9482758620689655,
-        "recall": 0.9482758620689655,
-        "f1_score": 0.9482758620689655,
-        "accuracy": 0.998304126625212,
-        "specificity": 0.9991379310344828,
-        "correct_matches": 55,
+        "true_positives": 54.0,
+        "true_negatives": 3534.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9310344827586207,
+        "recall": 0.9310344827586207,
+        "f1_score": 0.9310344827586207,
+        "accuracy": 0.9977753058954394,
+        "specificity": 0.9988694177501414,
+        "correct_matches": 54,
         "total_gt_matches": 58,
         "total_pred_matches": 58,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013086318969726562,
+        "matching_time": 0.04030632972717285,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013086318969726562,
+      "matching_time": 0.04030632972717285,
       "num_solutions": 1,
       "success": true
     },
@@ -2680,33 +2679,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6067,
-            8
+            5846,
+            4
           ],
           [
-            8,
-            67
+            4,
+            71
           ]
         ],
-        "true_positives": 67.0,
-        "true_negatives": 6067.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.8933333333333333,
-        "recall": 0.8933333333333333,
-        "f1_score": 0.8933333333333333,
-        "accuracy": 0.9973983739837399,
-        "specificity": 0.9986831275720165,
-        "correct_matches": 67,
+        "true_positives": 71.0,
+        "true_negatives": 5846.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9466666666666667,
+        "recall": 0.9466666666666667,
+        "f1_score": 0.9466666666666667,
+        "accuracy": 0.9986497890295358,
+        "specificity": 0.9993162393162394,
+        "correct_matches": 71,
         "total_gt_matches": 75,
         "total_pred_matches": 75,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.026770830154418945,
+        "matching_time": 0.016720056533813477,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.026770830154418945,
+      "matching_time": 0.016720056533813477,
       "num_solutions": 1,
       "success": true
     },
@@ -2716,33 +2715,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1968,
-            6
+            1804,
+            2
           ],
           [
-            6,
-            36
+            2,
+            40
           ]
         ],
-        "true_positives": 36.0,
-        "true_negatives": 1968.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8571428571428571,
-        "recall": 0.8571428571428571,
-        "f1_score": 0.8571428571428571,
-        "accuracy": 0.9940476190476191,
-        "specificity": 0.9969604863221885,
-        "correct_matches": 36,
+        "true_positives": 40.0,
+        "true_negatives": 1804.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9523809523809523,
+        "recall": 0.9523809523809523,
+        "f1_score": 0.9523809523809523,
+        "accuracy": 0.9978354978354979,
+        "specificity": 0.9988925802879292,
+        "correct_matches": 40,
         "total_gt_matches": 42,
         "total_pred_matches": 42,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.011005401611328125,
+        "matching_time": 0.040122032165527344,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.011005401611328125,
+      "matching_time": 0.040122032165527344,
       "num_solutions": 1,
       "success": true
     },
@@ -2752,33 +2751,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3275,
-            11
+            3690,
+            20
           ],
           [
-            11,
-            42
+            20,
+            33
           ]
         ],
-        "true_positives": 42.0,
-        "true_negatives": 3275.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.7924528301886793,
-        "recall": 0.7924528301886793,
-        "f1_score": 0.7924528301886793,
-        "accuracy": 0.9934112009583708,
-        "specificity": 0.9966524650030432,
-        "correct_matches": 42,
+        "true_positives": 33.0,
+        "true_negatives": 3690.0,
+        "false_positives": 20.0,
+        "false_negatives": 20.0,
+        "precision": 0.6226415094339622,
+        "recall": 0.6226415094339622,
+        "f1_score": 0.6226415094339622,
+        "accuracy": 0.989370183364337,
+        "specificity": 0.9946091644204852,
+        "correct_matches": 33,
         "total_gt_matches": 53,
         "total_pred_matches": 53,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.022724628448486328,
+        "matching_time": 0.01652836799621582,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.022724628448486328,
+      "matching_time": 0.01652836799621582,
       "num_solutions": 1,
       "success": true
     },
@@ -2788,33 +2787,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5904,
-            9
+            5688,
+            6
           ],
           [
-            9,
-            64
+            6,
+            67
           ]
         ],
-        "true_positives": 64.0,
-        "true_negatives": 5904.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8767123287671232,
-        "recall": 0.8767123287671232,
-        "f1_score": 0.8767123287671232,
-        "accuracy": 0.9969929836284664,
-        "specificity": 0.9984779299847792,
-        "correct_matches": 64,
+        "true_positives": 67.0,
+        "true_negatives": 5688.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9178082191780822,
+        "recall": 0.9178082191780822,
+        "f1_score": 0.9178082191780822,
+        "accuracy": 0.99791919542223,
+        "specificity": 0.9989462592202318,
+        "correct_matches": 67,
         "total_gt_matches": 73,
         "total_pred_matches": 73,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.018009424209594727,
+        "matching_time": 0.015408754348754883,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.018009424209594727,
+      "matching_time": 0.015408754348754883,
       "num_solutions": 1,
       "success": true
     },
@@ -2824,33 +2823,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3348,
-            7
+            3132,
+            3
           ],
           [
-            7,
-            48
+            3,
+            52
           ]
         ],
-        "true_positives": 48.0,
-        "true_negatives": 3348.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.8727272727272727,
-        "recall": 0.8727272727272727,
-        "f1_score": 0.8727272727272727,
-        "accuracy": 0.9958944281524926,
-        "specificity": 0.9979135618479881,
-        "correct_matches": 48,
+        "true_positives": 52.0,
+        "true_negatives": 3132.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9454545454545454,
+        "recall": 0.9454545454545454,
+        "f1_score": 0.9454545454545454,
+        "accuracy": 0.9981191222570532,
+        "specificity": 0.999043062200957,
+        "correct_matches": 52,
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03435969352722168,
+        "matching_time": 0.10634374618530273,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03435969352722168,
+      "matching_time": 0.10634374618530273,
       "num_solutions": 1,
       "success": true
     },
@@ -2860,33 +2859,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7999,
-            20
+            7598,
+            16
           ],
           [
-            20,
-            61
+            16,
+            65
           ]
         ],
-        "true_positives": 61.0,
-        "true_negatives": 7999.0,
-        "false_positives": 20.0,
-        "false_negatives": 20.0,
-        "precision": 0.7530864197530864,
-        "recall": 0.7530864197530864,
-        "f1_score": 0.7530864197530863,
-        "accuracy": 0.9950617283950617,
-        "specificity": 0.9975059234318494,
-        "correct_matches": 61,
+        "true_positives": 65.0,
+        "true_negatives": 7598.0,
+        "false_positives": 16.0,
+        "false_negatives": 16.0,
+        "precision": 0.8024691358024691,
+        "recall": 0.8024691358024691,
+        "f1_score": 0.8024691358024691,
+        "accuracy": 0.9958414554905783,
+        "specificity": 0.9978986078276858,
+        "correct_matches": 65,
         "total_gt_matches": 81,
         "total_pred_matches": 81,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0611422061920166,
+        "matching_time": 0.033477067947387695,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0611422061920166,
+      "matching_time": 0.033477067947387695,
       "num_solutions": 1,
       "success": true
     },
@@ -2896,33 +2895,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3770,
-            6
+            3538,
+            2
           ],
           [
-            6,
-            53
+            2,
+            57
           ]
         ],
-        "true_positives": 53.0,
-        "true_negatives": 3770.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8983050847457628,
-        "recall": 0.8983050847457628,
-        "f1_score": 0.8983050847457628,
-        "accuracy": 0.996870925684485,
-        "specificity": 0.9984110169491526,
-        "correct_matches": 53,
+        "true_positives": 57.0,
+        "true_negatives": 3538.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9661016949152542,
+        "recall": 0.9661016949152542,
+        "f1_score": 0.9661016949152542,
+        "accuracy": 0.9988885801611559,
+        "specificity": 0.9994350282485875,
+        "correct_matches": 57,
         "total_gt_matches": 59,
         "total_pred_matches": 59,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012572050094604492,
+        "matching_time": 0.011901378631591797,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012572050094604492,
+      "matching_time": 0.011901378631591797,
       "num_solutions": 1,
       "success": true
     },
@@ -2932,33 +2931,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            943,
-            17
+            828,
+            12
           ],
           [
-            17,
-            7
+            12,
+            12
           ]
         ],
-        "true_positives": 7.0,
-        "true_negatives": 943.0,
-        "false_positives": 17.0,
-        "false_negatives": 17.0,
-        "precision": 0.2916666666666667,
-        "recall": 0.2916666666666667,
-        "f1_score": 0.2916666666666667,
-        "accuracy": 0.9654471544715447,
-        "specificity": 0.9822916666666667,
-        "correct_matches": 7,
+        "true_positives": 12.0,
+        "true_negatives": 828.0,
+        "false_positives": 12.0,
+        "false_negatives": 12.0,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1_score": 0.5,
+        "accuracy": 0.9722222222222222,
+        "specificity": 0.9857142857142858,
+        "correct_matches": 12,
         "total_gt_matches": 24,
         "total_pred_matches": 24,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010007143020629883,
+        "matching_time": 0.006720781326293945,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010007143020629883,
+      "matching_time": 0.006720781326293945,
       "num_solutions": 1,
       "success": true
     },
@@ -2968,33 +2967,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1947,
-            13
+            2103,
+            17
           ],
           [
-            13,
-            27
+            17,
+            23
           ]
         ],
-        "true_positives": 27.0,
-        "true_negatives": 1947.0,
-        "false_positives": 13.0,
-        "false_negatives": 13.0,
-        "precision": 0.675,
-        "recall": 0.675,
-        "f1_score": 0.675,
-        "accuracy": 0.987,
-        "specificity": 0.9933673469387755,
-        "correct_matches": 27,
+        "true_positives": 23.0,
+        "true_negatives": 2103.0,
+        "false_positives": 17.0,
+        "false_negatives": 17.0,
+        "precision": 0.575,
+        "recall": 0.575,
+        "f1_score": 0.575,
+        "accuracy": 0.9842592592592593,
+        "specificity": 0.9919811320754717,
+        "correct_matches": 23,
         "total_gt_matches": 40,
         "total_pred_matches": 40,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0987546443939209,
+        "matching_time": 0.025041818618774414,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0987546443939209,
+      "matching_time": 0.025041818618774414,
       "num_solutions": 1,
       "success": true
     },
@@ -3004,33 +3003,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4550,
-            4
+            4485,
+            3
           ],
           [
-            4,
-            62
+            3,
+            63
           ]
         ],
-        "true_positives": 62.0,
-        "true_negatives": 4550.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9393939393939394,
-        "recall": 0.9393939393939394,
-        "f1_score": 0.9393939393939394,
-        "accuracy": 0.9982683982683983,
-        "specificity": 0.9991216512955643,
-        "correct_matches": 62,
+        "true_positives": 63.0,
+        "true_negatives": 4485.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9545454545454546,
+        "recall": 0.9545454545454546,
+        "f1_score": 0.9545454545454546,
+        "accuracy": 0.9986824769433466,
+        "specificity": 0.9993315508021391,
+        "correct_matches": 63,
         "total_gt_matches": 66,
         "total_pred_matches": 66,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012614965438842773,
+        "matching_time": 0.015970468521118164,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012614965438842773,
+      "matching_time": 0.015970468521118164,
       "num_solutions": 1,
       "success": true
     },
@@ -3040,33 +3039,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3536,
-            4
+            4000,
+            12
           ],
           [
-            4,
-            55
+            12,
+            47
           ]
         ],
-        "true_positives": 55.0,
-        "true_negatives": 3536.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9322033898305084,
-        "recall": 0.9322033898305084,
-        "f1_score": 0.9322033898305084,
-        "accuracy": 0.9977771603223118,
-        "specificity": 0.9988700564971752,
-        "correct_matches": 55,
+        "true_positives": 47.0,
+        "true_negatives": 4000.0,
+        "false_positives": 12.0,
+        "false_negatives": 12.0,
+        "precision": 0.7966101694915254,
+        "recall": 0.7966101694915254,
+        "f1_score": 0.7966101694915254,
+        "accuracy": 0.9941046425939573,
+        "specificity": 0.9970089730807578,
+        "correct_matches": 47,
         "total_gt_matches": 59,
         "total_pred_matches": 59,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.34229469299316406,
+        "matching_time": 0.015348196029663086,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.34229469299316406,
+      "matching_time": 0.015348196029663086,
       "num_solutions": 1,
       "success": true
     },
@@ -3097,12 +3096,12 @@
         "total_gt_matches": 42,
         "total_pred_matches": 42,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.13784098625183105,
+        "matching_time": 0.010998964309692383,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.13784098625183105,
+      "matching_time": 0.010998964309692383,
       "num_solutions": 1,
       "success": true
     },
@@ -3133,12 +3132,12 @@
         "total_gt_matches": 51,
         "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009287118911743164,
+        "matching_time": 0.03320431709289551,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009287118911743164,
+      "matching_time": 0.03320431709289551,
       "num_solutions": 1,
       "success": true
     },
@@ -3148,33 +3147,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1146,
-            6
+            1053,
+            3
           ],
           [
-            6,
-            26
+            3,
+            29
           ]
         ],
-        "true_positives": 26.0,
-        "true_negatives": 1146.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8125,
-        "recall": 0.8125,
-        "f1_score": 0.8125,
-        "accuracy": 0.9898648648648649,
-        "specificity": 0.9947916666666666,
-        "correct_matches": 26,
+        "true_positives": 29.0,
+        "true_negatives": 1053.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.90625,
+        "recall": 0.90625,
+        "f1_score": 0.90625,
+        "accuracy": 0.9944852941176471,
+        "specificity": 0.9971590909090909,
+        "correct_matches": 29,
         "total_gt_matches": 32,
         "total_pred_matches": 32,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.08782148361206055,
+        "matching_time": 0.005635976791381836,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.08782148361206055,
+      "matching_time": 0.005635976791381836,
       "num_solutions": 1,
       "success": true
     },
@@ -3184,33 +3183,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7134,
-            4
+            7216,
+            5
           ],
           [
-            4,
-            79
+            5,
+            78
           ]
         ],
-        "true_positives": 79.0,
-        "true_negatives": 7134.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9518072289156626,
-        "recall": 0.9518072289156626,
-        "f1_score": 0.9518072289156626,
-        "accuracy": 0.9988921202049578,
-        "specificity": 0.9994396189408798,
-        "correct_matches": 79,
+        "true_positives": 78.0,
+        "true_negatives": 7216.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.9397590361445783,
+        "recall": 0.9397590361445783,
+        "f1_score": 0.9397590361445783,
+        "accuracy": 0.9986308871851041,
+        "specificity": 0.9993075751280986,
+        "correct_matches": 78,
         "total_gt_matches": 83,
         "total_pred_matches": 83,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04503130912780762,
+        "matching_time": 0.044350385665893555,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04503130912780762,
+      "matching_time": 0.044350385665893555,
       "num_solutions": 1,
       "success": true
     },
@@ -3220,33 +3219,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5912,
-            8
+            5766,
+            6
           ],
           [
-            8,
-            66
+            6,
+            68
           ]
         ],
-        "true_positives": 66.0,
-        "true_negatives": 5912.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.8918918918918919,
-        "recall": 0.8918918918918919,
-        "f1_score": 0.8918918918918919,
-        "accuracy": 0.9973306639973306,
-        "specificity": 0.9986486486486487,
-        "correct_matches": 66,
+        "true_positives": 68.0,
+        "true_negatives": 5766.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.918918918918919,
+        "recall": 0.918918918918919,
+        "f1_score": 0.918918918918919,
+        "accuracy": 0.9979473144030107,
+        "specificity": 0.998960498960499,
+        "correct_matches": 68,
         "total_gt_matches": 74,
         "total_pred_matches": 74,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.043373823165893555,
+        "matching_time": 0.04398393630981445,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.043373823165893555,
+      "matching_time": 0.04398393630981445,
       "num_solutions": 1,
       "success": true
     },
@@ -3256,33 +3255,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1443,
-            1
+            1480,
+            2
           ],
           [
-            1,
-            37
+            2,
+            36
           ]
         ],
-        "true_positives": 37.0,
-        "true_negatives": 1443.0,
-        "false_positives": 1.0,
-        "false_negatives": 1.0,
-        "precision": 0.9736842105263158,
-        "recall": 0.9736842105263158,
-        "f1_score": 0.9736842105263158,
-        "accuracy": 0.9986504723346828,
-        "specificity": 0.9993074792243767,
-        "correct_matches": 37,
+        "true_positives": 36.0,
+        "true_negatives": 1480.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9473684210526315,
+        "recall": 0.9473684210526315,
+        "f1_score": 0.9473684210526315,
+        "accuracy": 0.9973684210526316,
+        "specificity": 0.9986504723346828,
+        "correct_matches": 36,
         "total_gt_matches": 38,
         "total_pred_matches": 38,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.012639045715332031,
+        "matching_time": 0.006811380386352539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.012639045715332031,
+      "matching_time": 0.006811380386352539,
       "num_solutions": 1,
       "success": true
     },
@@ -3292,33 +3291,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1608,
-            12
+            1573,
+            11
           ],
           [
-            12,
-            24
+            11,
+            25
           ]
         ],
-        "true_positives": 24.0,
-        "true_negatives": 1608.0,
-        "false_positives": 12.0,
-        "false_negatives": 12.0,
-        "precision": 0.6666666666666666,
-        "recall": 0.6666666666666666,
-        "f1_score": 0.6666666666666666,
-        "accuracy": 0.9855072463768116,
-        "specificity": 0.9925925925925926,
-        "correct_matches": 24,
+        "true_positives": 25.0,
+        "true_negatives": 1573.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.6944444444444444,
+        "recall": 0.6944444444444444,
+        "f1_score": 0.6944444444444444,
+        "accuracy": 0.9864197530864197,
+        "specificity": 0.9930555555555556,
+        "correct_matches": 25,
         "total_gt_matches": 36,
         "total_pred_matches": 36,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.020275115966796875,
+        "matching_time": 0.008471250534057617,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.020275115966796875,
+      "matching_time": 0.008471250534057617,
       "num_solutions": 1,
       "success": true
     },
@@ -3328,33 +3327,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4058,
-            13
+            3942,
+            11
           ],
           [
-            13,
-            46
+            11,
+            48
           ]
         ],
-        "true_positives": 46.0,
-        "true_negatives": 4058.0,
-        "false_positives": 13.0,
-        "false_negatives": 13.0,
-        "precision": 0.7796610169491526,
-        "recall": 0.7796610169491526,
-        "f1_score": 0.7796610169491526,
-        "accuracy": 0.9937046004842615,
-        "specificity": 0.9968066814050602,
-        "correct_matches": 46,
+        "true_positives": 48.0,
+        "true_negatives": 3942.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.8135593220338984,
+        "recall": 0.8135593220338984,
+        "f1_score": 0.8135593220338985,
+        "accuracy": 0.9945164506480558,
+        "specificity": 0.9972173033139388,
+        "correct_matches": 48,
         "total_gt_matches": 59,
         "total_pred_matches": 59,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03836178779602051,
+        "matching_time": 0.011775732040405273,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03836178779602051,
+      "matching_time": 0.011775732040405273,
       "num_solutions": 1,
       "success": true
     },
@@ -3364,33 +3363,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3068,
-            6
+            2964,
+            4
           ],
           [
-            6,
-            47
+            4,
+            49
           ]
         ],
-        "true_positives": 47.0,
-        "true_negatives": 3068.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8867924528301887,
-        "recall": 0.8867924528301887,
-        "f1_score": 0.8867924528301887,
-        "accuracy": 0.996162456028142,
-        "specificity": 0.9980481457384516,
-        "correct_matches": 47,
+        "true_positives": 49.0,
+        "true_negatives": 2964.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9245283018867925,
+        "recall": 0.9245283018867925,
+        "f1_score": 0.9245283018867925,
+        "accuracy": 0.9973518702416418,
+        "specificity": 0.9986522911051213,
+        "correct_matches": 49,
         "total_gt_matches": 53,
         "total_pred_matches": 53,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008626461029052734,
+        "matching_time": 0.023430824279785156,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008626461029052734,
+      "matching_time": 0.023430824279785156,
       "num_solutions": 1,
       "success": true
     },
@@ -3400,33 +3399,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3240,
-            5
+            3186,
+            4
           ],
           [
-            5,
-            50
+            4,
+            51
           ]
         ],
-        "true_positives": 50.0,
-        "true_negatives": 3240.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9090909090909091,
-        "recall": 0.9090909090909091,
-        "f1_score": 0.9090909090909091,
-        "accuracy": 0.996969696969697,
-        "specificity": 0.9984591679506933,
-        "correct_matches": 50,
+        "true_positives": 51.0,
+        "true_negatives": 3186.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9272727272727272,
+        "recall": 0.9272727272727272,
+        "f1_score": 0.9272727272727272,
+        "accuracy": 0.9975346687211094,
+        "specificity": 0.9987460815047022,
+        "correct_matches": 51,
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009140968322753906,
+        "matching_time": 0.014561653137207031,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009140968322753906,
+      "matching_time": 0.014561653137207031,
       "num_solutions": 1,
       "success": true
     },
@@ -3436,33 +3435,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4209,
-            7
+            4026,
+            4
           ],
           [
-            7,
-            55
+            4,
+            58
           ]
         ],
-        "true_positives": 55.0,
-        "true_negatives": 4209.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.8870967741935484,
-        "recall": 0.8870967741935484,
-        "f1_score": 0.8870967741935484,
-        "accuracy": 0.9967274427302478,
-        "specificity": 0.9983396584440227,
-        "correct_matches": 55,
+        "true_positives": 58.0,
+        "true_negatives": 4026.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9354838709677419,
+        "recall": 0.9354838709677419,
+        "f1_score": 0.9354838709677419,
+        "accuracy": 0.9980449657869013,
+        "specificity": 0.9990074441687344,
+        "correct_matches": 58,
         "total_gt_matches": 62,
         "total_pred_matches": 62,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02044367790222168,
+        "matching_time": 0.023819923400878906,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02044367790222168,
+      "matching_time": 0.023819923400878906,
       "num_solutions": 1,
       "success": true
     },
@@ -3493,12 +3492,12 @@
         "total_gt_matches": 101,
         "total_pred_matches": 101,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05885004997253418,
+        "matching_time": 0.022576570510864258,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05885004997253418,
+      "matching_time": 0.022576570510864258,
       "num_solutions": 1,
       "success": true
     },
@@ -3529,12 +3528,12 @@
         "total_gt_matches": 49,
         "total_pred_matches": 49,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.032074928283691406,
+        "matching_time": 0.027666568756103516,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.032074928283691406,
+      "matching_time": 0.027666568756103516,
       "num_solutions": 1,
       "success": true
     },
@@ -3544,33 +3543,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5100,
-            6
+            5372,
+            10
           ],
           [
-            6,
-            63
+            10,
+            59
           ]
         ],
-        "true_positives": 63.0,
-        "true_negatives": 5100.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9130434782608695,
-        "recall": 0.9130434782608695,
-        "f1_score": 0.9130434782608695,
-        "accuracy": 0.9976811594202899,
-        "specificity": 0.9988249118683902,
-        "correct_matches": 63,
+        "true_positives": 59.0,
+        "true_negatives": 5372.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.855072463768116,
+        "recall": 0.855072463768116,
+        "f1_score": 0.855072463768116,
+        "accuracy": 0.9963309484498257,
+        "specificity": 0.9981419546636938,
+        "correct_matches": 59,
         "total_gt_matches": 69,
         "total_pred_matches": 69,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01752614974975586,
+        "matching_time": 0.016833782196044922,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01752614974975586,
+      "matching_time": 0.016833782196044922,
       "num_solutions": 1,
       "success": true
     },
@@ -3580,33 +3579,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5214,
-            12
+            5544,
+            17
           ],
           [
-            12,
-            55
+            17,
+            50
           ]
         ],
-        "true_positives": 55.0,
-        "true_negatives": 5214.0,
-        "false_positives": 12.0,
-        "false_negatives": 12.0,
-        "precision": 0.8208955223880597,
-        "recall": 0.8208955223880597,
-        "f1_score": 0.8208955223880597,
-        "accuracy": 0.9954657094275459,
-        "specificity": 0.9977037887485649,
-        "correct_matches": 55,
+        "true_positives": 50.0,
+        "true_negatives": 5544.0,
+        "false_positives": 17.0,
+        "false_negatives": 17.0,
+        "precision": 0.746268656716418,
+        "recall": 0.746268656716418,
+        "f1_score": 0.746268656716418,
+        "accuracy": 0.9939587775408671,
+        "specificity": 0.9969429958640532,
+        "correct_matches": 50,
         "total_gt_matches": 67,
         "total_pred_matches": 67,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.07119894027709961,
+        "matching_time": 0.01777935028076172,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.07119894027709961,
+      "matching_time": 0.01777935028076172,
       "num_solutions": 1,
       "success": true
     },
@@ -3616,33 +3615,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            999,
-            9
+            972,
+            8
           ],
           [
-            9,
-            19
+            8,
+            20
           ]
         ],
-        "true_positives": 19.0,
-        "true_negatives": 999.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.6785714285714286,
-        "recall": 0.6785714285714286,
-        "f1_score": 0.6785714285714286,
-        "accuracy": 0.9826254826254827,
-        "specificity": 0.9910714285714286,
-        "correct_matches": 19,
+        "true_positives": 20.0,
+        "true_negatives": 972.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.7142857142857143,
+        "recall": 0.7142857142857143,
+        "f1_score": 0.7142857142857143,
+        "accuracy": 0.9841269841269841,
+        "specificity": 0.9918367346938776,
+        "correct_matches": 20,
         "total_gt_matches": 28,
         "total_pred_matches": 28,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.08186578750610352,
+        "matching_time": 0.08356976509094238,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.08186578750610352,
+      "matching_time": 0.08356976509094238,
       "num_solutions": 1,
       "success": true
     },
@@ -3652,33 +3651,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7341,
-            31
+            6517,
+            19
           ],
           [
-            31,
-            45
+            19,
+            57
           ]
         ],
-        "true_positives": 45.0,
-        "true_negatives": 7341.0,
-        "false_positives": 31.0,
-        "false_negatives": 31.0,
-        "precision": 0.5921052631578947,
-        "recall": 0.5921052631578947,
-        "f1_score": 0.5921052631578947,
-        "accuracy": 0.9916756176154672,
-        "specificity": 0.9957948996201845,
-        "correct_matches": 45,
+        "true_positives": 57.0,
+        "true_negatives": 6517.0,
+        "false_positives": 19.0,
+        "false_negatives": 19.0,
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1_score": 0.75,
+        "accuracy": 0.9942528735632183,
+        "specificity": 0.997093023255814,
+        "correct_matches": 57,
         "total_gt_matches": 76,
         "total_pred_matches": 76,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.021007776260375977,
+        "matching_time": 0.030529260635375977,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.021007776260375977,
+      "matching_time": 0.030529260635375977,
       "num_solutions": 1,
       "success": true
     },
@@ -3688,69 +3687,69 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2608,
+            2473,
+            11
+          ],
+          [
+            11,
+            35
+          ]
+        ],
+        "true_positives": 35.0,
+        "true_negatives": 2473.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.7608695652173914,
+        "recall": 0.7608695652173914,
+        "f1_score": 0.7608695652173914,
+        "accuracy": 0.991304347826087,
+        "specificity": 0.9955716586151369,
+        "correct_matches": 35,
+        "total_gt_matches": 46,
+        "total_pred_matches": 46,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008881092071533203,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008881092071533203,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5134,
             14
           ],
           [
             14,
-            32
+            52
           ]
         ],
-        "true_positives": 32.0,
-        "true_negatives": 2608.0,
+        "true_positives": 52.0,
+        "true_negatives": 5134.0,
         "false_positives": 14.0,
         "false_negatives": 14.0,
-        "precision": 0.6956521739130435,
-        "recall": 0.6956521739130435,
-        "f1_score": 0.6956521739130435,
-        "accuracy": 0.9895052473763118,
-        "specificity": 0.9946605644546148,
-        "correct_matches": 32,
-        "total_gt_matches": 46,
-        "total_pred_matches": 46,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.009079933166503906,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.009079933166503906,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 8,
-      "n_rooms_a_graphs": 10,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            4679,
-            7
-          ],
-          [
-            7,
-            59
-          ]
-        ],
-        "true_positives": 59.0,
-        "true_negatives": 4679.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.8939393939393939,
-        "recall": 0.8939393939393939,
-        "f1_score": 0.8939393939393939,
-        "accuracy": 0.9970538720538721,
-        "specificity": 0.9985061886470337,
-        "correct_matches": 59,
+        "precision": 0.7878787878787878,
+        "recall": 0.7878787878787878,
+        "f1_score": 0.7878787878787878,
+        "accuracy": 0.9946298427311085,
+        "specificity": 0.9972804972804973,
+        "correct_matches": 52,
         "total_gt_matches": 66,
         "total_pred_matches": 66,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.1016850471496582,
+        "matching_time": 0.027425765991210938,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.1016850471496582,
+      "matching_time": 0.027425765991210938,
       "num_solutions": 1,
       "success": true
     },
@@ -3760,33 +3759,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3127,
-            5
+            3180,
+            6
           ],
           [
-            5,
-            49
+            6,
+            48
           ]
         ],
-        "true_positives": 49.0,
-        "true_negatives": 3127.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9074074074074074,
-        "recall": 0.9074074074074074,
-        "f1_score": 0.9074074074074074,
-        "accuracy": 0.9968612680477087,
-        "specificity": 0.9984035759897829,
-        "correct_matches": 49,
+        "true_positives": 48.0,
+        "true_negatives": 3180.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8888888888888888,
+        "recall": 0.8888888888888888,
+        "f1_score": 0.8888888888888888,
+        "accuracy": 0.9962962962962963,
+        "specificity": 0.9981167608286252,
+        "correct_matches": 48,
         "total_gt_matches": 54,
         "total_pred_matches": 54,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.018412113189697266,
+        "matching_time": 0.012710809707641602,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.018412113189697266,
+      "matching_time": 0.012710809707641602,
       "num_solutions": 1,
       "success": true
     },
@@ -3796,33 +3795,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2690,
-            10
+            2837,
+            13
           ],
           [
-            10,
-            40
+            13,
+            37
           ]
         ],
-        "true_positives": 40.0,
-        "true_negatives": 2690.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.8,
-        "recall": 0.8,
-        "f1_score": 0.8000000000000002,
-        "accuracy": 0.9927272727272727,
-        "specificity": 0.9962962962962963,
-        "correct_matches": 40,
+        "true_positives": 37.0,
+        "true_negatives": 2837.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.74,
+        "recall": 0.74,
+        "f1_score": 0.74,
+        "accuracy": 0.9910344827586207,
+        "specificity": 0.9954385964912281,
+        "correct_matches": 37,
         "total_gt_matches": 50,
         "total_pred_matches": 50,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05397534370422363,
+        "matching_time": 0.014897584915161133,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05397534370422363,
+      "matching_time": 0.014897584915161133,
       "num_solutions": 1,
       "success": true
     },
@@ -3832,33 +3831,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5538,
-            6
+            5396,
+            4
           ],
           [
-            6,
-            66
+            4,
+            68
           ]
         ],
-        "true_positives": 66.0,
-        "true_negatives": 5538.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9166666666666666,
-        "recall": 0.9166666666666666,
-        "f1_score": 0.9166666666666666,
-        "accuracy": 0.9978632478632479,
-        "specificity": 0.9989177489177489,
-        "correct_matches": 66,
+        "true_positives": 68.0,
+        "true_negatives": 5396.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9444444444444444,
+        "recall": 0.9444444444444444,
+        "f1_score": 0.9444444444444444,
+        "accuracy": 0.9985380116959064,
+        "specificity": 0.9992592592592593,
+        "correct_matches": 68,
         "total_gt_matches": 72,
         "total_pred_matches": 72,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.031832218170166016,
+        "matching_time": 0.013350248336791992,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.031832218170166016,
+      "matching_time": 0.013350248336791992,
       "num_solutions": 1,
       "success": true
     },
@@ -3868,33 +3867,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3523,
-            11
+            3692,
+            13
           ],
           [
-            11,
-            46
+            13,
+            44
           ]
         ],
-        "true_positives": 46.0,
-        "true_negatives": 3523.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.8070175438596491,
-        "recall": 0.8070175438596491,
-        "f1_score": 0.8070175438596491,
-        "accuracy": 0.9938735728209412,
-        "specificity": 0.9968873797396718,
-        "correct_matches": 46,
+        "true_positives": 44.0,
+        "true_negatives": 3692.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.7719298245614035,
+        "recall": 0.7719298245614035,
+        "f1_score": 0.7719298245614035,
+        "accuracy": 0.9930887825624668,
+        "specificity": 0.9964912280701754,
+        "correct_matches": 44,
         "total_gt_matches": 57,
         "total_pred_matches": 57,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.15625476837158203,
+        "matching_time": 0.017920255661010742,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.15625476837158203,
+      "matching_time": 0.017920255661010742,
       "num_solutions": 1,
       "success": true
     },
@@ -3925,12 +3924,12 @@
         "total_gt_matches": 60,
         "total_pred_matches": 60,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.02230095863342285,
+        "matching_time": 0.01493692398071289,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.02230095863342285,
+      "matching_time": 0.01493692398071289,
       "num_solutions": 1,
       "success": true
     },
@@ -3940,33 +3939,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5918,
-            7
+            5992,
+            8
           ],
           [
-            7,
-            68
+            8,
+            67
           ]
         ],
-        "true_positives": 68.0,
-        "true_negatives": 5918.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.9066666666666666,
-        "recall": 0.9066666666666666,
-        "f1_score": 0.9066666666666666,
-        "accuracy": 0.9976666666666667,
-        "specificity": 0.9988185654008439,
-        "correct_matches": 68,
+        "true_positives": 67.0,
+        "true_negatives": 5992.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8933333333333333,
+        "recall": 0.8933333333333333,
+        "f1_score": 0.8933333333333333,
+        "accuracy": 0.9973662551440329,
+        "specificity": 0.9986666666666667,
+        "correct_matches": 67,
         "total_gt_matches": 75,
         "total_pred_matches": 75,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.026731252670288086,
+        "matching_time": 0.02340078353881836,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.026731252670288086,
+      "matching_time": 0.02340078353881836,
       "num_solutions": 1,
       "success": true
     },
@@ -3976,33 +3975,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            12060,
-            15
+            11540,
+            10
           ],
           [
-            15,
-            90
+            10,
+            95
           ]
         ],
-        "true_positives": 90.0,
-        "true_negatives": 12060.0,
-        "false_positives": 15.0,
-        "false_negatives": 15.0,
-        "precision": 0.8571428571428571,
-        "recall": 0.8571428571428571,
-        "f1_score": 0.8571428571428571,
-        "accuracy": 0.9975369458128078,
-        "specificity": 0.9987577639751553,
-        "correct_matches": 90,
+        "true_positives": 95.0,
+        "true_negatives": 11540.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.9047619047619048,
+        "recall": 0.9047619047619048,
+        "f1_score": 0.9047619047619048,
+        "accuracy": 0.9982839982839983,
+        "specificity": 0.9991341991341991,
+        "correct_matches": 95,
         "total_gt_matches": 105,
         "total_pred_matches": 105,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.031249284744262695,
+        "matching_time": 0.02644801139831543,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.031249284744262695,
+      "matching_time": 0.02644801139831543,
       "num_solutions": 1,
       "success": true
     },
@@ -4033,12 +4032,12 @@
         "total_gt_matches": 46,
         "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009562492370605469,
+        "matching_time": 0.02520608901977539,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009562492370605469,
+      "matching_time": 0.02520608901977539,
       "num_solutions": 1,
       "success": true
     },
@@ -4048,33 +4047,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1638,
-            2
+            1755,
+            5
           ],
           [
-            2,
-            38
+            5,
+            35
           ]
         ],
-        "true_positives": 38.0,
-        "true_negatives": 1638.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.95,
-        "recall": 0.95,
-        "f1_score": 0.9500000000000001,
-        "accuracy": 0.9976190476190476,
-        "specificity": 0.998780487804878,
-        "correct_matches": 38,
+        "true_positives": 35.0,
+        "true_negatives": 1755.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.875,
+        "recall": 0.875,
+        "f1_score": 0.875,
+        "accuracy": 0.9944444444444445,
+        "specificity": 0.9971590909090909,
+        "correct_matches": 35,
         "total_gt_matches": 40,
         "total_pred_matches": 40,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.021073579788208008,
+        "matching_time": 0.00866246223449707,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.021073579788208008,
+      "matching_time": 0.00866246223449707,
       "num_solutions": 1,
       "success": true
     },
@@ -4084,33 +4083,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2519,
-            11
+            2609,
+            13
           ],
           [
-            11,
-            35
+            13,
+            33
           ]
         ],
-        "true_positives": 35.0,
-        "true_negatives": 2519.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.7608695652173914,
-        "recall": 0.7608695652173914,
-        "f1_score": 0.7608695652173914,
-        "accuracy": 0.9914596273291926,
-        "specificity": 0.9956521739130435,
-        "correct_matches": 35,
+        "true_positives": 33.0,
+        "true_negatives": 2609.0,
+        "false_positives": 13.0,
+        "false_negatives": 13.0,
+        "precision": 0.717391304347826,
+        "recall": 0.717391304347826,
+        "f1_score": 0.717391304347826,
+        "accuracy": 0.9902548725637181,
+        "specificity": 0.9950419527078566,
+        "correct_matches": 33,
         "total_gt_matches": 46,
         "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.01741194725036621,
+        "matching_time": 0.012831687927246094,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.01741194725036621,
+      "matching_time": 0.012831687927246094,
       "num_solutions": 1,
       "success": true
     },
@@ -4120,33 +4119,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4024,
-            6
+            3902,
+            4
           ],
           [
-            6,
-            56
+            4,
+            58
           ]
         ],
-        "true_positives": 56.0,
-        "true_negatives": 4024.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9032258064516129,
-        "recall": 0.9032258064516129,
-        "f1_score": 0.9032258064516129,
-        "accuracy": 0.9970674486803519,
-        "specificity": 0.9985111662531018,
-        "correct_matches": 56,
+        "true_positives": 58.0,
+        "true_negatives": 3902.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9354838709677419,
+        "recall": 0.9354838709677419,
+        "f1_score": 0.9354838709677419,
+        "accuracy": 0.9979838709677419,
+        "specificity": 0.9989759344598055,
+        "correct_matches": 58,
         "total_gt_matches": 62,
         "total_pred_matches": 62,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.015332698822021484,
+        "matching_time": 0.016206741333007812,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.015332698822021484,
+      "matching_time": 0.016206741333007812,
       "num_solutions": 1,
       "success": true
     },
@@ -4156,33 +4155,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            10807,
-            5
+            10908,
+            6
           ],
           [
-            5,
-            97
+            6,
+            96
           ]
         ],
-        "true_positives": 97.0,
-        "true_negatives": 10807.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9509803921568627,
-        "recall": 0.9509803921568627,
-        "f1_score": 0.9509803921568627,
-        "accuracy": 0.9990837456477918,
-        "specificity": 0.9995375508694043,
-        "correct_matches": 97,
+        "true_positives": 96.0,
+        "true_negatives": 10908.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9411764705882353,
+        "recall": 0.9411764705882353,
+        "f1_score": 0.9411764705882353,
+        "accuracy": 0.9989106753812637,
+        "specificity": 0.999450247388675,
+        "correct_matches": 96,
         "total_gt_matches": 102,
         "total_pred_matches": 102,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0304718017578125,
+        "matching_time": 0.026575565338134766,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0304718017578125,
+      "matching_time": 0.026575565338134766,
       "num_solutions": 1,
       "success": true
     },
@@ -4192,33 +4191,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2375,
-            10
+            2199,
+            6
           ],
           [
-            10,
-            35
+            6,
+            39
           ]
         ],
-        "true_positives": 35.0,
-        "true_negatives": 2375.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.7777777777777778,
-        "recall": 0.7777777777777778,
-        "f1_score": 0.7777777777777778,
-        "accuracy": 0.9917695473251029,
-        "specificity": 0.9958071278825996,
-        "correct_matches": 35,
+        "true_positives": 39.0,
+        "true_negatives": 2199.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8666666666666667,
+        "recall": 0.8666666666666667,
+        "f1_score": 0.8666666666666667,
+        "accuracy": 0.9946666666666667,
+        "specificity": 0.9972789115646259,
+        "correct_matches": 39,
         "total_gt_matches": 45,
         "total_pred_matches": 45,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.019602537155151367,
+        "matching_time": 0.020430564880371094,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.019602537155151367,
+      "matching_time": 0.020430564880371094,
       "num_solutions": 1,
       "success": true
     },
@@ -4228,33 +4227,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2115,
-            1
+            2070,
+            0
           ],
           [
-            1,
-            45
+            0,
+            46
           ]
         ],
-        "true_positives": 45.0,
-        "true_negatives": 2115.0,
-        "false_positives": 1.0,
-        "false_negatives": 1.0,
-        "precision": 0.9782608695652174,
-        "recall": 0.9782608695652174,
-        "f1_score": 0.9782608695652174,
-        "accuracy": 0.9990749306197965,
-        "specificity": 0.9995274102079396,
-        "correct_matches": 45,
+        "true_positives": 46.0,
+        "true_negatives": 2070.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 46,
         "total_gt_matches": 46,
         "total_pred_matches": 46,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009337902069091797,
+        "matching_time": 0.15743184089660645,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009337902069091797,
+      "matching_time": 0.15743184089660645,
       "num_solutions": 1,
       "success": true
     },
@@ -4264,33 +4263,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            580,
-            8
+            540,
+            6
           ],
           [
-            8,
-            13
+            6,
+            15
           ]
         ],
-        "true_positives": 13.0,
-        "true_negatives": 580.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.6190476190476191,
-        "recall": 0.6190476190476191,
-        "f1_score": 0.6190476190476191,
-        "accuracy": 0.9737274220032841,
-        "specificity": 0.9863945578231292,
-        "correct_matches": 13,
+        "true_positives": 15.0,
+        "true_negatives": 540.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.7142857142857143,
+        "recall": 0.7142857142857143,
+        "f1_score": 0.7142857142857143,
+        "accuracy": 0.9788359788359788,
+        "specificity": 0.989010989010989,
+        "correct_matches": 15,
         "total_gt_matches": 21,
         "total_pred_matches": 21,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005283832550048828,
+        "matching_time": 0.0067517757415771484,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005283832550048828,
+      "matching_time": 0.0067517757415771484,
       "num_solutions": 1,
       "success": true
     },
@@ -4300,33 +4299,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            6871,
-            9
+            7028,
+            12
           ],
           [
-            9,
-            71
+            12,
+            68
           ]
         ],
-        "true_positives": 71.0,
-        "true_negatives": 6871.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8875,
-        "recall": 0.8875,
-        "f1_score": 0.8875,
-        "accuracy": 0.9974137931034482,
-        "specificity": 0.9986918604651163,
-        "correct_matches": 71,
+        "true_positives": 68.0,
+        "true_negatives": 7028.0,
+        "false_positives": 12.0,
+        "false_negatives": 12.0,
+        "precision": 0.85,
+        "recall": 0.85,
+        "f1_score": 0.85,
+        "accuracy": 0.996629213483146,
+        "specificity": 0.9982954545454545,
+        "correct_matches": 68,
         "total_gt_matches": 80,
         "total_pred_matches": 80,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03445720672607422,
+        "matching_time": 0.05187654495239258,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03445720672607422,
+      "matching_time": 0.05187654495239258,
       "num_solutions": 1,
       "success": true
     },
@@ -4357,12 +4356,12 @@
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008783102035522461,
+        "matching_time": 0.030934572219848633,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008783102035522461,
+      "matching_time": 0.030934572219848633,
       "num_solutions": 1,
       "success": true
     },
@@ -4372,33 +4371,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3587,
-            9
+            3929,
+            15
           ],
           [
-            9,
-            49
+            15,
+            43
           ]
         ],
-        "true_positives": 49.0,
-        "true_negatives": 3587.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.8448275862068966,
-        "recall": 0.8448275862068966,
-        "f1_score": 0.8448275862068967,
-        "accuracy": 0.9950738916256158,
-        "specificity": 0.9974972191323693,
-        "correct_matches": 49,
+        "true_positives": 43.0,
+        "true_negatives": 3929.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.7413793103448276,
+        "recall": 0.7413793103448276,
+        "f1_score": 0.7413793103448276,
+        "accuracy": 0.992503748125937,
+        "specificity": 0.9961967545638946,
+        "correct_matches": 43,
         "total_gt_matches": 58,
         "total_pred_matches": 58,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.11527252197265625,
+        "matching_time": 0.017848491668701172,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.11527252197265625,
+      "matching_time": 0.017848491668701172,
       "num_solutions": 1,
       "success": true
     },
@@ -4408,33 +4407,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1394,
-            6
+            1496,
+            9
           ],
           [
-            6,
-            29
+            9,
+            26
           ]
         ],
-        "true_positives": 29.0,
-        "true_negatives": 1394.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.8285714285714286,
-        "recall": 0.8285714285714286,
-        "f1_score": 0.8285714285714286,
-        "accuracy": 0.9916376306620209,
-        "specificity": 0.9957142857142857,
-        "correct_matches": 29,
+        "true_positives": 26.0,
+        "true_negatives": 1496.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.7428571428571429,
+        "recall": 0.7428571428571429,
+        "f1_score": 0.7428571428571429,
+        "accuracy": 0.9883116883116884,
+        "specificity": 0.9940199335548173,
+        "correct_matches": 26,
         "total_gt_matches": 35,
         "total_pred_matches": 35,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008654594421386719,
+        "matching_time": 0.024642229080200195,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008654594421386719,
+      "matching_time": 0.024642229080200195,
       "num_solutions": 1,
       "success": true
     },
@@ -4444,33 +4443,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3078,
-            2
+            3024,
+            1
           ],
           [
-            2,
-            53
+            1,
+            54
           ]
         ],
-        "true_positives": 53.0,
-        "true_negatives": 3078.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9636363636363636,
-        "recall": 0.9636363636363636,
-        "f1_score": 0.9636363636363636,
-        "accuracy": 0.9987240829346092,
-        "specificity": 0.9993506493506493,
-        "correct_matches": 53,
+        "true_positives": 54.0,
+        "true_negatives": 3024.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9818181818181818,
+        "recall": 0.9818181818181818,
+        "f1_score": 0.9818181818181818,
+        "accuracy": 0.9993506493506493,
+        "specificity": 0.9996694214876033,
+        "correct_matches": 54,
         "total_gt_matches": 55,
         "total_pred_matches": 55,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.018587350845336914,
+        "matching_time": 0.06200218200683594,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.018587350845336914,
+      "matching_time": 0.06200218200683594,
       "num_solutions": 1,
       "success": true
     },
@@ -4480,33 +4479,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5035,
-            5
+            4966,
+            4
           ],
           [
-            5,
-            65
+            4,
+            66
           ]
         ],
-        "true_positives": 65.0,
-        "true_negatives": 5035.0,
-        "false_positives": 5.0,
-        "false_negatives": 5.0,
-        "precision": 0.9285714285714286,
-        "recall": 0.9285714285714286,
-        "f1_score": 0.9285714285714286,
-        "accuracy": 0.9980430528375733,
-        "specificity": 0.9990079365079365,
-        "correct_matches": 65,
+        "true_positives": 66.0,
+        "true_negatives": 4966.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9428571428571428,
+        "recall": 0.9428571428571428,
+        "f1_score": 0.9428571428571428,
+        "accuracy": 0.9984126984126984,
+        "specificity": 0.999195171026157,
+        "correct_matches": 66,
         "total_gt_matches": 70,
         "total_pred_matches": 70,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.21341443061828613,
+        "matching_time": 0.013907670974731445,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.21341443061828613,
+      "matching_time": 0.013907670974731445,
       "num_solutions": 1,
       "success": true
     },
@@ -4516,33 +4515,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            912,
-            13
+            864,
+            11
           ],
           [
-            13,
-            12
+            11,
+            14
           ]
         ],
-        "true_positives": 12.0,
-        "true_negatives": 912.0,
-        "false_positives": 13.0,
-        "false_negatives": 13.0,
-        "precision": 0.48,
-        "recall": 0.48,
-        "f1_score": 0.48,
-        "accuracy": 0.9726315789473684,
-        "specificity": 0.985945945945946,
-        "correct_matches": 12,
+        "true_positives": 14.0,
+        "true_negatives": 864.0,
+        "false_positives": 11.0,
+        "false_negatives": 11.0,
+        "precision": 0.56,
+        "recall": 0.56,
+        "f1_score": 0.56,
+        "accuracy": 0.9755555555555555,
+        "specificity": 0.9874285714285714,
+        "correct_matches": 14,
         "total_gt_matches": 25,
         "total_pred_matches": 25,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.00645136833190918,
+        "matching_time": 0.006945371627807617,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.00645136833190918,
+      "matching_time": 0.006945371627807617,
       "num_solutions": 1,
       "success": true
     },
@@ -4573,12 +4572,12 @@
         "total_gt_matches": 67,
         "total_pred_matches": 67,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.08895134925842285,
+        "matching_time": 0.025249481201171875,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.08895134925842285,
+      "matching_time": 0.025249481201171875,
       "num_solutions": 1,
       "success": true
     },
@@ -4588,33 +4587,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            4059,
-            12
+            4233,
+            15
           ],
           [
-            12,
-            47
+            15,
+            44
           ]
         ],
-        "true_positives": 47.0,
-        "true_negatives": 4059.0,
-        "false_positives": 12.0,
-        "false_negatives": 12.0,
-        "precision": 0.7966101694915254,
-        "recall": 0.7966101694915254,
-        "f1_score": 0.7966101694915254,
-        "accuracy": 0.9941888619854722,
-        "specificity": 0.9970523212969786,
-        "correct_matches": 47,
+        "true_positives": 44.0,
+        "true_negatives": 4233.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.7457627118644068,
+        "recall": 0.7457627118644068,
+        "f1_score": 0.7457627118644068,
+        "accuracy": 0.9930345948456002,
+        "specificity": 0.9964689265536724,
+        "correct_matches": 44,
         "total_gt_matches": 59,
         "total_pred_matches": 59,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.025821685791015625,
+        "matching_time": 0.016735076904296875,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.025821685791015625,
+      "matching_time": 0.016735076904296875,
       "num_solutions": 1,
       "success": true
     },
@@ -4624,33 +4623,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            928,
-            2
+            957,
+            3
           ],
           [
-            2,
-            28
+            3,
+            27
           ]
         ],
-        "true_positives": 28.0,
-        "true_negatives": 928.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9333333333333333,
-        "recall": 0.9333333333333333,
-        "f1_score": 0.9333333333333333,
-        "accuracy": 0.9958333333333333,
-        "specificity": 0.9978494623655914,
-        "correct_matches": 28,
+        "true_positives": 27.0,
+        "true_negatives": 957.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9939393939393939,
+        "specificity": 0.996875,
+        "correct_matches": 27,
         "total_gt_matches": 30,
         "total_pred_matches": 30,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0059926509857177734,
+        "matching_time": 0.005558013916015625,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0059926509857177734,
+      "matching_time": 0.005558013916015625,
       "num_solutions": 1,
       "success": true
     },
@@ -4681,12 +4680,12 @@
         "total_gt_matches": 32,
         "total_pred_matches": 32,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.005110740661621094,
+        "matching_time": 0.005417823791503906,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.005110740661621094,
+      "matching_time": 0.005417823791503906,
       "num_solutions": 1,
       "success": true
     },
@@ -4696,33 +4695,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1887,
-            13
+            1923,
+            15
           ],
           [
-            13,
-            25
+            15,
+            23
           ]
         ],
-        "true_positives": 25.0,
-        "true_negatives": 1887.0,
-        "false_positives": 13.0,
-        "false_negatives": 13.0,
-        "precision": 0.6578947368421053,
-        "recall": 0.6578947368421053,
-        "f1_score": 0.6578947368421053,
-        "accuracy": 0.9865841073271414,
-        "specificity": 0.9931578947368421,
-        "correct_matches": 25,
+        "true_positives": 23.0,
+        "true_negatives": 1923.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.6052631578947368,
+        "recall": 0.6052631578947368,
+        "f1_score": 0.6052631578947368,
+        "accuracy": 0.9848178137651822,
+        "specificity": 0.9922600619195047,
+        "correct_matches": 23,
         "total_gt_matches": 38,
         "total_pred_matches": 38,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04425764083862305,
+        "matching_time": 0.0837244987487793,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04425764083862305,
+      "matching_time": 0.0837244987487793,
       "num_solutions": 1,
       "success": true
     },
@@ -4732,33 +4731,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            11646,
-            9
+            11542,
+            8
           ],
           [
-            9,
-            96
+            8,
+            97
           ]
         ],
-        "true_positives": 96.0,
-        "true_negatives": 11646.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.9142857142857143,
-        "recall": 0.9142857142857143,
-        "f1_score": 0.9142857142857143,
-        "accuracy": 0.9984693877551021,
-        "specificity": 0.9992277992277993,
-        "correct_matches": 96,
+        "true_positives": 97.0,
+        "true_negatives": 11542.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.9238095238095239,
+        "recall": 0.9238095238095239,
+        "f1_score": 0.9238095238095239,
+        "accuracy": 0.9986271986271986,
+        "specificity": 0.9993073593073593,
+        "correct_matches": 97,
         "total_gt_matches": 105,
         "total_pred_matches": 105,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.056478261947631836,
+        "matching_time": 0.1094217300415039,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.056478261947631836,
+      "matching_time": 0.1094217300415039,
       "num_solutions": 1,
       "success": true
     },
@@ -4768,33 +4767,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1140,
-            7
+            1110,
+            6
           ],
           [
-            7,
-            24
+            6,
+            25
           ]
         ],
-        "true_positives": 24.0,
-        "true_negatives": 1140.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.7741935483870968,
-        "recall": 0.7741935483870968,
-        "f1_score": 0.7741935483870968,
-        "accuracy": 0.9881154499151104,
-        "specificity": 0.993897122929381,
-        "correct_matches": 24,
+        "true_positives": 25.0,
+        "true_negatives": 1110.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8064516129032258,
+        "recall": 0.8064516129032258,
+        "f1_score": 0.8064516129032258,
+        "accuracy": 0.9895379250217959,
+        "specificity": 0.9946236559139785,
+        "correct_matches": 25,
         "total_gt_matches": 31,
         "total_pred_matches": 31,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.008190393447875977,
+        "matching_time": 0.0067975521087646484,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.008190393447875977,
+      "matching_time": 0.0067975521087646484,
       "num_solutions": 1,
       "success": true
     },
@@ -4804,33 +4803,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            5740,
-            11
+            5670,
+            10
           ],
           [
-            11,
-            60
+            10,
+            61
           ]
         ],
-        "true_positives": 60.0,
-        "true_negatives": 5740.0,
-        "false_positives": 11.0,
-        "false_negatives": 11.0,
-        "precision": 0.8450704225352113,
-        "recall": 0.8450704225352113,
-        "f1_score": 0.8450704225352113,
-        "accuracy": 0.9962212298179319,
-        "specificity": 0.9980872891671013,
-        "correct_matches": 60,
+        "true_positives": 61.0,
+        "true_negatives": 5670.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.8591549295774648,
+        "recall": 0.8591549295774648,
+        "f1_score": 0.8591549295774648,
+        "accuracy": 0.9965223439401844,
+        "specificity": 0.9982394366197183,
+        "correct_matches": 61,
         "total_gt_matches": 71,
         "total_pred_matches": 71,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0237576961517334,
+        "matching_time": 0.015015125274658203,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0237576961517334,
+      "matching_time": 0.015015125274658203,
       "num_solutions": 1,
       "success": true
     },
@@ -4840,33 +4839,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1804,
-            2
+            1927,
+            5
           ],
           [
-            2,
-            40
+            5,
+            37
           ]
         ],
-        "true_positives": 40.0,
-        "true_negatives": 1804.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9523809523809523,
-        "recall": 0.9523809523809523,
-        "f1_score": 0.9523809523809523,
-        "accuracy": 0.9978354978354979,
-        "specificity": 0.9988925802879292,
-        "correct_matches": 40,
+        "true_positives": 37.0,
+        "true_negatives": 1927.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8809523809523809,
+        "recall": 0.8809523809523809,
+        "f1_score": 0.8809523809523809,
+        "accuracy": 0.9949341438703141,
+        "specificity": 0.9974120082815735,
+        "correct_matches": 37,
         "total_gt_matches": 42,
         "total_pred_matches": 42,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.019438505172729492,
+        "matching_time": 0.04722332954406738,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.019438505172729492,
+      "matching_time": 0.04722332954406738,
       "num_solutions": 1,
       "success": true
     },
@@ -4876,33 +4875,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            9007,
-            9
+            9644,
+            16
           ],
           [
-            9,
-            83
+            16,
+            76
           ]
         ],
-        "true_positives": 83.0,
-        "true_negatives": 9007.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.9021739130434783,
-        "recall": 0.9021739130434783,
-        "f1_score": 0.9021739130434784,
-        "accuracy": 0.9980237154150198,
-        "specificity": 0.9990017746228926,
-        "correct_matches": 83,
+        "true_positives": 76.0,
+        "true_negatives": 9644.0,
+        "false_positives": 16.0,
+        "false_negatives": 16.0,
+        "precision": 0.8260869565217391,
+        "recall": 0.8260869565217391,
+        "f1_score": 0.8260869565217391,
+        "accuracy": 0.9967186218211649,
+        "specificity": 0.998343685300207,
+        "correct_matches": 76,
         "total_gt_matches": 92,
         "total_pred_matches": 92,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.03344607353210449,
+        "matching_time": 0.031229496002197266,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.03344607353210449,
+      "matching_time": 0.031229496002197266,
       "num_solutions": 1,
       "success": true
     },
@@ -4933,12 +4932,12 @@
         "total_gt_matches": 79,
         "total_pred_matches": 79,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029476404190063477,
+        "matching_time": 0.13511252403259277,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029476404190063477,
+      "matching_time": 0.13511252403259277,
       "num_solutions": 1,
       "success": true
     },
@@ -4948,33 +4947,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            945,
-            7
+            918,
+            6
           ],
           [
-            7,
-            21
+            6,
+            22
           ]
         ],
-        "true_positives": 21.0,
-        "true_negatives": 945.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.75,
-        "recall": 0.75,
-        "f1_score": 0.75,
-        "accuracy": 0.9857142857142858,
-        "specificity": 0.9926470588235294,
-        "correct_matches": 21,
+        "true_positives": 22.0,
+        "true_negatives": 918.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.7857142857142857,
+        "recall": 0.7857142857142857,
+        "f1_score": 0.7857142857142857,
+        "accuracy": 0.9873949579831933,
+        "specificity": 0.9935064935064936,
+        "correct_matches": 22,
         "total_gt_matches": 28,
         "total_pred_matches": 28,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.006655454635620117,
+        "matching_time": 0.03539252281188965,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.006655454635620117,
+      "matching_time": 0.03539252281188965,
       "num_solutions": 1,
       "success": true
     },
@@ -4984,33 +4983,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1739,
-            9
+            1776,
+            10
           ],
           [
-            9,
-            29
+            10,
+            28
           ]
         ],
-        "true_positives": 29.0,
-        "true_negatives": 1739.0,
-        "false_positives": 9.0,
-        "false_negatives": 9.0,
-        "precision": 0.7631578947368421,
-        "recall": 0.7631578947368421,
-        "f1_score": 0.7631578947368421,
-        "accuracy": 0.9899216125419933,
-        "specificity": 0.9948512585812357,
-        "correct_matches": 29,
+        "true_positives": 28.0,
+        "true_negatives": 1776.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.7368421052631579,
+        "recall": 0.7368421052631579,
+        "f1_score": 0.7368421052631579,
+        "accuracy": 0.9890350877192983,
+        "specificity": 0.9944008958566629,
+        "correct_matches": 28,
         "total_gt_matches": 38,
         "total_pred_matches": 38,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.014147043228149414,
+        "matching_time": 0.010515451431274414,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.014147043228149414,
+      "matching_time": 0.010515451431274414,
       "num_solutions": 1,
       "success": true
     },
@@ -5041,12 +5040,12 @@
         "total_gt_matches": 65,
         "total_pred_matches": 65,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.029359817504882812,
+        "matching_time": 0.02030467987060547,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.029359817504882812,
+      "matching_time": 0.02030467987060547,
       "num_solutions": 1,
       "success": true
     },
@@ -5077,156 +5076,12 @@
         "total_gt_matches": 41,
         "total_pred_matches": 41,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.0319826602935791,
+        "matching_time": 0.016408681869506836,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.0319826602935791,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 7,
-      "n_rooms_a_graphs": 8,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            3900,
-            4
-          ],
-          [
-            4,
-            57
-          ]
-        ],
-        "true_positives": 57.0,
-        "true_negatives": 3900.0,
-        "false_positives": 4.0,
-        "false_negatives": 4.0,
-        "precision": 0.9344262295081968,
-        "recall": 0.9344262295081968,
-        "f1_score": 0.9344262295081968,
-        "accuracy": 0.9979823455233291,
-        "specificity": 0.9989754098360656,
-        "correct_matches": 57,
-        "total_gt_matches": 61,
-        "total_pred_matches": 61,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.09070158004760742,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.09070158004760742,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 5,
-      "n_rooms_a_graphs": 5,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            1720,
-            2
-          ],
-          [
-            2,
-            39
-          ]
-        ],
-        "true_positives": 39.0,
-        "true_negatives": 1720.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9512195121951219,
-        "recall": 0.9512195121951219,
-        "f1_score": 0.9512195121951219,
-        "accuracy": 0.9977311401020987,
-        "specificity": 0.9988385598141696,
-        "correct_matches": 39,
-        "total_gt_matches": 41,
-        "total_pred_matches": 41,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.1722850799560547,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.1722850799560547,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 9,
-      "n_rooms_a_graphs": 10,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            3526,
-            8
-          ],
-          [
-            8,
-            49
-          ]
-        ],
-        "true_positives": 49.0,
-        "true_negatives": 3526.0,
-        "false_positives": 8.0,
-        "false_negatives": 8.0,
-        "precision": 0.8596491228070176,
-        "recall": 0.8596491228070176,
-        "f1_score": 0.8596491228070176,
-        "accuracy": 0.9955444165970482,
-        "specificity": 0.9977362761743067,
-        "correct_matches": 49,
-        "total_gt_matches": 57,
-        "total_pred_matches": 57,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.08133316040039062,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.08133316040039062,
-      "num_solutions": 1,
-      "success": true
-    },
-    {
-      "n_rooms_s_graphs": 9,
-      "n_rooms_a_graphs": 9,
-      "metrics": {
-        "confusion_matrix": [
-          [
-            7118,
-            10
-          ],
-          [
-            10,
-            71
-          ]
-        ],
-        "true_positives": 71.0,
-        "true_negatives": 7118.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.8765432098765432,
-        "recall": 0.8765432098765432,
-        "f1_score": 0.8765432098765432,
-        "accuracy": 0.9972256901095853,
-        "specificity": 0.9985970819304153,
-        "correct_matches": 71,
-        "total_gt_matches": 81,
-        "total_pred_matches": 81,
-        "experiment_type": "pgm_msd",
-        "matching_time": 0.028267621994018555,
-        "num_solutions": 1,
-        "success": true
-      },
-      "experiment_type": "pgm_msd",
-      "matching_time": 0.028267621994018555,
+      "matching_time": 0.016408681869506836,
       "num_solutions": 1,
       "success": true
     },
@@ -5257,12 +5112,156 @@
         "total_gt_matches": 61,
         "total_pred_matches": 61,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.013012409210205078,
+        "matching_time": 0.03206920623779297,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.013012409210205078,
+      "matching_time": 0.03206920623779297,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1640,
+            0
+          ],
+          [
+            0,
+            41
+          ]
+        ],
+        "true_positives": 41.0,
+        "true_negatives": 1640.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 41,
+        "total_gt_matches": 41,
+        "total_pred_matches": 41,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.06462836265563965,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.06462836265563965,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3470,
+            7
+          ],
+          [
+            7,
+            50
+          ]
+        ],
+        "true_positives": 50.0,
+        "true_negatives": 3470.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.8771929824561403,
+        "recall": 0.8771929824561403,
+        "f1_score": 0.8771929824561403,
+        "accuracy": 0.9960384833050367,
+        "specificity": 0.997986770204199,
+        "correct_matches": 50,
+        "total_gt_matches": 57,
+        "total_pred_matches": 57,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01997518539428711,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01997518539428711,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6798,
+            6
+          ],
+          [
+            6,
+            75
+          ]
+        ],
+        "true_positives": 75.0,
+        "true_negatives": 6798.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9259259259259259,
+        "recall": 0.9259259259259259,
+        "f1_score": 0.9259259259259259,
+        "accuracy": 0.9982570806100218,
+        "specificity": 0.9991181657848325,
+        "correct_matches": 75,
+        "total_gt_matches": 81,
+        "total_pred_matches": 81,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.07750296592712402,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.07750296592712402,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4200,
+            9
+          ],
+          [
+            9,
+            52
+          ]
+        ],
+        "true_positives": 52.0,
+        "true_negatives": 4200.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8524590163934426,
+        "recall": 0.8524590163934426,
+        "f1_score": 0.8524590163934426,
+        "accuracy": 0.9957845433255269,
+        "specificity": 0.9978617248752673,
+        "correct_matches": 52,
+        "total_gt_matches": 61,
+        "total_pred_matches": 61,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013202190399169922,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013202190399169922,
       "num_solutions": 1,
       "success": true
     },
@@ -5272,33 +5271,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            2100,
-            7
+            2016,
+            5
           ],
           [
-            7,
-            36
+            5,
+            38
           ]
         ],
-        "true_positives": 36.0,
-        "true_negatives": 2100.0,
-        "false_positives": 7.0,
-        "false_negatives": 7.0,
-        "precision": 0.8372093023255814,
-        "recall": 0.8372093023255814,
-        "f1_score": 0.8372093023255814,
-        "accuracy": 0.9934883720930232,
-        "specificity": 0.9966777408637874,
-        "correct_matches": 36,
+        "true_positives": 38.0,
+        "true_negatives": 2016.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8837209302325582,
+        "recall": 0.8837209302325582,
+        "f1_score": 0.8837209302325582,
+        "accuracy": 0.9951550387596899,
+        "specificity": 0.9975259772389906,
+        "correct_matches": 38,
         "total_gt_matches": 43,
         "total_pred_matches": 43,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.010909795761108398,
+        "matching_time": 0.009145975112915039,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.010909795761108398,
+      "matching_time": 0.009145975112915039,
       "num_solutions": 1,
       "success": true
     },
@@ -5308,33 +5307,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3974,
-            16
+            3918,
+            15
           ],
           [
-            16,
-            41
+            15,
+            42
           ]
         ],
-        "true_positives": 41.0,
-        "true_negatives": 3974.0,
-        "false_positives": 16.0,
-        "false_negatives": 16.0,
-        "precision": 0.7192982456140351,
-        "recall": 0.7192982456140351,
-        "f1_score": 0.7192982456140351,
-        "accuracy": 0.9920929083271559,
-        "specificity": 0.9959899749373433,
-        "correct_matches": 41,
+        "true_positives": 42.0,
+        "true_negatives": 3918.0,
+        "false_positives": 15.0,
+        "false_negatives": 15.0,
+        "precision": 0.7368421052631579,
+        "recall": 0.7368421052631579,
+        "f1_score": 0.7368421052631579,
+        "accuracy": 0.9924812030075187,
+        "specificity": 0.996186117467582,
+        "correct_matches": 42,
         "total_gt_matches": 57,
         "total_pred_matches": 57,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.04858231544494629,
+        "matching_time": 0.02893853187561035,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.04858231544494629,
+      "matching_time": 0.02893853187561035,
       "num_solutions": 1,
       "success": true
     },
@@ -5344,33 +5343,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            1558,
-            2
+            1596,
+            3
           ],
           [
-            2,
-            37
+            3,
+            36
           ]
         ],
-        "true_positives": 37.0,
-        "true_negatives": 1558.0,
-        "false_positives": 2.0,
-        "false_negatives": 2.0,
-        "precision": 0.9487179487179487,
-        "recall": 0.9487179487179487,
-        "f1_score": 0.9487179487179487,
-        "accuracy": 0.9974984365228268,
-        "specificity": 0.9987179487179487,
-        "correct_matches": 37,
+        "true_positives": 36.0,
+        "true_negatives": 1596.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9230769230769231,
+        "recall": 0.9230769230769231,
+        "f1_score": 0.9230769230769231,
+        "accuracy": 0.9963369963369964,
+        "specificity": 0.99812382739212,
+        "correct_matches": 36,
         "total_gt_matches": 39,
         "total_pred_matches": 39,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.007483720779418945,
+        "matching_time": 0.0063474178314208984,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.007483720779418945,
+      "matching_time": 0.0063474178314208984,
       "num_solutions": 1,
       "success": true
     },
@@ -5380,33 +5379,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            3050,
-            10
+            2850,
+            6
           ],
           [
-            10,
-            41
+            6,
+            45
           ]
         ],
-        "true_positives": 41.0,
-        "true_negatives": 3050.0,
-        "false_positives": 10.0,
-        "false_negatives": 10.0,
-        "precision": 0.803921568627451,
-        "recall": 0.803921568627451,
-        "f1_score": 0.8039215686274509,
-        "accuracy": 0.9935711989713918,
-        "specificity": 0.9967320261437909,
-        "correct_matches": 41,
+        "true_positives": 45.0,
+        "true_negatives": 2850.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706,
+        "f1_score": 0.8823529411764706,
+        "accuracy": 0.9958720330237358,
+        "specificity": 0.9978991596638656,
+        "correct_matches": 45,
         "total_gt_matches": 51,
         "total_pred_matches": 51,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.009296178817749023,
+        "matching_time": 0.01181340217590332,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.009296178817749023,
+      "matching_time": 0.01181340217590332,
       "num_solutions": 1,
       "success": true
     },
@@ -5416,33 +5415,33 @@
       "metrics": {
         "confusion_matrix": [
           [
-            7914,
-            6
+            8175,
+            9
           ],
           [
-            6,
-            82
+            9,
+            79
           ]
         ],
-        "true_positives": 82.0,
-        "true_negatives": 7914.0,
-        "false_positives": 6.0,
-        "false_negatives": 6.0,
-        "precision": 0.9318181818181818,
-        "recall": 0.9318181818181818,
-        "f1_score": 0.9318181818181818,
-        "accuracy": 0.9985014985014985,
-        "specificity": 0.9992424242424243,
-        "correct_matches": 82,
+        "true_positives": 79.0,
+        "true_negatives": 8175.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8977272727272727,
+        "recall": 0.8977272727272727,
+        "f1_score": 0.8977272727272727,
+        "accuracy": 0.9978239845261122,
+        "specificity": 0.998900293255132,
+        "correct_matches": 79,
         "total_gt_matches": 88,
         "total_pred_matches": 88,
         "experiment_type": "pgm_msd",
-        "matching_time": 0.05207061767578125,
+        "matching_time": 0.019066810607910156,
         "num_solutions": 1,
         "success": true
       },
       "experiment_type": "pgm_msd",
-      "matching_time": 0.05207061767578125,
+      "matching_time": 0.019066810607910156,
       "num_solutions": 1,
       "success": true
     }

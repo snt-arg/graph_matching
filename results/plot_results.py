@@ -434,6 +434,387 @@ def collect_threshold_points(results_dir, current_dataset=None):
     return raw_points
 
 
+def collect_soft_scores_from_msd(model, msd_test_list, sinkhorn_threshold=None, max_pairs=None,
+                                  save_heatmaps_dir=None, heatmap_pairs=3):
+    """
+    Run the model on MSD pairs with return_soft=True to collect soft_topk scores
+    labelled by whether hard_topk selected them AND whether they are true GT matches.
+    Optionally saves matrix heatmaps for the first `heatmap_pairs` pairs.
+    """
+    import torch
+
+    device = next(model.parameters()).device
+    model.eval()
+
+    if save_heatmaps_dir:
+        os.makedirs(save_heatmaps_dir, exist_ok=True)
+
+    tp_scores, fp_scores, fn_scores, tn_scores = [], [], [], []
+    aff_gt, aff_non_gt = [], []
+    sk_gt,  sk_non_gt  = [], []
+    sk_assigned_tp, sk_assigned_fp = [], []
+    hung_gt, hung_non_gt = [], []
+
+    pairs = msd_test_list if max_pairs is None else msd_test_list[:max_pairs]
+    for pair_idx, (data1, data2, gt_perm) in enumerate(pairs):
+        data1 = data1.to(device)
+        data2 = data2.to(device)
+        batch_idx1 = torch.zeros(data1.num_nodes, dtype=torch.long, device=device)
+        batch_idx2 = torch.zeros(data2.num_nodes, dtype=torch.long, device=device)
+
+        with torch.no_grad():
+            hard_list, _, soft_list, affinity_list, sinkhorn_list = model(
+                data1, data2, batch_idx1, batch_idx2,
+                inference=True, return_soft=True,
+                sinkhorn_threshold=sinkhorn_threshold,
+                return_intermediate=True,
+            )
+
+        hard    = hard_list[0].cpu().numpy()      # [N1, N2] binary
+        soft    = soft_list[0].cpu().numpy()      # [N1, N2] in [0, 1]
+        affinity = affinity_list[0].cpu().numpy() # [N1, N2] normalised affinity
+        sinkhorn = sinkhorn_list[0].cpu().numpy() # [N1, N2] doubly stochastic
+        gt      = gt_perm.cpu().numpy()           # [N1, N2] binary ground truth
+
+        # Resize gt to match soft if shapes differ (partial matching)
+        N1, N2 = soft.shape
+        if gt.shape != (N1, N2):
+            gt_full = np.zeros((N1, N2), dtype=gt.dtype)
+            r = min(gt.shape[0], N1)
+            c = min(gt.shape[1], N2)
+            gt_full[:r, :c] = gt[:r, :c]
+            gt = gt_full
+
+        tp_scores.append(soft[(hard == 1) & (gt == 1)].flatten())
+        fp_scores.append(soft[(hard == 1) & (gt == 0)].flatten())
+        fn_scores.append(soft[(hard == 0) & (gt == 1)].flatten())
+        tn_scores.append(soft[(hard == 0) & (gt == 0)].flatten())
+
+        aff_gt.append(affinity[gt == 1].flatten())
+        aff_non_gt.append(affinity[gt == 0].flatten())
+        sk_gt.append(sinkhorn[gt == 1].flatten())
+        sk_non_gt.append(sinkhorn[gt == 0].flatten())
+        hung_gt.append(hard[gt == 1].flatten())
+        hung_non_gt.append(hard[gt == 0].flatten())
+        # S scores at positions Hungarian assigned (hard=1), split by GT
+        sk_assigned_tp.append(sinkhorn[(hard == 1) & (gt == 1)].flatten())
+        sk_assigned_fp.append(sinkhorn[(hard == 1) & (gt == 0)].flatten())
+
+        # if save_heatmaps_dir and pair_idx < heatmap_pairs:
+        #     _save_single_heatmap(affinity, sinkhorn, soft, hard, gt,
+        #                          pair_idx, save_heatmaps_dir)
+
+    def _cat(lst): return np.concatenate(lst) if lst else np.array([])
+    return (
+        _cat(tp_scores), _cat(fp_scores), _cat(fn_scores), _cat(tn_scores),
+        _cat(aff_gt), _cat(aff_non_gt),
+        _cat(sk_gt),  _cat(sk_non_gt),
+        _cat(hung_gt), _cat(hung_non_gt),
+        _cat(sk_assigned_tp), _cat(sk_assigned_fp),
+    )
+
+
+def plot_soft_score_distribution(tp, fp, fn, tn):
+    """
+    Plot soft top-k score distributions split by hard selection and GT label.
+
+    Four groups:
+      TP : GT match  + hard selected   → want these high
+      FP : GT non-match + hard selected → want these low (false alarms)
+      FN : GT match  + NOT selected    → want these high (missed)
+      TN : GT non-match + NOT selected → want these low (correct rejections)
+
+    The overlap between FP and TP (or FN and TP) guides where to set a threshold.
+    """
+    from scipy.stats import gaussian_kde
+
+    colors = {'TP': '#2ca02c', 'FP': '#d62728', 'FN': '#ff7f0e', 'TN': '#1f77b4'}
+    x_range = np.linspace(0.0, 1.0, 500)
+
+    fig = plt.figure(figsize=(12, 10))
+    fig.suptitle('Soft top-k score distributions (selected vs filtered, by GT label)', fontsize=13)
+    gs = fig.add_gridspec(2, 2, hspace=0.4, wspace=0.3)
+
+    # ── Row 0 left: selected pairs (hard=1) — TP vs FP ───────────────────────
+    ax = fig.add_subplot(gs[0, 0])
+    for label, arr in [('TP', tp), ('FP', fp)]:
+        if len(arr) > 1:
+            kde = gaussian_kde(arr)
+            ax.plot(x_range, kde(x_range), color=colors[label],
+                    label=f'{label} (n={len(arr)})', linewidth=2)
+            ax.fill_between(x_range, kde(x_range), alpha=0.15, color=colors[label])
+    ax.set_xlabel('Soft top-k score  [0, 1]')
+    ax.set_ylabel('Density')
+    ax.set_title('Hard-selected pairs (hard=1)\nTP = correct match   FP = wrong match')
+    ax.set_xlim(0.0, 1.0)
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+
+    # ── Row 0 right: rejected pairs (hard=0) — FN vs TN ─────────────────────
+    ax2 = fig.add_subplot(gs[0, 1])
+    for label, arr in [('FN', fn), ('TN', tn)]:
+        if len(arr) > 1:
+            kde = gaussian_kde(arr)
+            ax2.plot(x_range, kde(x_range), color=colors[label],
+                     label=f'{label} (n={len(arr)})', linewidth=2)
+            ax2.fill_between(x_range, kde(x_range), alpha=0.15, color=colors[label])
+    ax2.set_xlabel('Soft top-k score  [0, 1]')
+    ax2.set_ylabel('Density')
+    ax2.set_title('Rejected pairs (hard=0)\nFN = missed match   TN = correct rejection')
+    ax2.set_xlim(0.0, 1.0)
+    ax2.legend(fontsize=9)
+    ax2.grid(True, alpha=0.3)
+
+    # ── Row 1 left: GT match (TP+FN) vs FP — full matrix ────────────────────
+    gt_match = np.concatenate([arr for arr in [tp, fn] if len(arr) > 1])  # all gt=1
+    groups_bottom = [('GT match  (gt=1)', gt_match, colors['TP']),
+                     ('FP  (hard=1, gt=0)', fp,       colors['FP'])]
+
+    def _draw_bottom(ax, ylim=None):
+        for label, arr, color in groups_bottom:
+            if len(arr) > 1:
+                kde = gaussian_kde(arr)
+                ax.plot(x_range, kde(x_range), color=color, linewidth=2,
+                        label=f'{label} (n={len(arr)})')
+                ax.fill_between(x_range, kde(x_range), alpha=0.15, color=color)
+        ax.set_xlabel('Soft top-k score  [0, 1]')
+        ax.set_ylabel('Density')
+        ax.set_xlim(0.0, 1.0)
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3)
+        if ylim is not None:
+            ax.set_ylim(0.0, ylim)
+
+    ax3 = fig.add_subplot(gs[1, :])
+    _draw_bottom(ax3)
+    ax3.set_title('Full matrix: GT match vs FP\n(GT match = TP + FN)')
+
+    plt.show(block=True)
+
+    # Summary statistics
+    print("\n--- Soft top-k score summary ---")
+    for label, arr in [('TP', tp), ('FP', fp), ('FN', fn), ('TN', tn)]:
+        if len(arr):
+            print(f"  {label} (n={len(arr):5d}):  "
+                  f"min={arr.min():.3f}  "
+                  f"p10={np.percentile(arr,10):.3f}  "
+                  f"median={np.median(arr):.3f}  "
+                  f"p90={np.percentile(arr,90):.3f}  "
+                  f"max={arr.max():.3f}")
+
+
+
+def _save_single_heatmap(affinity, sinkhorn, soft, hard, gt, idx, save_dir):
+    """Save a 4-panel heatmap for one pair with cell values annotated."""
+    # N1, N2 = soft.shape
+    # gt_rows, gt_cols = np.where(gt == 1)
+
+    # cell_size = max(1.0, min(2.0, 12 / max(N1, N2)))
+    # fig_w = min(4 * N2 * cell_size + 4, 36)
+    # fig_h = min(N1 * cell_size + 2, 12)
+    # fig, axes = plt.subplots(1, 4, figsize=(fig_w, fig_h))
+    # fig.suptitle(f'Pair {idx} — N1={N1}, N2={N2}, GT matches={len(gt_rows)}', fontsize=12)
+
+    # matrices = [
+    #     (affinity, 'Affinity\n(sim_normed)',              'RdYlGn'),
+    #     (sinkhorn, 'Doubly stochastic\n(first Sinkhorn)', 'Blues'),
+    #     (soft,     'Soft top-k scores',                   'Blues'),
+    #     (hard,     'Hard permutation\n(final selection)',  'Greys'),
+    # ]
+
+    # for ax, (mat, title, cmap) in zip(axes, matrices):
+    #     im = ax.imshow(mat, cmap=cmap, aspect='auto', vmin=mat.min(), vmax=mat.max())
+    #     thresh = (mat.max() + mat.min()) / 2
+    #     fmt = '.2f' if mat.dtype.kind == 'f' else 'd'
+    #     for i in range(N1):
+    #         for j in range(N2):
+    #             val = mat[i, j]
+    #             color = 'white' if val < thresh else 'black'
+    #             ax.text(j, i, f'{val:{fmt}}', ha='center', va='center',
+    #                     fontsize=7, color=color, fontweight='bold')
+    #     ax.scatter(gt_cols, gt_rows, c='none', s=200, marker='o',
+    #                edgecolors='red', linewidths=2, zorder=5, label='GT match')
+    #     ax.set_title(title, fontsize=10)
+    #     ax.set_xlabel('G2 nodes (j)')
+    #     ax.set_ylabel('G1 nodes (i)')
+    #     ax.set_xticks(range(N2))
+    #     ax.set_yticks(range(N1))
+    #     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    # axes[0].legend(fontsize=8, loc='upper right')
+    # plt.tight_layout()
+    # save_path = os.path.join(save_dir, f'matrices_pair{idx:03d}.png')
+    # plt.savefig(save_path, dpi=100, bbox_inches='tight')
+    # plt.close(fig)
+    # print(f"Saved: {save_path}")
+    pass
+
+
+def plot_intermediate_distributions(aff_gt, aff_non_gt, sk_gt, sk_non_gt, hung_gt, hung_non_gt):
+    """
+    Plot score distributions of the affinity matrix, the doubly-stochastic Sinkhorn
+    matrix, and the hard permutation matrix from Hungarian — all split by GT label
+    (GT match in green, GT non-match in red).
+    """
+    from scipy.stats import gaussian_kde
+
+    colors = {'gt': '#2ca02c', 'non_gt': '#d62728'}
+
+    fig = plt.figure(figsize=(18, 5))
+    fig.suptitle('Intermediate matrix score distributions (by GT label)', fontsize=13)
+    gs = fig.add_gridspec(1, 3, hspace=0.4, wspace=0.3)
+
+    def _draw_kde(ax, gt_arr, non_gt_arr, title, xlabel):
+        for label, arr, color in [
+            ('GT match (gt=1)',      gt_arr,     colors['gt']),
+            ('GT non-match (gt=0)', non_gt_arr, colors['non_gt']),
+        ]:
+            if len(arr) > 1:
+                kde = gaussian_kde(arr)
+                x_range = np.linspace(arr.min(), arr.max(), 500)
+                ax.plot(x_range, kde(x_range), color=color, linewidth=2,
+                        label=f'{label} (n={len(arr)})')
+                ax.fill_between(x_range, kde(x_range), alpha=0.15, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel('Density')
+        ax.set_title(title)
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3)
+
+    def _draw_discrete(ax, gt_arr, non_gt_arr, title, xlabel):
+        """Impulse (stem) plot for discrete {0, 1} distributions."""
+        x = np.array([0, 1])
+        for label, arr, color in zip(
+            ['GT match (gt=1)', 'GT non-match (gt=0)'],
+            [gt_arr, non_gt_arr],
+            [colors['gt'], colors['non_gt']],
+        ):
+            if len(arr) > 0:
+                counts = np.array([(arr == v).sum() for v in [0, 1]], dtype=float)
+                proportions = counts / counts.sum() if counts.sum() > 0 else counts
+                markerline, stemlines, baseline = ax.stem(
+                    x, proportions, linefmt=color, markerfmt='o',
+                    basefmt=' ', label=f'{label} (n={len(arr)})'
+                )
+                markerline.set_color(color)
+                markerline.set_markersize(8)
+                stemlines.set_linewidth(2.5)
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(['0 (not assigned)', '1 (assigned)'])
+        ax.set_xlim(-0.3, 1.3)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel('Proportion')
+        ax.set_title(title)
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3, axis='y')
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    _draw_kde(ax1, aff_gt, aff_non_gt,
+              title='Normalised affinity matrix\n(before first Sinkhorn)',
+              xlabel='Affinity score (instance-normalised)')
+
+    ax2 = fig.add_subplot(gs[0, 1])
+    _draw_kde(ax2, sk_gt, sk_non_gt,
+              title='Doubly stochastic matrix\n(after Sinkhorn, before Hungarian)',
+              xlabel='Sinkhorn score  [0, 1]')
+
+    ax3 = fig.add_subplot(gs[0, 2])
+    _draw_discrete(ax3, hung_gt, hung_non_gt,
+                   title='Hard permutation matrix\n(Hungarian output)',
+                   xlabel='Assignment value  {0, 1}')
+
+    plt.show(block=False)
+
+
+def plot_hungarian_assigned_scores(sk_assigned_tp, sk_assigned_fp):
+    """
+    Plot the distribution of doubly-stochastic S scores at the positions
+    that Hungarian selected (hard=1), split by GT label:
+      - TP (hard=1, gt=1): correct assignments — want these high
+      - FP (hard=1, gt=0): wrong assignments  — want these low
+
+    This shows whether the model assigns high S scores to correct matches
+    and low scores to wrong ones, directly indicating if a sinkhorn_threshold
+    could separate TP from FP.
+    """
+    from scipy.stats import gaussian_kde
+
+    colors = {'TP': '#2ca02c', 'FP': '#d62728'}
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    fig.suptitle('S scores at Hungarian-assigned positions (hard=1)', fontsize=13)
+
+    for label, arr, color in [
+        ('TP — correct assignments (gt=1)', sk_assigned_tp, colors['TP']),
+        ('FP — wrong assignments  (gt=0)',  sk_assigned_fp, colors['FP']),
+    ]:
+        if len(arr) > 1:
+            kde = gaussian_kde(arr)
+            x_range = np.linspace(0.0, 1.0, 500)
+            ax.plot(x_range, kde(x_range), color=color, linewidth=2,
+                    label=f'{label} (n={len(arr)})')
+            ax.fill_between(x_range, kde(x_range), alpha=0.15, color=color)
+
+    ax.set_xlabel('Sinkhorn score S[i,j]  [0, 1]')
+    ax.set_ylabel('Density')
+    #ax.set_title(')
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show(block=False)
+
+
+def run_score_distribution_analysis(sinkhorn_threshold=None, max_pairs=None):
+    """Load the PGM model + MSD dataset and plot soft top-k score distributions."""
+    import sys
+    import pickle
+
+    GNN_PATH   = '/root/workspace/src/graph_matching_gnn/GNN'
+    PGM_PATH   = '/root/workspace/src/graph_matching_gnn/graph_matching'
+    MSD_PATH   = os.path.join(GNN_PATH, 'preprocessed', 'partial_graph_matching',
+                              'ws_room_dropout_noise', 'test_dataset.pkl')
+
+    for p in (PGM_PATH, GNN_PATH):
+        if p not in sys.path:
+            sys.path.insert(0, p)
+
+    import torch
+    from PGM_class import PartialGraphMatching, MatchingModel_GATv2SinkhornTopK  # type: ignore
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    pgm = PartialGraphMatching(
+        model_class=MatchingModel_GATv2SinkhornTopK,
+        data_paths={
+            'equal':   os.path.join(GNN_PATH, 'preprocessed', 'graph_matching', 'equal'),
+            'partial': os.path.join(GNN_PATH, 'preprocessed', 'partial_graph_matching',
+                                    'ws_room_dropout_noise'),
+        },
+        model_save_path=os.path.join(GNN_PATH, 'models', 'partial_graph_matching',
+                                     'ws_room_dropout_noise'),
+        device=device, in_dim=7,
+    )
+    pgm.load_best_model()
+    print("PGM model loaded.")
+
+    with open(MSD_PATH, 'rb') as f:
+        msd_test_list = pickle.load(f)
+    n = len(msd_test_list) if max_pairs is None else min(max_pairs, len(msd_test_list))
+    print(f"MSD test set: {len(msd_test_list)} pairs — analysing {n}")
+
+    matrices_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'matrix_heatmaps')
+    tp, fp, fn, tn, aff_gt, aff_non_gt, sk_gt, sk_non_gt, hung_gt, hung_non_gt, sk_assigned_tp, sk_assigned_fp = collect_soft_scores_from_msd(
+        pgm.model, msd_test_list,
+        sinkhorn_threshold=sinkhorn_threshold,
+        max_pairs=max_pairs,
+        save_heatmaps_dir=matrices_dir,
+        heatmap_pairs=min(3, n),
+    )
+
+    plot_intermediate_distributions(aff_gt, aff_non_gt, sk_gt, sk_non_gt, hung_gt, hung_non_gt)
+    plot_hungarian_assigned_scores(sk_assigned_tp, sk_assigned_fp)
+    plot_soft_score_distribution(tp, fp, fn, tn)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Plot graph matching results from JSON file')
     parser.add_argument('json_file', nargs='?', default='latest_results.json',
@@ -442,10 +823,22 @@ def main():
                         help='Do not display plots (only save)')
     parser.add_argument('--no-scatter', action='store_true',
                         help='Show surfaces only, hide scatter points')
+    parser.add_argument('--score-dist', action='store_true',
+                        help='Plot soft top-k score distributions (runs model on MSD test set)')
+    parser.add_argument('--sinkhorn-threshold', type=float, default=None,
+                        help='Post-Sinkhorn threshold applied to S before Hungarian during score-dist analysis')
+    parser.add_argument('--max-pairs', type=int, default=None,
+                        help='Limit number of MSD pairs analysed in --score-dist mode')
     args = parser.parse_args()
 
-    script_dir   = os.path.dirname(os.path.abspath(__file__))
-    results_dir  = script_dir
+    script_dir  = os.path.dirname(os.path.abspath(__file__))
+    results_dir = script_dir
+
+    if args.score_dist:
+        run_score_distribution_analysis(
+            sinkhorn_threshold=args.sinkhorn_threshold,
+            max_pairs=args.max_pairs,
+        )
 
     json_filepath = (os.path.join(results_dir, args.json_file)
                      if not os.path.dirname(args.json_file)
