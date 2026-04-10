@@ -764,6 +764,39 @@ def plot_hungarian_assigned_scores(sk_assigned_tp, sk_assigned_fp):
     plt.show(block=False)
 
 
+def plot_sinkhorn_full_distribution(sk_assigned_tp, sk_assigned_fp):
+    """
+    Plot the Sinkhorn score distribution at Hungarian-assigned positions (hard=1),
+    split strictly into TP (hard=1, gt=1) and FP (hard=1, gt=0).
+    FN (hard=0, gt=1) and TN (hard=0, gt=0) are excluded.
+    """
+    from scipy.stats import gaussian_kde
+
+    colors = {'tp': '#2ca02c', 'fp': '#d62728'}
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    x_range = np.linspace(0, 1.5, 500)
+
+    for label, arr, color in [
+        (f'TP — correct assignments (gt=1)  (n={len(sk_assigned_tp):,})', sk_assigned_tp, colors['tp']),
+        (f'FP — wrong assignments   (gt=0)  (n={len(sk_assigned_fp):,})', sk_assigned_fp, colors['fp']),
+    ]:
+        if len(arr) > 1:
+            kde = gaussian_kde(arr)
+            ax.plot(x_range, kde(x_range), color=color, linewidth=2, label=label)
+            ax.fill_between(x_range, kde(x_range), alpha=0.15, color=color)
+
+    ax.set_xlim(0, 1.5)
+    ax.set_ylim(0, 40)
+    ax.set_xlabel('Sinkhorn score S[i,j]')
+    ax.set_ylabel('Density')
+    ax.set_title('Sinkhorn score distribution — all entries, TP vs FP (MSD test set)')
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show(block=False)
+
+
 def run_score_distribution_analysis(sinkhorn_threshold=None, max_pairs=None):
     """Load the PGM model + MSD dataset and plot soft top-k score distributions."""
     import sys
@@ -813,6 +846,7 @@ def run_score_distribution_analysis(sinkhorn_threshold=None, max_pairs=None):
     plot_intermediate_distributions(aff_gt, aff_non_gt, sk_gt, sk_non_gt, hung_gt, hung_non_gt)
     plot_hungarian_assigned_scores(sk_assigned_tp, sk_assigned_fp)
     plot_soft_score_distribution(tp, fp, fn, tn)
+    plot_sinkhorn_full_distribution(sk_assigned_tp, sk_assigned_fp)
 
 
 def main():

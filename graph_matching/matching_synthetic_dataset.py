@@ -400,11 +400,14 @@ def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=
     Node indices are used as node IDs since MSD data has no named nodes.
 
     Returns:
-        dict with the same keys as run_pgm_matching_experiment
+        dict with the same keys as run_pgm_matching_experiment, plus 'soft_S' and 'gt_perm'
     """
     start_time = time.time()
     matching_matrix = predict_matching_matrix(pgm_model.model, data1, data2, discrete=True, sinkhorn_threshold=sinkhorn_threshold, score_threshold=score_threshold, acc_threshold=acc_threshold)
     matching_time = time.time() - start_time
+
+    # Also get the soft Sinkhorn matrix (before Hungarian) for score distribution analysis
+    soft_S = predict_matching_matrix(pgm_model.model, data1, data2, discrete=False, sinkhorn_threshold=None, score_threshold=None, acc_threshold=acc_threshold)
 
     rows, cols = np.where(matching_matrix.cpu().numpy() > 0)
     predicted_matches = [[str(r), str(c)] for r, c in zip(rows, cols)]
@@ -420,7 +423,9 @@ def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=
         'metrics': metrics,
         'matching_time': matching_time,
         'gt_match': gt_matches,
-        'experiment_type': 'pgm_msd'
+        'experiment_type': 'pgm_msd',
+        'soft_S': soft_S.cpu().numpy(),
+        'gt_perm': gt_perm.cpu().numpy(),
     }
 
 
@@ -454,6 +459,9 @@ if DATASET == "msd":
         msd_test_list = pickle.load(f)
     print(f"MSD test set loaded: {len(msd_test_list)} pairs")
 
+    all_tp_scores = []
+    all_fp_scores = []
+
     for data1, data2, gt_perm in tqdm(msd_test_list, desc="MSD matching", colour="green"):
         results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD)
 
@@ -465,6 +473,15 @@ if DATASET == "msd":
         n_rooms_s = sum(1 for n in data2.node_names if n.endswith('_centroid'))
         n_rooms_a = sum(1 for n in data1.node_names if n.endswith('_centroid'))
         all_metrics_data.append((n_rooms_s, n_rooms_a, metrics))
+
+        # Collect Sinkhorn TP/FP scores for distribution plot
+        soft_S = results['soft_S']   # [N1, N2]
+        gt_mask = results['gt_perm'] # [N1, N2], 1=TP, 0=FP
+        # Align shapes (gt_perm may be larger if it includes padding)
+        h, w = soft_S.shape
+        gt_mask_crop = gt_mask[:h, :w]
+        all_tp_scores.append(soft_S[gt_mask_crop == 1].flatten())
+        all_fp_scores.append(soft_S[gt_mask_crop == 0].flatten())
 
     # Aggregated summary over all MSD pairs
     msd_metrics = [m for _, _, m in all_metrics_data if m.get('experiment_type') == 'pgm_msd']
@@ -480,6 +497,39 @@ if DATASET == "msd":
         print(f"Accuracy  : {avg('accuracy'):.4f}")
         print(f"Avg Time  : {avg('matching_time'):.4f}s")
         print("="*60)
+
+    # Sinkhorn score distribution plot (TP vs FP)
+    if all_tp_scores or all_fp_scores:
+        from scipy.stats import gaussian_kde
+
+        tp_scores = np.concatenate(all_tp_scores) if all_tp_scores else np.array([])
+        fp_scores = np.concatenate(all_fp_scores) if all_fp_scores else np.array([])
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        x_range = np.linspace(0, 3, 500)
+        colors = {'tp': '#2ca02c', 'fp': '#d62728'}
+        for label, arr, color in [
+            (f'GT match / TP  (n={len(tp_scores):,})',     tp_scores, colors['tp']),
+            (f'GT non-match / FP  (n={len(fp_scores):,})', fp_scores, colors['fp']),
+        ]:
+            if len(arr) > 1:
+                kde = gaussian_kde(arr)
+                ax.plot(x_range, kde(x_range), color=color, linewidth=2, label=label)
+                ax.fill_between(x_range, kde(x_range), alpha=0.15, color=color)
+        ax.set_xlim(0, 3)
+        ax.set_xlabel('Sinkhorn score')
+        ax.set_ylabel('Density')
+        ax.set_title('Sinkhorn score distribution — TP vs FP (MSD test set)')
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3)
+        fig.tight_layout()
+
+        results_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
+        os.makedirs(results_dir, exist_ok=True)
+        plot_path = os.path.join(results_dir, "sinkhorn_score_distribution.png")
+        fig.savefig(plot_path, dpi=150)
+        print(f"Sinkhorn score distribution plot saved to: {plot_path}")
+        plt.show()
 
 elif DATASET == "synthetic":
     # ── Synthetic dataset loop ────────────────────────────────────────────────
