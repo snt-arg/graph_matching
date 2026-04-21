@@ -115,6 +115,7 @@ class GraphMatchingNode(Node):
 
         if self.use_pgm:
             self.setup_pgm()
+            self.create_subscription(PlanesDataMsg, '/s_graphs/all_map_planes', self.all_planes_callback_wrapper, 10)
             self.get_logger().info('Using PGM matcher')
         else:
             self.get_logger().info('Classic matcher initialized. Not using PGM matcher.')
@@ -865,7 +866,7 @@ class GraphMatchingNode(Node):
 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
-        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)
+        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=True, blocking=True)
         # G.from_3D_to_2D()
 
         return G
@@ -1063,7 +1064,7 @@ class GraphMatchingNode(Node):
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_3_visualization', 10)
         # self.symmetry_match_1_visualization_publisher = self.create_publisher(MarkerArrayMsg, 'graph_matching/symmetry_match_4_visualization', 10)
         self.subgraph_match_srv = self.create_service(SubgraphMatchSrv, 'graph_matching/subgraph_match', self.subgraph_match_srv_callback)
-        self.create_subscription(PlanesDataMsg,'/s_graphs/all_map_planes', self.all_planes_callback_wrapper, 10)
+        # /s_graphs/all_map_planes is PGM-only — subscription created in __init__ when use_pgm=True
 
 
     def all_planes_callback_wrapper(self, msg):
@@ -1218,7 +1219,7 @@ class GraphMatchingNode(Node):
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
-        if graph["name"] == "Online" and len(room_ids)>=4:
+        if graph["name"] == "Online" and len(room_ids)>=2:
             self.get_logger().info(f"Starting match!")
             # Save Online pickle here — every time matching fires — so the pickle
             # always holds the most recent >= 4-room state used for matching.
@@ -1227,6 +1228,7 @@ class GraphMatchingNode(Node):
                 with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
                     pickle.dump(self.graphs_gnn["Online"], pickle_file)
                 self.get_logger().info(f"Saved Online graph to {graph_dicts_dir}/Online.pkl")
+
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
@@ -1678,10 +1680,15 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = True
+    debug_offline = False
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 
+        if "Online" not in graph_matching_node.gm.graphs:
+            graph_matching_node.get_logger().warn("No Online graph found in graph_dicts, skipping debug offline mode")
+            debug_offline = False
+
+    if debug_offline:
         g = graph_matching_node.gm.graphs["Online"].graph
         rooms = [(n, d) for n, d in g.nodes(data=True) if d.get("type") == "room"]
         ws    = [(n, d) for n, d in g.nodes(data=True) if d.get("type") == "ws"]
@@ -1700,7 +1707,7 @@ def main(args=None):
                 g_viz.from_2D_to_3D()
                 g_viz._add_complete_viz_attributes_to_graph()
                 visualize_nxgraph_3d(g_viz, gname, visualize_alone=True,
-                                     include_node_ids=True, blocking=False)
+                                     include_node_ids=False, blocking=False)
         plt.show(block=True)  # block here until both windows are closed
 
         result = graph_matching_node.match_loaded_graphs()

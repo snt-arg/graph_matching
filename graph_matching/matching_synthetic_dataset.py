@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-import sys, json, os, copy
+import copy
+import sys, json, os, re
 import numpy as np
 import time
 import pickle
@@ -12,10 +13,17 @@ from tqdm import tqdm
 # ── Matcher / dataset selection ───────────────────────────────────────────────
 # USE_PGM=True  → run with PGM_env (Python 3.11, has PyTorch/moviepy)
 # USE_PGM=False → run with system Python 3.12 (has clipperpy/ROS packages)
-USE_PGM = True
+USE_PGM = False
 
 # Dataset selection — pick one: "synthetic", "msd", "real"
-DATASET = "msd"
+DATASET = "real"
+
+# Noise condition for MSD dataset — pick one:
+#   "ws_dropout_noise"        → WS noise only
+#   "room_dropout_noise"      → Room noise only
+#   "ws_room_dropout_noise"   → WS + Room noise (combined)
+#   "ws_room_dropout_noise_inc" → WS + Room noise incremental
+NOISE_CONDITION = "ws_room_dropout_noise"
 
 # Post soft-topk threshold.
 # Matches whose soft score is below this value are rejected after soft-topk.
@@ -28,7 +36,7 @@ SCORE_THRESHOLD = None  # e.g. 0.3, 0.5, 0.7
 # Hungarian, guiding the solver away from weak pairs. S values are in [0, 1]
 # so the threshold should be in that range (e.g. 0.1, 0.2).
 # Set to None to disable (Hungarian runs on the full S matrix).
-SINKHORN_THRESHOLD = 0.99 # e.g. 0.1, 0.2 — None disables
+SINKHORN_THRESHOLD = None # e.g. 0.1, 0.2 — None disables
 
 # Pre-normalisation accuracy threshold (PGM only).
 # Entries in the raw dot-product similarity matrix (before instance norm) below
@@ -61,12 +69,46 @@ sys.path.append(synthetic_datset_dir)
 # from situational_graphs_datasets.SyntheticDatasetGenerator import SyntheticDatasetGenerator
 from situational_graphs_datasets.graph_visualizer import visualize_nxgraph_3d
 
+import networkx as nx
 import situational_graphs_wrapper
+from situational_graphs_wrapper.GraphWrapper import GraphWrapper
 # Make the module available under both names for pickle compatibility
 sys.modules['graph_wrapper'] = situational_graphs_wrapper
 
 # from situational_graphs_datasets.config import get_config as get_datasets_config
 # synteticdataset_settings = get_datasets_config("graph_matching")
+
+def pyg_data_to_graphwrapper(data, original_graphs, name=None):
+    """Reconstruct a GraphWrapper from a PyG Data object by looking up the
+    original NetworkX DiGraph (which has full geometry: center, normal, limits).
+
+    data.name is the graph index/name used to match against original_graphs.
+    original_graphs is the list of NX DiGraphs from original.pkl.
+    """
+    orig_nx = next((g for g in original_graphs if str(g.graph.get('name')) == str(data.name)), None)
+    if orig_nx is None:
+        raise ValueError(f"No original graph found with name '{data.name}'")
+
+    # Only keep the nodes present in data (the partial/noisy subset)
+    G = nx.DiGraph()
+    display_name = name if name is not None else str(data.name)
+    G.graph['name'] = display_name
+    perm = data.permutation.tolist()
+    node_ids = [data.node_names[idx] for idx in perm]
+    for node_id in node_ids:
+        if node_id in orig_nx.nodes:
+            G.add_node(node_id, **orig_nx.nodes[node_id])
+    for u_idx, v_idx in data.edge_index.t().tolist():
+        u = node_ids[u_idx]
+        v = node_ids[v_idx]
+        if u in G and v in G:
+            edge_attrs = orig_nx.edges[u, v] if orig_nx.has_edge(u, v) else {}
+            G.add_edge(u, v, **edge_attrs)
+
+    wrapper = GraphWrapper(graph_obj=G)
+    wrapper.name = display_name
+    return wrapper
+
 
 class FakeLogger(object):    #Needed to initialize GraphMatcher without a real logger (to avoid errors when running in non-ROS environment)
     def __init__(self) -> None:
@@ -109,8 +151,130 @@ def process_synthetic_graph(graph):
             node_attrs["Geometric_info"] = initial
 
 
-def load_real_graphs():
-    """Load Prior/Online graphs and ground truth from graph_dicts/.
+def unsplit_graph(graph):
+    """Merge GNN split-plane nodes (e.g. '92077532_s0') back to their original ws node.
+
+    GNN-format graphs split wall planes into sub-segments for GNN processing.
+    The classic matcher works on whole walls, so split nodes must be merged back.
+    Each split node has an 'original_id' pointing to the original plane ID and
+    'original_attrs' carrying the full-wall center/normal.
+    """
+    g = graph.graph
+
+    splits_by_original = {}
+    for node_id, attrs in list(g.nodes(data=True)):
+        original_id = attrs.get("original_id")
+        if original_id is not None:
+            splits_by_original.setdefault(original_id, []).append((node_id, attrs))
+
+    for original_id, split_nodes in splits_by_original.items():
+        first_attrs = split_nodes[0][1]
+        orig_attrs = first_attrs.get("original_attrs", {})
+
+        center = orig_attrs.get("center", first_attrs.get("center", [0., 0.]))
+        normal = orig_attrs.get("normal", first_attrs.get("normal", [0., 0.]))
+        if hasattr(center, "tolist"):
+            center = center.tolist()
+        if hasattr(normal, "tolist"):
+            normal = normal.tolist()
+
+        split_ids = {s[0] for s in split_nodes}
+        all_neighbors = set()
+        for split_id in split_ids:
+            if hasattr(g, 'predecessors'):
+                all_neighbors.update(g.predecessors(split_id))
+                all_neighbors.update(g.successors(split_id))
+            else:
+                all_neighbors.update(g.neighbors(split_id))
+        all_neighbors -= split_ids
+
+        g.add_node(original_id,
+                   type="ws",
+                   center=center,
+                   normal=normal,
+                   original_type=first_attrs.get("original_type", "Plane"),
+                   original_attrs=orig_attrs)
+
+        for neighbor in all_neighbors:
+            g.add_edge(neighbor, original_id)
+
+        for split_id in split_ids:
+            g.remove_node(split_id)
+
+
+def strip_split_suffix(node_id):
+    """Convert a split node ID like '92077532_s4' to its original ID '92077532'."""
+    return re.sub(r'_s\d+$', '', str(node_id))
+
+
+def map_gt_to_unsplit_ids(gt_match):
+    """Remap GT pairs from split-node IDs to original unsplit node IDs.
+
+    The ground truth JSON was created from GNN-format (split) graphs, so ws IDs
+    look like '92077532_s4'. After unsplit_graph(), those nodes no longer exist —
+    only the original '92077532' remains. Strip the '_sX' suffix so the GT IDs
+    align with the unsplit graph. Room IDs (plain integers) are unaffected.
+    """
+    seen = set()
+    mapped = []
+    for prior_id, online_id in gt_match:
+        pair = (strip_split_suffix(prior_id), strip_split_suffix(online_id))
+        if pair not in seen:
+            seen.add(pair)
+            mapped.append(list(pair))
+    return mapped
+
+
+def process_real_graph(graph):
+    """Set Geometric_info on real-environment graph nodes.
+
+    Call after unsplit_graph(). The classic matcher requires Geometric_info in
+    the same representation used by the node's graph_callback:
+      - room: [cx, cy, cz]  (room center)
+      - ws:   [cx, cy, cz, nx, ny, nz]  where [cx,cy,cz] = closest point on
+              the infinite plane to the world origin (NOT the segment center).
+
+    The correct Geometric_info is preserved in original_attrs on each node
+    (stored by convert_wrapper_to_gnn_format before GNN splitting). Using the
+    segment center stored in node_attrs["center"] gives the wrong invariants and
+    causes the matcher to fail on real environments.
+    """
+    graph.to_undirected()
+    for node_id, node_attrs in graph.get_attributes_of_all_nodes():
+        original_attrs = node_attrs.get("original_attrs", {})
+        if node_attrs.get("type") == "room":
+            center = node_attrs.get("center", [0., 0.])
+            node_attrs["Geometric_info"] = np.array([center[0], center[1], 0.0])
+        elif node_attrs.get("type") == "ws":
+            orig_geom = original_attrs.get("Geometric_info")
+            if orig_geom is not None:
+                orig_geom = np.array(orig_geom, dtype=float)
+                if len(orig_geom) >= 6:
+                    # Use canonical x,y (closest-point-to-origin), force z=0.
+                    # Prior maps are 2D (z=0 already); Online SLAM estimates may
+                    # have small non-zero z/nz from 3D SLAM.  Forcing z=0 for
+                    # both keeps the invariants consistent, matching what the node
+                    # does when it reconstructs Geometric_info in graph_callback.
+                    node_attrs["Geometric_info"] = np.array([
+                        orig_geom[0], orig_geom[1], 0.0,
+                        orig_geom[3], orig_geom[4], 0.0,
+                    ])
+                else:
+                    center = node_attrs.get("center", [0., 0.])
+                    normal = node_attrs.get("normal", [0., 0.])
+                    node_attrs["Geometric_info"] = np.array([center[0], center[1], 0.0,
+                                                             normal[0], normal[1], 0.0])
+            else:
+                center = node_attrs.get("center", [0., 0.])
+                normal = node_attrs.get("normal", [0., 0.])
+                node_attrs["Geometric_info"] = np.array([center[0], center[1], 0.0,
+                                                         normal[0], normal[1], 0.0])
+
+
+REAL_ENVS = ["47_basement", "47_topfloor_", "CF12"]
+
+def load_real_graphs(env_name):
+    """Load Prior/Online graphs and ground truth from graph_dicts/<env_name>/.
 
     The pickled graphs are already in GNN format (split planes, sanitized attrs).
     Ground truth JSON format:
@@ -120,8 +284,9 @@ def load_real_graphs():
     Returns:
         (a_graph, s_graph, gt_match)
         where gt_match = [[prior_node_id, online_node_id], ...] (A-graph, S-graph order)
+        gt_match is [] when no ground_truth.json exists for this environment.
     """
-    graph_dicts_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "graph_dicts")
+    graph_dicts_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "graph_dicts", env_name)
 
     with open(os.path.join(graph_dicts_path, "Prior.pkl"), 'rb') as f:
         a_graph = pickle.load(f)
@@ -136,20 +301,21 @@ def load_real_graphs():
                     attrs[key] = attrs[key].tolist()
 
     # Load and parse ground truth — store as [[prior_id, online_id]] = [[A, S]]
-    gt_path = os.path.join(graph_dicts_path, "ground_truth.json")
-    with open(gt_path, "r") as f:
-        raw = json.load(f)
-
     gt_match = []
-    for o_id, p_id in raw.get("rooms", {}).items():
-        if p_id != "??":
-            gt_match.append([str(p_id), str(o_id)])   # [prior=A, online=S]
-    for entry in raw.get("ws", []):
-        if len(entry) == 2 and entry[1] != "??":
-            gt_match.append([str(entry[1]), str(entry[0])])  # [prior=A, online=S]
+    gt_path = os.path.join(graph_dicts_path, "ground_truth.json")
+    if os.path.exists(gt_path):
+        with open(gt_path, "r") as f:
+            raw = json.load(f)
+        for o_id, p_id in raw.get("rooms", {}).items():
+            if p_id != "??":
+                gt_match.append([str(p_id), str(o_id)])   # [prior=A, online=S]
+        for entry in raw.get("ws", []):
+            if len(entry) == 2 and entry[1] != "??":
+                gt_match.append([str(entry[1]), str(entry[0])])  # [prior=A, online=S]
 
-    print(f"Real graphs loaded — Prior: {a_graph.graph.number_of_nodes()} nodes, "
-          f"Online: {s_graph.graph.number_of_nodes()} nodes, GT pairs: {len(gt_match)}")
+    gt_info = f"GT pairs: {len(gt_match)}" if gt_match else "no ground truth"
+    print(f"[{env_name}] Prior: {a_graph.graph.number_of_nodes()} nodes, "
+          f"Online: {s_graph.graph.number_of_nodes()} nodes, {gt_info}")
     return a_graph, s_graph, gt_match
             
 
@@ -166,16 +332,11 @@ def run_graph_matching_experiment(a_graph, s_graph, gt_match, graph_name_suffix=
     Returns:
         dict: Dictionary containing success status, metrics, timing, and other results
     """
-    # Prepare target graph (with or without filtering)
-    target_graph = copy.deepcopy(s_graph)
-    
     # Create GraphMatcher
     graph_matcher = GraphMatcher(fake_logger, log_level=0)
     graph_matcher.set_parameters(syntheticDS_params)
     graph_matcher.set_graph_from_wrapper(a_graph, "A-Graph")
-    graph_matcher.set_graph_from_wrapper(s_graph, f"S-Graph")
-    graph_matcher.room_string = "room"
-    graph_matcher.ws_string = "ws"
+    graph_matcher.set_graph_from_wrapper(s_graph, "S-Graph")
     
     # Perform matching
     start_time = time.time()
@@ -431,7 +592,7 @@ def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
 GNN_PATH = '/root/workspace/src/graph_matching_gnn/GNN'
-MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", "ws_room_dropout_noise", "test_dataset.pkl")
+MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION, "test_dataset.pkl")
 
 # Load PGM model once (only needed for pgm and msd modes)
 if USE_PGM:
@@ -440,9 +601,9 @@ if USE_PGM:
         model_class=MatchingModel_GATv2SinkhornTopK,
         data_paths={
             "equal":   os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal"),
-            "partial": os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", "ws_room_dropout_noise"),
+            "partial": os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION),
         },
-        model_save_path=os.path.join(GNN_PATH, "models", "partial_graph_matching", "ws_room_dropout_noise"),
+        model_save_path=os.path.join(GNN_PATH, "models", "partial_graph_matching", NOISE_CONDITION),
         device=device, in_dim=7,
     )
     pgm_model_instance.load_best_model()
@@ -458,6 +619,25 @@ if DATASET == "msd":
     with open(MSD_TEST_PATH, 'rb') as f:
         msd_test_list = pickle.load(f)
     print(f"MSD test set loaded: {len(msd_test_list)} pairs")
+
+    # Reuse original graphs already loaded by the PGM model (avoids double memory cost)
+    original_graphs_raw = pgm_model_instance.original_graphs
+
+    # ── Visualize first 3 full original graphs from the MSD test set ─────────
+    for idx in range(min(20, len(msd_test_list))):
+        data1, _, _ = msd_test_list[idx]
+        orig_nx = next((g for g in original_graphs_raw if str(g.graph.get('name')) == str(data1.name)), None)
+        if orig_nx is None:
+            print(f"[WARN] No original graph found for MSD pair {idx} (name={data1.name})")
+            continue
+        g_viz = GraphWrapper(graph_obj=copy.deepcopy(orig_nx))
+        g_viz.name = f"MSD_{idx}_orig"
+        g_viz.from_2D_to_3D()
+        g_viz._add_complete_viz_attributes_to_graph()
+        visualize_nxgraph_3d(g_viz, f"MSD_{idx}_orig", visualize_alone=True,
+                             include_node_ids=False, blocking=False)
+    plt.show(block=True)
+    # ─────────────────────────────────────────────────────────────────────────
 
     all_tp_scores = []
     all_fp_scores = []
@@ -593,37 +773,72 @@ elif DATASET == "synthetic":
         print("="*60)
 
 elif DATASET == "real":
-    # ── Real environment dataset (graph_dicts/) ───────────────────────────────
-    a_graph, s_graph, gt_match = load_real_graphs()
-
+    # ── Real environment dataset (graph_dicts/<env>/) ─────────────────────────
     exp_type = 'pgm_real' if USE_PGM else 'classic_real'
+    summary_rows = []  # collect per-env results for the summary table
 
-    if USE_PGM:
-        results = run_pgm_matching_experiment(
-            pgm_model_instance, a_graph, s_graph, gt_match,
-            graph_name_suffix=exp_type,
-            sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD
-        )
-    else:
-        results = run_graph_matching_experiment(
-            a_graph, s_graph, gt_match,
-            graph_name_suffix=exp_type
-        )
+    for env_name in REAL_ENVS:
+        print(f"\n{'='*60}")
+        print(f"  Environment: {env_name}")
+        print(f"{'='*60}")
 
-    metrics = results['metrics'].copy() if results['metrics'] else {}
-    metrics['experiment_type'] = exp_type
-    metrics['matching_time'] = results['matching_time']
-    metrics['num_solutions'] = len(results['matches_node_ids'])
-    metrics['success'] = bool(results['success'])
+        a_graph, s_graph, gt_match = load_real_graphs(env_name)
+        if not USE_PGM:
+            unsplit_graph(a_graph)
+            unsplit_graph(s_graph)
+            process_real_graph(a_graph)
+            process_real_graph(s_graph)
+            gt_match = map_gt_to_unsplit_ids(gt_match)
 
-    n_rooms_s = sum(1 for _, attrs in s_graph.graph.nodes(data=True) if attrs.get('type') == 'room')
-    n_rooms_a = sum(1 for _, attrs in a_graph.graph.nodes(data=True) if attrs.get('type') == 'room')
-    all_metrics_data.append((n_rooms_s, n_rooms_a, metrics))
+        if USE_PGM:
+            results = run_pgm_matching_experiment(
+                pgm_model_instance, a_graph, s_graph, gt_match,
+                graph_name_suffix=f"{exp_type}_{env_name}",
+                sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD
+            )
+        else:
+            results = run_graph_matching_experiment(
+                a_graph, s_graph, gt_match,
+                graph_name_suffix=f"{exp_type}_{env_name}"
+            )
 
-    print(f"\n[Real] success={metrics['success']}  solutions={metrics['num_solutions']}  "
-          f"time={metrics['matching_time']:.3f}s")
-    if results['metrics']:
-        compute_metrics(gt_match, results['matches_node_ids'][0], log_level=1)
+        metrics = results['metrics'].copy() if results['metrics'] else {}
+        metrics['experiment_type'] = f"{exp_type}_{env_name}"
+        metrics['matching_time'] = results['matching_time']
+        metrics['num_solutions'] = len(results['matches_node_ids'])
+        metrics['success'] = bool(results['success'])
+        metrics['environment'] = env_name
+
+        n_rooms_s = sum(1 for _, attrs in s_graph.graph.nodes(data=True) if attrs.get('type') == 'room')
+        n_rooms_a = sum(1 for _, attrs in a_graph.graph.nodes(data=True) if attrs.get('type') == 'room')
+        all_metrics_data.append((n_rooms_s, n_rooms_a, metrics))
+
+        if gt_match and results['metrics']:
+            compute_metrics(gt_match, results['matches_node_ids'][0], log_level=1)
+
+        summary_rows.append({
+            'env': env_name,
+            'precision': metrics.get('precision', float('nan')),
+            'recall':    metrics.get('recall',    float('nan')),
+            'f1':        metrics.get('f1_score',   float('nan')),
+            'accuracy':  metrics.get('accuracy',  float('nan')),
+            'time':      metrics['matching_time'],
+            'has_gt':    bool(gt_match),
+        })
+
+    # ── Summary table ─────────────────────────────────────────────────────────
+    print(f"\n{'='*72}")
+    print(f"  REAL ENVIRONMENT SUMMARY")
+    print(f"{'='*72}")
+    print(f"  {'Environment':<22} {'Precision':>10} {'Recall':>8} {'F1':>8} {'Accuracy':>10} {'Time(s)':>9}")
+    print(f"  {'-'*22} {'-'*10} {'-'*8} {'-'*8} {'-'*10} {'-'*9}")
+    for row in summary_rows:
+        if row['has_gt']:
+            print(f"  {row['env']:<22} {row['precision']:>10.4f} {row['recall']:>8.4f} "
+                  f"{row['f1']:>8.4f} {row['accuracy']:>10.4f} {row['time']:>9.3f}")
+        else:
+            print(f"  {row['env']:<22} {'n/a':>10} {'n/a':>8} {'n/a':>8} {'n/a':>10} {row['time']:>9.3f}")
+    print(f"{'='*72}")
 
 else:
     raise ValueError(f"Unknown DATASET value: '{DATASET}'. Choose 'synthetic', 'msd', or 'real'.")
@@ -676,6 +891,7 @@ if all_metrics_data:
         'sinkhorn_threshold': SINKHORN_THRESHOLD,
         'acc_threshold': ACC_THRESHOLD,
         'dataset': DATASET,
+        'noise_condition': NOISE_CONDITION,
     }
     
     # Combine data and metadata
