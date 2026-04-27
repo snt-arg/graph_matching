@@ -797,6 +797,89 @@ def plot_sinkhorn_full_distribution(sk_assigned_tp, sk_assigned_fp):
     plt.show(block=False)
 
 
+def plot_mc_dropout_threshold_curve(json_filepath):
+    """Plot precision, recall, F1 vs std_threshold from MC Dropout uncertainty data.
+
+    For each candidate std_threshold value, simulates what happens if all
+    Hungarian-assigned matches with uncertainty > threshold are rejected,
+    and recomputes the classification metrics.
+    """
+    with open(json_filepath) as f:
+        data = json.load(f)
+
+    mc = data.get('mc_uncertainty', {})
+    if not mc or 'assigned_tp_uncertainty' not in mc:
+        print("No MC Dropout assigned uncertainty data found in this results file.")
+        print("Re-run matching_synthetic_dataset.py with MC_SAMPLES > 0.")
+        return
+
+    tp_unc        = np.array(mc['assigned_tp_uncertainty'])   # uncertainty at correct assigned matches
+    fp_unc        = np.array(mc['assigned_fp_uncertainty'])   # uncertainty at wrong assigned matches
+    total_gt      = mc['total_gt_matches']                    # total GT matches (TP + FN) in test set
+    mc_samples    = mc.get('mc_samples', '?')
+
+    original_tp   = len(tp_unc)
+    original_fp   = len(fp_unc)
+    original_fn   = total_gt - original_tp  # GT matches that Hungarian missed before any threshold
+
+    # Sweep threshold from 0 to the max observed uncertainty
+    max_unc    = max(tp_unc.max() if len(tp_unc) else 0, fp_unc.max() if len(fp_unc) else 0)
+    thresholds = np.linspace(0.0, max_unc, 200)
+
+    precisions, recalls, f1s = [], [], []
+    for t in thresholds:
+        remaining_tp = int((tp_unc <= t).sum())   # correct matches kept
+        remaining_fp = int((fp_unc <= t).sum())   # wrong matches kept
+
+        denom_prec = remaining_tp + remaining_fp
+        denom_rec  = total_gt  # TP + FN is fixed (original_fn + original_tp)
+
+        precision = remaining_tp / denom_prec if denom_prec > 0 else 0.0
+        recall    = remaining_tp / denom_rec  if denom_rec  > 0 else 0.0
+        f1        = (2 * precision * recall / (precision + recall)
+                     if (precision + recall) > 0 else 0.0)
+
+        precisions.append(precision)
+        recalls.append(recall)
+        f1s.append(f1)
+
+    precisions = np.array(precisions)
+    recalls    = np.array(recalls)
+    f1s        = np.array(f1s)
+
+    best_idx = np.argmax(f1s)
+    best_t   = thresholds[best_idx]
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.plot(thresholds, precisions, color='#1f77b4', linewidth=2, label='Precision')
+    ax.plot(thresholds, recalls,    color='#2ca02c', linewidth=2, label='Recall')
+    ax.plot(thresholds, f1s,        color='#d62728', linewidth=2, label='F1-Score')
+    ax.axvline(best_t, color='grey', linestyle='--', linewidth=1.2,
+               label=f'Best F1 threshold = {best_t:.3f}')
+
+    ax.set_xlim(0, max_unc)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(f'std_threshold  (MC Dropout std, {mc_samples} passes)')
+    ax.set_ylabel('Metric value')
+    ax.set_title(f'Precision / Recall / F1 vs MC Dropout std threshold  ({mc_samples} passes)')
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
+    save_path = os.path.join(os.path.dirname(json_filepath), 'mc_dropout_threshold_curve.png')
+    fig.savefig(save_path, dpi=150)
+    print(f"MC Dropout threshold curve saved to: {save_path}")
+
+    print(f"\n--- MC Dropout threshold sweep ({mc_samples} passes) ---")
+    print(f"  Original assigned TP : {original_tp}")
+    print(f"  Original assigned FP : {original_fp}")
+    print(f"  Original FN (missed) : {original_fn}")
+    print(f"  Best F1 = {f1s[best_idx]:.4f}  at std_threshold = {best_t:.4f}"
+          f"  (precision={precisions[best_idx]:.4f}, recall={recalls[best_idx]:.4f})")
+
+    plt.show()
+
+
 def run_score_distribution_analysis(sinkhorn_threshold=None, max_pairs=None):
     """Load the PGM model + MSD dataset and plot soft top-k score distributions."""
     import sys
@@ -863,6 +946,8 @@ def main():
                         help='Post-Sinkhorn threshold applied to S before Hungarian during score-dist analysis')
     parser.add_argument('--max-pairs', type=int, default=None,
                         help='Limit number of MSD pairs analysed in --score-dist mode')
+    parser.add_argument('--mc-dropout', action='store_true',
+                        help='Plot MC Dropout uncertainty distribution from the results JSON')
     args = parser.parse_args()
 
     script_dir  = os.path.dirname(os.path.abspath(__file__))
@@ -877,6 +962,9 @@ def main():
     json_filepath = (os.path.join(results_dir, args.json_file)
                      if not os.path.dirname(args.json_file)
                      else args.json_file)
+
+    if args.mc_dropout:
+        plot_mc_dropout_threshold_curve(json_filepath)
 
     print(f"Loading results from: {json_filepath}")
     data = load_results(json_filepath)

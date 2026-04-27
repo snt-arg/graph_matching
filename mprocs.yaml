@@ -3,7 +3,7 @@ procs:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && rviz2 -d ~/workspace/src/is_graphs/rviz/s_graphs_ros2.rviz"'
     autostart: true
   s_graphs_sim:
-    shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/point_cloud base_frame:=base_footprint"'
+    shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/platform/velodyne_points base_frame:=base_footprint"'
     autostart: false
   s_graphs_real:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/ouster/points base_frame:=base_link"'

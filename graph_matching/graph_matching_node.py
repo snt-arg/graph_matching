@@ -1182,8 +1182,15 @@ class GraphMatchingNode(Node):
         self.gm.graphs[graph["name"]] = self.gm.graphs[graph["name"]].filter_graph_by_node_types(accapted_node_types)
         self.gm.graphs[graph["name"]].set_name(graph["name"]) # Set the name of the graph in the wrapper for later reference (e.g. during visualization)
         # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
-        
-        
+
+        # Always save the latest graph to disk regardless of matcher mode.
+        graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
+        os.makedirs(graph_dicts_dir, exist_ok=True)
+        save_path = os.path.join(graph_dicts_dir, f"{graph['name']}.pkl")
+        with open(save_path, "wb") as pickle_file:
+            pickle.dump(nx.DiGraph(self.gm.graphs[graph["name"]].graph), pickle_file)
+        self.get_logger().info(f"Saved {graph['name']} graph -> {save_path}")
+
         if self.use_pgm:
             if graph["name"] != "Prior" and not self.original_planes:
                 self.get_logger().warn(f'Skipping GNN conversion for {graph["name"]}: original_planes not yet received from /s_graphs/all_map_planes')
@@ -1675,12 +1682,72 @@ class GraphMatchingNode(Node):
 
 
 
+def visualize_saved_graphs(save_dir):
+    print(f"[visualize] Loading graphs from: {save_dir}")
+    for graph_name in ("Prior", "Online"):
+        pkl_path = os.path.join(save_dir, f"{graph_name}.pkl")
+        if not os.path.exists(pkl_path):
+            print(f"[visualize] {pkl_path} not found — skipping.")
+            continue
+        with open(pkl_path, "rb") as f:
+            obj = pickle.load(f)
+        nx_graph = obj.graph if isinstance(obj, GraphWrapper) else obj
+        g_viz = GraphWrapper(graph_obj=copy.deepcopy(nx_graph))
+        g_viz.name = graph_name
+
+        for node_id, node_attrs in list(g_viz.get_attributes_of_all_nodes()):
+            gi = np.array(node_attrs.get("Geometric_info", [0.0, 0.0, 0.0]), dtype=float)
+            center = gi[:3] if len(gi) >= 3 else np.array([gi[0], gi[1], 0.0])
+            if node_attrs.get("type") == "Finite Room":
+                node_attrs["type"] = "room"
+                node_attrs["center"] = center
+                g_viz.update_node_attrs(node_id, node_attrs)
+            elif node_attrs.get("type") == "Plane":
+                node_attrs["type"] = "ws"
+                normal = gi[3:6] if len(gi) >= 6 else np.array([0.0, 0.0, 0.0])
+                node_attrs["normal"] = normal
+                # Use start_point + length if available (accurate segment endpoints)
+                start_point = node_attrs.get("start_point")
+                raw_length = node_attrs.get("length")
+                if start_point is not None and raw_length is not None:
+                    length = float(raw_length[0]) if isinstance(raw_length, np.ndarray) else float(raw_length)
+                    tangent = np.array([-normal[1], normal[0], 0.0])
+                    tn = np.linalg.norm(tangent)
+                    tangent = tangent / tn if tn > 1e-6 else np.array([1.0, 0.0, 0.0])
+                    sp = np.array(start_point, dtype=float)
+                    ep = sp + length * tangent[:2] if len(sp) == 2 else sp + length * tangent
+                    node_attrs["center"] = np.array([*(sp[:2] + (length / 2) * tangent[:2]), 0.0])
+                    node_attrs["limits"] = np.array([
+                        np.array([sp[0], sp[1], 0.0]),
+                        np.array([ep[0], ep[1], 0.0]),
+                    ])
+                else:
+                    # Fallback: fixed-length line perpendicular to normal
+                    node_attrs["center"] = center
+                    perp = np.array([-normal[1], normal[0], 0.0])
+                    pn = np.linalg.norm(perp)
+                    perp = perp / pn if pn > 1e-6 else np.array([1.0, 0.0, 0.0])
+                    node_attrs["limits"] = np.array([center + 2.0 * perp, center - 2.0 * perp])
+                g_viz.update_node_attrs(node_id, node_attrs)
+
+        g_viz.from_2D_to_3D()
+        g_viz._add_complete_viz_attributes_to_graph()
+        visualize_nxgraph_3d(g_viz, graph_name, visualize_alone=True,
+                             include_node_ids=True, blocking=False)
+    plt.show(block=True)
+
+
 def main(args=None):
+    # If called with a directory path, visualize saved graphs from that directory.
+    if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
+        visualize_saved_graphs(sys.argv[1])
+        return
+
     rclpy.init(args=args)
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = False
+    debug_offline = True
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 

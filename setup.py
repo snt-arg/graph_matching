@@ -26,7 +26,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'graph_matching = graph_matching.graph_matching_node:main'
+            'graph_matching = graph_matching.graph_matching_node:main',
+            'visualize_graphs = graph_matching.graph_matching_node:visualize_saved_graphs',
         ],
     },
 )
