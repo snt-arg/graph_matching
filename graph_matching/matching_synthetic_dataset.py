@@ -60,7 +60,7 @@ ACC_THRESHOLD = None # e.g. -1.0, 0.0, 1.0 — None disables
 # and averages the soft matrices before Hungarian. Also stores per-entry
 # uncertainty (std across passes) in experiment results.
 # Set to 0 to disable (standard single-pass inference).
-MC_SAMPLES = 0 # e.g. 10, 30, 50
+MC_SAMPLES = 10 # e.g. 10, 30, 50
 
 
 # MC Dropout std threshold (PGM only, requires MC_SAMPLES > 0).
@@ -68,9 +68,26 @@ MC_SAMPLES = 0 # e.g. 10, 30, 50
 # are zeroed before Hungarian, filtering candidates the model was inconsistent about.
 # Set to None to disable.
 # STD_THRESHOLD = 0.417  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=30)
-# STD_THRESHOLD = None  # best F1 threshold found from plot_results.py --mc-dropout
-# STD_THRESHOLD = 0.442  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=10)
+STD_THRESHOLD = 0.442  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=10)
+# STD_THRESHOLD = None
 
+
+# MC Dropout on the affinity matrix (PGM only).
+# When > 0, runs MC Dropout with this many stochastic GNN passes, averages the
+# raw dot-product affinity matrices, applies InstanceNorm once on the mean, then
+# runs a single Sinkhorn pass. Saves N-1 Sinkhorn normalizations vs MC_SAMPLES.
+# Uncertainty is the per-entry std of raw affinities (not in [0,1] — calibrate
+# AFFINITY_STD_THRESHOLD independently from STD_THRESHOLD).
+# Set to 0 to disable.
+MC_AFFINITY_SAMPLES = 0  # e.g. 10, 30, 50
+
+
+# Affinity-space uncertainty threshold (PGM only, requires MC_AFFINITY_SAMPLES > 0).
+# Entries in mean_sim_normed whose raw-affinity std across passes exceeds this
+# value are masked to -inf before Sinkhorn, filtering inconsistent candidates.
+# Scale is in raw affinity space — NOT [0,1]. Set to None to disable.
+# AFFINITY_STD_THRESHOLD = 27.081  # e.g. 0.5, 1.0, 2.0
+AFFINITY_STD_THRESHOLD = None # e.g. 0.5, 1.0, 2.0
 
 
 # Per-experiment timeout for the classic matcher (seconds).
@@ -632,7 +649,7 @@ def compute_metrics(ground_truth_matches, predicted_matches, log_level=0):
 
 
 
-def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_name_suffix="", sinkhorn_threshold=None, score_threshold=None, acc_threshold=None, mc_samples=0, std_threshold=None):
+def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_name_suffix="", sinkhorn_threshold=None, score_threshold=None, acc_threshold=None, mc_samples=0, std_threshold=None, mc_affinity_samples=0, affinity_std_threshold=None):
     """
     Run a single graph matching experiment using the GNN-based PGM matcher.
 
@@ -660,9 +677,9 @@ def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_nam
 
 
     start_time = time.time()
-    output = pgm_model.infer_matching(g1, g2, discrete=True, sinkhorn_threshold=sinkhorn_threshold, score_threshold=score_threshold, acc_threshold=acc_threshold, mc_samples=mc_samples, std_threshold=std_threshold)
+    output = pgm_model.infer_matching(g1, g2, discrete=True, sinkhorn_threshold=sinkhorn_threshold, score_threshold=score_threshold, acc_threshold=acc_threshold, mc_samples=mc_samples, std_threshold=std_threshold, mc_affinity_samples=mc_affinity_samples, affinity_std_threshold=affinity_std_threshold)
     matching_time = time.time() - start_time
-    matching_matrix, uncertainty = output if mc_samples > 0 else (output, None)
+    matching_matrix, uncertainty = output if (mc_samples > 0 or mc_affinity_samples > 0) else (output, None)
 
 
     g1_nodes = list(g1.nodes())
@@ -694,7 +711,7 @@ def run_pgm_matching_experiment(pgm_model, a_graph, s_graph, gt_match, graph_nam
 
 
 
-def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=None, score_threshold=None, acc_threshold=None, mc_samples=0, std_threshold=None):
+def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=None, score_threshold=None, acc_threshold=None, mc_samples=0, std_threshold=None, mc_affinity_samples=0, affinity_std_threshold=None):
     """
     Run a matching experiment on a MSD dataset pair (already in PyG format).
 
@@ -708,9 +725,9 @@ def run_pgm_msd_experiment(pgm_model, data1, data2, gt_perm, sinkhorn_threshold=
         dict with the same keys as run_pgm_matching_experiment, plus 'soft_S' and 'gt_perm'
     """
     start_time = time.time()
-    output = predict_matching_matrix(pgm_model.model, data1, data2, discrete=True, sinkhorn_threshold=sinkhorn_threshold, score_threshold=score_threshold, acc_threshold=acc_threshold, mc_samples=mc_samples, std_threshold=std_threshold)
+    output = predict_matching_matrix(pgm_model.model, data1, data2, discrete=True, sinkhorn_threshold=sinkhorn_threshold, score_threshold=score_threshold, acc_threshold=acc_threshold, mc_samples=mc_samples, std_threshold=std_threshold, mc_affinity_samples=mc_affinity_samples, affinity_std_threshold=affinity_std_threshold)
     matching_time = time.time() - start_time
-    matching_matrix, uncertainty = output if mc_samples > 0 else (output, None)
+    matching_matrix, uncertainty = output if (mc_samples > 0 or mc_affinity_samples > 0) else (output, None)
 
 
     # Also get the soft Sinkhorn matrix (before Hungarian) for score distribution analysis
@@ -845,13 +862,16 @@ if DATASET == "msd":
         all_fp_scores = []
         all_hard_tp_scores = []
         all_hard_fp_scores = []
-        all_assigned_tp_uncertainty = []  # uncertainty at Hungarian-assigned correct matches
-        all_assigned_fp_uncertainty = []  # uncertainty at Hungarian-assigned wrong matches
-        total_gt_matches = 0              # total GT matches across test set (TP + FN)
+        all_assigned_tp_uncertainty = []      # Sinkhorn-MC: uncertainty at assigned correct matches
+        all_assigned_fp_uncertainty = []      # Sinkhorn-MC: uncertainty at assigned wrong matches
+        total_gt_matches = 0                  # Sinkhorn-MC: total GT matches across test set
+        all_assigned_aff_tp_uncertainty = []  # Affinity-MC: uncertainty at assigned correct matches
+        all_assigned_aff_fp_uncertainty = []  # Affinity-MC: uncertainty at assigned wrong matches
+        total_gt_matches_aff = 0              # Affinity-MC: total GT matches across test set
 
 
         for data1, data2, gt_perm in tqdm(msd_test_list, desc="MSD matching", colour="green"):
-            results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD)
+            results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD, mc_affinity_samples=MC_AFFINITY_SAMPLES, affinity_std_threshold=AFFINITY_STD_THRESHOLD)
 
 
             metrics = results['metrics'].copy() if results['metrics'] else {}
@@ -879,18 +899,21 @@ if DATASET == "msd":
             all_hard_fp_scores.append(soft_S[(hard_crop == 1) & (gt_mask_crop == 0)].flatten())
 
 
-            # Collect MC Dropout uncertainty at Hungarian-assigned positions only
+            # Collect uncertainty at Hungarian-assigned positions (TP and FP)
             if results['uncertainty'] is not None:
-                unc  = results['uncertainty']    # [N1, N2]
-                hard = results['matching_matrix'] # [N1, N2] binary
+                unc  = results['uncertainty']     # [N1, N2]
+                hard = results['matching_matrix']  # [N1, N2] binary
                 hu, wu = unc.shape
-                gt_mask_unc  = gt_mask[:hu, :wu]
-                hard_crop    = hard[:hu, :wu]
-                total_gt_matches += int((gt_mask_unc == 1).sum())
-                # Assigned TP: Hungarian selected AND gt match
-                all_assigned_tp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 1)].flatten())
-                # Assigned FP: Hungarian selected AND not gt match
-                all_assigned_fp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 0)].flatten())
+                gt_mask_unc = gt_mask[:hu, :wu]
+                hard_crop   = hard[:hu, :wu]
+                if MC_SAMPLES > 0:
+                    total_gt_matches += int((gt_mask_unc == 1).sum())
+                    all_assigned_tp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 1)].flatten())
+                    all_assigned_fp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 0)].flatten())
+                if MC_AFFINITY_SAMPLES > 0:
+                    total_gt_matches_aff += int((gt_mask_unc == 1).sum())
+                    all_assigned_aff_tp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 1)].flatten())
+                    all_assigned_aff_fp_uncertainty.append(unc[(hard_crop == 1) & (gt_mask_unc == 0)].flatten())
 
 
         # Aggregated summary over all MSD pairs
@@ -1097,7 +1120,8 @@ elif DATASET == "synthetic":
                 results_no_objects = run_pgm_matching_experiment(
                     pgm_model_instance, a_graph_no_objects, s_graph_no_objects, gt_match,
                     graph_name_suffix=f"pgm_{n_rooms_s_graphs}_rooms",
-                    sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD
+                    sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD,
+                    mc_affinity_samples=MC_AFFINITY_SAMPLES, affinity_std_threshold=AFFINITY_STD_THRESHOLD
                 )
             else:
                 results_no_objects = run_graph_matching_experiment(
@@ -1164,7 +1188,8 @@ elif DATASET == "real":
             results = run_pgm_matching_experiment(
                 pgm_model_instance, a_graph, s_graph, gt_match,
                 graph_name_suffix=f"{exp_type}_{env_name}",
-                sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD
+                sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD,
+                mc_affinity_samples=MC_AFFINITY_SAMPLES, affinity_std_threshold=AFFINITY_STD_THRESHOLD
             )
         else:
             results = run_graph_matching_experiment(
@@ -1270,12 +1295,14 @@ if all_metrics_data:
         'acc_threshold': ACC_THRESHOLD,
         'mc_samples': MC_SAMPLES,
         'std_threshold': STD_THRESHOLD,
+        'mc_affinity_samples': MC_AFFINITY_SAMPLES,
+        'affinity_std_threshold': AFFINITY_STD_THRESHOLD,
         'dataset': DATASET,
         'noise_condition': NOISE_CONDITION,
     }
 
 
-    # Aggregate MC Dropout uncertainty arrays (only present when MC_SAMPLES > 0 and DATASET == "msd")
+    # Aggregate Sinkhorn-MC uncertainty arrays (only present when MC_SAMPLES > 0 and DATASET == "msd")
     mc_uncertainty_data = {}
     if 'all_assigned_tp_uncertainty' in dir() and all_assigned_tp_uncertainty:
         mc_uncertainty_data['assigned_tp_uncertainty'] = np.concatenate(all_assigned_tp_uncertainty).tolist()
@@ -1283,12 +1310,20 @@ if all_metrics_data:
         mc_uncertainty_data['total_gt_matches'] = int(total_gt_matches)
         mc_uncertainty_data['mc_samples'] = MC_SAMPLES
 
+    # Aggregate affinity-MC uncertainty arrays (only present when MC_AFFINITY_SAMPLES > 0 and DATASET == "msd")
+    mc_affinity_uncertainty_data = {}
+    if 'all_assigned_aff_tp_uncertainty' in dir() and all_assigned_aff_tp_uncertainty:
+        mc_affinity_uncertainty_data['assigned_tp_uncertainty'] = np.concatenate(all_assigned_aff_tp_uncertainty).tolist()
+        mc_affinity_uncertainty_data['assigned_fp_uncertainty'] = np.concatenate(all_assigned_aff_fp_uncertainty).tolist()
+        mc_affinity_uncertainty_data['total_gt_matches'] = int(total_gt_matches_aff)
+        mc_affinity_uncertainty_data['mc_affinity_samples'] = MC_AFFINITY_SAMPLES
 
     # Combine data and metadata
     output_data = {
         'metadata': metadata,
         'experiments': serializable_data,
         'mc_uncertainty': mc_uncertainty_data,
+        'mc_affinity_uncertainty': mc_affinity_uncertainty_data,
     }
     
     # Save to JSON file with timestamp
