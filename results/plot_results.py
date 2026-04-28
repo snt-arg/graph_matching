@@ -880,6 +880,89 @@ def plot_mc_dropout_threshold_curve(json_filepath):
     plt.show()
 
 
+def plot_mc_affinity_threshold_curve(json_filepath):
+    """Plot precision, recall, F1 vs affinity_std_threshold from affinity-MC uncertainty data.
+
+    Same logic as plot_mc_dropout_threshold_curve but operates on the raw-affinity
+    uncertainty stored under 'mc_affinity_uncertainty'.  The threshold scale is in
+    raw affinity space (not [0,1]), so the x-axis range differs from the Sinkhorn-MC
+    version.
+    """
+    with open(json_filepath) as f:
+        data = json.load(f)
+
+    mc = data.get('mc_affinity_uncertainty', {})
+    if not mc or 'assigned_tp_uncertainty' not in mc:
+        print("No affinity-MC uncertainty data found in this results file.")
+        print("Re-run matching_synthetic_dataset.py with MC_AFFINITY_SAMPLES > 0.")
+        return
+
+    tp_unc       = np.array(mc['assigned_tp_uncertainty'])
+    fp_unc       = np.array(mc['assigned_fp_uncertainty'])
+    total_gt     = mc['total_gt_matches']
+    mc_samples   = mc.get('mc_affinity_samples', '?')
+
+    original_tp  = len(tp_unc)
+    original_fp  = len(fp_unc)
+    original_fn  = total_gt - original_tp
+
+    max_unc    = max(tp_unc.max() if len(tp_unc) else 0, fp_unc.max() if len(fp_unc) else 0)
+    thresholds = np.linspace(0.0, max_unc, 200)
+
+    precisions, recalls, f1s = [], [], []
+    for t in thresholds:
+        remaining_tp = int((tp_unc <= t).sum())
+        remaining_fp = int((fp_unc <= t).sum())
+
+        denom_prec = remaining_tp + remaining_fp
+        denom_rec  = total_gt
+
+        precision = remaining_tp / denom_prec if denom_prec > 0 else 0.0
+        recall    = remaining_tp / denom_rec  if denom_rec  > 0 else 0.0
+        f1        = (2 * precision * recall / (precision + recall)
+                     if (precision + recall) > 0 else 0.0)
+
+        precisions.append(precision)
+        recalls.append(recall)
+        f1s.append(f1)
+
+    precisions = np.array(precisions)
+    recalls    = np.array(recalls)
+    f1s        = np.array(f1s)
+
+    best_idx = np.argmax(f1s)
+    best_t   = thresholds[best_idx]
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.plot(thresholds, precisions, color='#1f77b4', linewidth=2, label='Precision')
+    ax.plot(thresholds, recalls,    color='#2ca02c', linewidth=2, label='Recall')
+    ax.plot(thresholds, f1s,        color='#d62728', linewidth=2, label='F1-Score')
+    ax.axvline(best_t, color='grey', linestyle='--', linewidth=1.2,
+               label=f'Best F1 threshold = {best_t:.3f}')
+
+    ax.set_xlim(0, max_unc)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(f'affinity_std_threshold  (raw affinity std, {mc_samples} passes)')
+    ax.set_ylabel('Metric value')
+    ax.set_title(f'Precision / Recall / F1 vs affinity std threshold  ({mc_samples} passes)')
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
+    save_path = os.path.join(os.path.dirname(json_filepath), 'mc_affinity_threshold_curve.png')
+    fig.savefig(save_path, dpi=150)
+    print(f"Affinity-MC threshold curve saved to: {save_path}")
+
+    print(f"\n--- Affinity-MC threshold sweep ({mc_samples} passes) ---")
+    print(f"  Original assigned TP : {original_tp}")
+    print(f"  Original assigned FP : {original_fp}")
+    print(f"  Original FN (missed) : {original_fn}")
+    print(f"  Best F1 = {f1s[best_idx]:.4f}  at affinity_std_threshold = {best_t:.4f}"
+          f"  (precision={precisions[best_idx]:.4f}, recall={recalls[best_idx]:.4f})")
+
+    plt.show()
+
+
 def run_score_distribution_analysis(sinkhorn_threshold=None, max_pairs=None):
     """Load the PGM model + MSD dataset and plot soft top-k score distributions."""
     import sys
@@ -948,6 +1031,8 @@ def main():
                         help='Limit number of MSD pairs analysed in --score-dist mode')
     parser.add_argument('--mc-dropout', action='store_true',
                         help='Plot MC Dropout uncertainty distribution from the results JSON')
+    parser.add_argument('--mc-affinity', action='store_true',
+                        help='Plot affinity-MC uncertainty threshold curve from the results JSON')
     args = parser.parse_args()
 
     script_dir  = os.path.dirname(os.path.abspath(__file__))
@@ -965,6 +1050,9 @@ def main():
 
     if args.mc_dropout:
         plot_mc_dropout_threshold_curve(json_filepath)
+
+    if args.mc_affinity:
+        plot_mc_affinity_threshold_curve(json_filepath)
 
     print(f"Loading results from: {json_filepath}")
     data = load_results(json_filepath)

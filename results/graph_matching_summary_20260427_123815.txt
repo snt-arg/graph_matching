@@ -1,0 +1,139 @@
+GRAPH MATCHING PERFORMANCE ANALYSIS
+==================================================
+
+Generated: 2026-04-27T12:36:27.051675
+Dataset:   /root/workspace/src/graph_matching_gnn/GNN/preprocessed/partial_graph_matching/ws_room_dropout_noise/test_dataset.pkl
+Total:     151 experiments
+
+
+Rooms: 1
+  Success Rate  : 100.0%
+  Avg Time      : 0.1063s ± 0.0000s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=1 unambiguous) ---
+  Precision   : 0.8750 ± 0.0000
+  Recall      : 0.8750 ± 0.0000
+  F1-Score    : 0.8750 ± 0.0000
+  Accuracy    : 0.9926 ± 0.0000
+  Specificity : 0.9962 ± 0.0000
+
+Rooms: 2
+  Success Rate  : 100.0%
+  Avg Time      : 0.0370s ± 0.0175s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=2 unambiguous) ---
+  Precision   : 0.5417 ± 0.1250
+  Recall      : 0.5417 ± 0.1250
+  F1-Score    : 0.5417 ± 0.1250
+  Accuracy    : 0.9574 ± 0.0188
+  Specificity : 0.9776 ± 0.0100
+
+Rooms: 3
+  Success Rate  : 100.0%
+  Avg Time      : 0.0568s ± 0.0335s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=2 unambiguous) ---
+  Precision   : 0.6033 ± 0.3533
+  Recall      : 0.6033 ± 0.3533
+  F1-Score    : 0.6033 ± 0.3533
+  Accuracy    : 0.9803 ± 0.0160
+  Specificity : 0.9899 ± 0.0082
+
+Rooms: 4
+  Success Rate  : 100.0%
+  Avg Time      : 0.0821s ± 0.0640s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=11 unambiguous) ---
+  Precision   : 0.8514 ± 0.1202
+  Recall      : 0.8514 ± 0.1202
+  F1-Score    : 0.8514 ± 0.1202
+  Accuracy    : 0.9917 ± 0.0067
+  Specificity : 0.9958 ± 0.0034
+
+Rooms: 5
+  Success Rate  : 100.0%
+  Avg Time      : 0.0759s ± 0.0703s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=23 unambiguous) ---
+  Precision   : 0.8141 ± 0.1180
+  Recall      : 0.8141 ± 0.1180
+  F1-Score    : 0.8141 ± 0.1180
+  Accuracy    : 0.9923 ± 0.0060
+  Specificity : 0.9960 ± 0.0031
+
+Rooms: 6
+  Success Rate  : 100.0%
+  Avg Time      : 0.0721s ± 0.0285s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=26 unambiguous) ---
+  Precision   : 0.8470 ± 0.0937
+  Recall      : 0.8470 ± 0.0937
+  F1-Score    : 0.8470 ± 0.0937
+  Accuracy    : 0.9942 ± 0.0043
+  Specificity : 0.9970 ± 0.0022
+
+Rooms: 7
+  Success Rate  : 100.0%
+  Avg Time      : 0.0703s ± 0.0396s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=30 unambiguous) ---
+  Precision   : 0.8760 ± 0.0814
+  Recall      : 0.8760 ± 0.0814
+  F1-Score    : 0.8760 ± 0.0814
+  Accuracy    : 0.9958 ± 0.0032
+  Specificity : 0.9979 ± 0.0016
+
+Rooms: 8
+  Success Rate  : 100.0%
+  Avg Time      : 0.0722s ± 0.0449s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=20 unambiguous) ---
+  Precision   : 0.8364 ± 0.1138
+  Recall      : 0.8364 ± 0.1138
+  F1-Score    : 0.8364 ± 0.1138
+  Accuracy    : 0.9954 ± 0.0033
+  Specificity : 0.9977 ± 0.0017
+
+Rooms: 9
+  Success Rate  : 100.0%
+  Avg Time      : 0.0747s ± 0.0420s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=19 unambiguous) ---
+  Precision   : 0.8930 ± 0.0640
+  Recall      : 0.8930 ± 0.0640
+  F1-Score    : 0.8930 ± 0.0640
+  Accuracy    : 0.9971 ± 0.0019
+  Specificity : 0.9985 ± 0.0009
+
+Rooms: 10
+  Success Rate  : 100.0%
+  Avg Time      : 0.0882s ± 0.0480s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=9 unambiguous) ---
+  Precision   : 0.9240 ± 0.0227
+  Recall      : 0.9240 ± 0.0227
+  F1-Score    : 0.9240 ± 0.0227
+  Accuracy    : 0.9982 ± 0.0005
+  Specificity : 0.9991 ± 0.0002
+
+Rooms: 11
+  Success Rate  : 100.0%
+  Avg Time      : 0.0654s ± 0.0243s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=5 unambiguous) ---
+  Precision   : 0.9120 ± 0.0285
+  Recall      : 0.9120 ± 0.0285
+  F1-Score    : 0.9120 ± 0.0285
+  Accuracy    : 0.9980 ± 0.0007
+  Specificity : 0.9990 ± 0.0004
+
+Rooms: 12
+  Success Rate  : 100.0%
+  Avg Time      : 0.1749s ± 0.0833s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=3 unambiguous) ---
+  Precision   : 0.8148 ± 0.0652
+  Recall      : 0.8148 ± 0.0652
+  F1-Score    : 0.8148 ± 0.0652
+  Accuracy    : 0.9969 ± 0.0016
+  Specificity : 0.9985 ± 0.0008
