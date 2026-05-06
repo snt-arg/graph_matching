@@ -1,6 +1,6 @@
 graph_matching:
   ros__parameters:
-    use_pgm : false
+    use_pgm : true
     invariants:
       points:
         "0" : 

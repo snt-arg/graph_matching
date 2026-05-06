@@ -140,7 +140,7 @@ class GraphMatchingNode(Node):
 
 
         """ Path to PGM isolated environment"""
-        self.pgm_python ="/root/PGM_env/bin/python"
+        self.pgm_python ="/root/isolated_python_env/bin/python"
 
 
         """ Path to PGM inference script"""
@@ -1149,7 +1149,8 @@ class GraphMatchingNode(Node):
                 if node_msg.type == "Plane" and attrib_msg.name == "Geometric_info" and len(attributes[attrib_msg.name]) == 4:
                     attributes[attrib_msg.name] = plane_4_params_to_6_params(attributes[attrib_msg.name])
 
-            print(f"[DEBUG] Node type={node_msg.type}, attributes keys: {list(attributes.keys())}")
+            if graph["name"] == "Prior" and node_msg.type == "Plane":
+                self.get_logger().info(f"[DEBUG] Prior Plane {node_msg.id} attributes: {list(attributes.keys())}")
             if node_msg.type == "Plane":
                 if "Geometric_info" not in attributes:
                     print(f"[ERROR] Plane node missing Geometric_info! Has: {list(attributes.keys())}")
@@ -1226,7 +1227,7 @@ class GraphMatchingNode(Node):
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
-        if graph["name"] == "Online" and len(room_ids)>=2:
+        if graph["name"] == "Online" and len(room_ids)>=4:
             self.get_logger().info(f"Starting match!")
             # Save Online pickle here — every time matching fires — so the pickle
             # always holds the most recent >= 4-room state used for matching.
@@ -1747,7 +1748,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = True
+    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 

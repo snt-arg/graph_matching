@@ -31,6 +31,12 @@ DATASET = "msd"
 NOISE_CONDITION = "ws_room_dropout_noise"
 
 
+# When True, uses the ws_room_dropout_noise_inc_BCE model
+# (trained with BCE loss on the incremental noise condition)
+# instead of the model derived from NOISE_CONDITION above.
+USE_NEW_MODEL = True
+
+
 # Post soft-topk threshold.
 # Matches whose soft score is below this value are rejected after soft-topk.
 # Drawback: a rejected node loses its match entirely (FN risk).
@@ -60,7 +66,7 @@ ACC_THRESHOLD = None # e.g. -1.0, 0.0, 1.0 — None disables
 # and averages the soft matrices before Hungarian. Also stores per-entry
 # uncertainty (std across passes) in experiment results.
 # Set to 0 to disable (standard single-pass inference).
-MC_SAMPLES = 10 # e.g. 10, 30, 50
+MC_SAMPLES = 0# e.g. 10, 30, 50
 
 
 # MC Dropout std threshold (PGM only, requires MC_SAMPLES > 0).
@@ -803,7 +809,10 @@ def run_classic_msd_experiment(data1, data2, gt_perm, original_graphs, graph_nam
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
 GNN_PATH = '/root/workspace/src/graph_matching_gnn/GNN'
-MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION, "test_dataset.pkl")
+_pgm_noise = "ws_room_dropout_noise_inc" if USE_NEW_MODEL else NOISE_CONDITION
+_pgm_model_path = os.path.join(GNN_PATH, "models", "partial_graph_matching",
+                                "ws_room_dropout_noise_inc_BCE" if USE_NEW_MODEL else NOISE_CONDITION)
+MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", _pgm_noise, "test_dataset.pkl")
 MSD_ORIGINAL_PATH = os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal", "original.pkl")
 
 
@@ -814,9 +823,9 @@ if USE_PGM:
         model_class=MatchingModel_GATv2SinkhornTopK,
         data_paths={
             "equal":   os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal"),
-            "partial": os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION),
+            "partial": os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", _pgm_noise),
         },
-        model_save_path=os.path.join(GNN_PATH, "models", "partial_graph_matching", NOISE_CONDITION),
+        model_save_path=_pgm_model_path,
         device=device, in_dim=7,
     )
     pgm_model_instance.load_best_model()
