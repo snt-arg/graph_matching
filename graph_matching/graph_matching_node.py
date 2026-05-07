@@ -1748,7 +1748,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 

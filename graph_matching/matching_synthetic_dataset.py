@@ -23,6 +23,10 @@ USE_PGM = True
 DATASET = "msd"
 
 
+# MSD split to evaluate — pick one: "train", "valid", "test"
+SPLIT = "valid"
+
+
 # Noise condition for MSD dataset — pick one:
 #   "ws_dropout_noise"        → WS noise only
 #   "room_dropout_noise"      → Room noise only
@@ -66,7 +70,7 @@ ACC_THRESHOLD = None # e.g. -1.0, 0.0, 1.0 — None disables
 # and averages the soft matrices before Hungarian. Also stores per-entry
 # uncertainty (std across passes) in experiment results.
 # Set to 0 to disable (standard single-pass inference).
-MC_SAMPLES = 0# e.g. 10, 30, 50
+MC_SAMPLES = 0  # e.g. 10, 30, 50
 
 
 # MC Dropout std threshold (PGM only, requires MC_SAMPLES > 0).
@@ -74,8 +78,8 @@ MC_SAMPLES = 0# e.g. 10, 30, 50
 # are zeroed before Hungarian, filtering candidates the model was inconsistent about.
 # Set to None to disable.
 # STD_THRESHOLD = 0.417  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=30)
-STD_THRESHOLD = 0.442  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=10)
-# STD_THRESHOLD = None
+#STD_THRESHOLD = 0.442  # best F1 threshold found from plot_results.py --mc-dropout (with mc_samples=10)
+STD_THRESHOLD = None
 
 
 # MC Dropout on the affinity matrix (PGM only).
@@ -812,7 +816,7 @@ GNN_PATH = '/root/workspace/src/graph_matching_gnn/GNN'
 _pgm_noise = "ws_room_dropout_noise_inc" if USE_NEW_MODEL else NOISE_CONDITION
 _pgm_model_path = os.path.join(GNN_PATH, "models", "partial_graph_matching",
                                 "ws_room_dropout_noise_inc_BCE" if USE_NEW_MODEL else NOISE_CONDITION)
-MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", _pgm_noise, "test_dataset.pkl")
+MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION, f"{SPLIT}_dataset.pkl")
 MSD_ORIGINAL_PATH = os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal", "original.pkl")
 
 
@@ -841,7 +845,7 @@ all_metrics_data = []  # List of (n_nodes_s, n_nodes_a, metrics_dict)
 if DATASET == "msd":
     with open(MSD_TEST_PATH, 'rb') as f:
         msd_test_list = pickle.load(f)
-    print(f"MSD test set loaded: {len(msd_test_list)} pairs")
+    print(f"MSD {SPLIT} set loaded: {len(msd_test_list)} pairs")
 
 
     if USE_PGM:
@@ -879,7 +883,7 @@ if DATASET == "msd":
         total_gt_matches_aff = 0              # Affinity-MC: total GT matches across test set
 
 
-        for data1, data2, gt_perm in tqdm(msd_test_list, desc="MSD matching", colour="green"):
+        for data1, data2, gt_perm in tqdm(msd_test_list, desc=f"MSD {SPLIT} matching", colour="green"):
             results = run_pgm_msd_experiment(pgm_model_instance, data1, data2, gt_perm, sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD, mc_affinity_samples=MC_AFFINITY_SAMPLES, affinity_std_threshold=AFFINITY_STD_THRESHOLD)
 
 
@@ -931,7 +935,7 @@ if DATASET == "msd":
             n = len(msd_metrics)
             avg = lambda key: np.mean([m[key] for m in msd_metrics if key in m])
             print("\n" + "="*60)
-            print(f"MSD SUMMARY ({n} pairs)")
+            print(f"MSD {SPLIT.upper()} SUMMARY ({n} pairs)")
             print("="*60)
             print(f"Precision : {avg('precision'):.4f}")
             print(f"Recall    : {avg('recall'):.4f}")
