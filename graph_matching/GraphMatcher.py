@@ -1429,17 +1429,32 @@ class GraphMatcher():
         for ws_node in MG_ws_nodes:
             attrs = match_graph.get_attributes_of_node(ws_node)
             # self.logger.info("flag bestPair attrs['split_match'] {}".format(attrs['split_match']))
-            split_matches_lengths = [len(split_match) for split_match in attrs['split_match']]
+            split_matches = attrs.get("split_match", [])
+            split_scores = attrs.get("split_scores", [])
+
+            if not split_matches or not split_scores:
+                continue
+
+            split_matches_lengths = [len(split_match) for split_match in split_matches]
             # self.logger.info("flag bestPair split_matches_lengths {}".format(split_matches_lengths))
-            longest_split_matches_idx = np.array(split_matches_lengths) == max(split_matches_lengths)
+            max_split_len = max(split_matches_lengths)
+            longest_split_match_indices = [i for i, length in enumerate(split_matches_lengths) if length == max_split_len]
+
+            if not longest_split_match_indices:
+                continue
             # self.logger.info("flag bestPair longest_split_matches_idx {}".format(longest_split_matches_idx))
             # self.logger.info("flag bestPair attrs[split_scores] {}".format(attrs['split_scores']))
-            best_score_index = np.array(attrs["split_scores"])[longest_split_matches_idx].argmax()
+            candidate_scores = [split_scores[i] for i in longest_split_match_indices]
+            best_score_index = int(np.argmax(candidate_scores))
             # self.logger.info("flag bestPair best_score_index {}".format(best_score_index))
             # self.logger.info("flag bestPair 1 {}".format(attrs["split_match"]))
             # self.logger.info("flag bestPair 2 {}".format(np.array(attrs["split_match"])[longest_split_matches_idx]))
             # self.logger.info("flag bestPair 3 {}".format(np.array(attrs["split_match"])[longest_split_matches_idx][best_score_index]))
-            best_score_pair = list(np.array(attrs["split_match"])[longest_split_matches_idx][best_score_index])[0]
+            selected_split_match = split_matches[longest_split_match_indices[best_score_index]]
+            if not selected_split_match:
+                continue
+
+            best_score_pair = list(selected_split_match)[0]
             match_graph.set_node_attributes("best_pair", {ws_node : best_score_pair})
             # self.logger.info("flag bestPair attrs[split_scores] {}".format(attrs['split_scores']))
             # self.logger.info("flag bestPair attrs['split_match'] {}".format(attrs['split_match']))

@@ -1,0 +1,2420 @@
+{
+  "metadata": {
+    "timestamp": "2026-03-23T13:34:47.200443",
+    "total_experiments": 102,
+    "dataset_file": "incremental_local3_symmetries_translation_small.pkl",
+    "description": "Graph matching performance metrics collected from synthetic dataset experiments"
+  },
+  "experiments": [
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 37.5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.2400496006011963,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2400496006011963,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.23340487480163574,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.23340487480163574,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 41.17647058823529,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.19536423683166504,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.19536423683166504,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.6486570835113525,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.6486570835113525,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 37.5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.12798690795898438,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.12798690795898438,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.3185234069824219,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.3185234069824219,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 23.076923076923077,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.20223689079284668,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.20223689079284668,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5326156616210938,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5326156616210938,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.14335250854492188,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.14335250854492188,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.36617136001586914,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.36617136001586914,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.2560150623321533,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2560150623321533,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5511560440063477,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5511560440063477,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.1383821964263916,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.1383821964263916,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.26276326179504395,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.26276326179504395,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 44.44444444444444,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.1700589656829834,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.1700589656829834,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5656890869140625,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5656890869140625,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 44.44444444444444,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.183363676071167,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.183363676071167,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.39109063148498535,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.39109063148498535,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.19228458404541016,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.19228458404541016,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.24036049842834473,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.24036049842834473,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.5385017395019531,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.5385017395019531,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5418009757995605,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5418009757995605,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.1933290958404541,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.1933290958404541,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.3413212299346924,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.3413212299346924,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 44.44444444444444,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.1710071563720703,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.1710071563720703,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 1,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.24998831748962402,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.24998831748962402,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.4483458995819092,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.4483458995819092,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 12.982171773910522,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 12.982171773910522,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 25.0,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.3500406742095947,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.3500406742095947,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.320351839065552,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.320351839065552,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 23.076923076923077,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.27905964851379395,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.27905964851379395,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.6000306606292725,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.6000306606292725,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.04045820236206055,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.04045820236206055,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.4916422367095947,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.4916422367095947,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.16200685501098633,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.16200685501098633,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5634219646453857,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5634219646453857,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.13969206809997559,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.13969206809997559,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.3340485095977783,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.3340485095977783,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.2092893123626709,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2092893123626709,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.49640321731567383,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.49640321731567383,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.12764215469360352,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.12764215469360352,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.2893199920654297,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.2893199920654297,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.19318890571594238,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.19318890571594238,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5328092575073242,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5328092575073242,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 37.5,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.11925363540649414,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.11925363540649414,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.24417448043823242,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.24417448043823242,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.17967844009399414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.17967844009399414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5949118137359619,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5949118137359619,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.15607666969299316,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.15607666969299316,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.18414902687072754,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.18414902687072754,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 33.33333333333333,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.2142806053161621,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2142806053161621,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5335342884063721,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5335342884063721,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.13949871063232422,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.13949871063232422,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 2,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.31655383110046387,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.31655383110046387,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 31.03448275862069,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.37964773178100586,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.37964773178100586,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 12.867815017700195,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 12.867815017700195,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 34.78260869565217,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.24472451210021973,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.24472451210021973,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.093914985656738,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.093914985656738,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.2767946720123291,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2767946720123291,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.6791985034942627,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.6791985034942627,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.148223876953125,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.148223876953125,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5647873878479004,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5647873878479004,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 25.925925925925924,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.29830336570739746,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.29830336570739746,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 12.992543935775757,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 12.992543935775757,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 21.052631578947366,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.29030346870422363,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.29030346870422363,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.441559553146362,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.441559553146362,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 23.076923076923077,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.23973965644836426,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.23973965644836426,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.4106297492980957,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.4106297492980957,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.14731097221374512,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.14731097221374512,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5436959266662598,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5436959266662598,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 20.0,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.494736909866333,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.494736909866333,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 12.496026277542114,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 12.496026277542114,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.4434940814971924,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.4434940814971924,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.298309803009033,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.298309803009033,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.3410499095916748,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.3410499095916748,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 1.333951711654663,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 1.333951711654663,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.2271709442138672,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.2271709442138672,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5334265232086182,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5334265232086182,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 33.33333333333333,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.4942004680633545,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.4942004680633545,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 13.077934503555298,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 13.077934503555298,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 34.78260869565217,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.35108137130737305,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.35108137130737305,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.420487642288208,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.420487642288208,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 33.33333333333333,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.4630310535430908,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.4630310535430908,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.550389289855957,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.550389289855957,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 37.5,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.24477410316467285,
+        "num_solutions": 3,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.24477410316467285,
+      "num_solutions": 3,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5680015087127686,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5680015087127686,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 33.33333333333333,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.3522329330444336,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.3522329330444336,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 13.644953489303589,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 13.644953489303589,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 25.0,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.26633143424987793,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.26633143424987793,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.400804758071899,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.400804758071899,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            90,
+            0
+          ],
+          [
+            0,
+            10
+          ]
+        ],
+        "true_positives": 10.0,
+        "true_negatives": 90.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 10,
+        "total_gt_matches": 10,
+        "total_pred_matches": 10,
+        "experiment_type": "with_objects",
+        "matching_time": 0.41257333755493164,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.41257333755493164,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.534942865371704,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.534942865371704,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 28.57142857142857,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            20,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "true_positives": 5.0,
+        "true_negatives": 20.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 5,
+        "total_gt_matches": 5,
+        "total_pred_matches": 5,
+        "experiment_type": "with_objects",
+        "matching_time": 0.16441011428833008,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.16441011428833008,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5352423191070557,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5352423191070557,
+      "num_solutions": 16,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 20.0,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            0
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "true_positives": 20.0,
+        "true_negatives": 380.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 20,
+        "total_gt_matches": 20,
+        "total_pred_matches": 20,
+        "experiment_type": "with_objects",
+        "matching_time": 0.8185679912567139,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.8185679912567139,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 12.540778160095215,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 12.540778160095215,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            210,
+            0
+          ],
+          [
+            0,
+            15
+          ]
+        ],
+        "true_positives": 15.0,
+        "true_negatives": 210.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 15,
+        "total_gt_matches": 15,
+        "total_pred_matches": 15,
+        "experiment_type": "with_objects",
+        "matching_time": 0.6404495239257812,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.6404495239257812,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 5.4515700340271,
+        "num_solutions": 4,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 5.4515700340271,
+      "num_solutions": 4,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.42810845375061035,
+        "num_solutions": 2,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.42810845375061035,
+      "num_solutions": 2,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 2,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 2.550917148590088,
+        "num_solutions": 8,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 2.550917148590088,
+      "num_solutions": 8,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 16.666666666666664,
+      "metrics": {
+        "experiment_type": "with_objects",
+        "matching_time": 0.14639878273010254,
+        "num_solutions": 3,
+        "success": true
+      },
+      "experiment_type": "with_objects",
+      "matching_time": 0.14639878273010254,
+      "num_solutions": 3,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 1,
+      "n_rooms_a_graphs": 4,
+      "pct_object_nodes": 0.0,
+      "metrics": {
+        "experiment_type": "no_objects",
+        "matching_time": 0.5299584865570068,
+        "num_solutions": 16,
+        "success": true
+      },
+      "experiment_type": "no_objects",
+      "matching_time": 0.5299584865570068,
+      "num_solutions": 16,
+      "success": true
+    }
+  ]
+}
