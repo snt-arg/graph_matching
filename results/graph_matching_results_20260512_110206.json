@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-05-12T11:02:48.641240",
+    "timestamp": "2026-05-12T11:02:06.898043",
     "total_experiments": 3,
     "dataset_file": "graph_dicts/",
     "description": "Graph matching performance metrics collected from real environment dataset experiments",
@@ -42,13 +42,13 @@
         "total_gt_matches": 18,
         "total_pred_matches": 30,
         "experiment_type": "pgm_real_47_basement_Unsplitted",
-        "matching_time": 0.0008533000946044922,
+        "matching_time": 0.0013852119445800781,
         "num_solutions": 1,
         "success": true,
         "environment": "47_basement_Unsplitted"
       },
       "experiment_type": "pgm_real_47_basement_Unsplitted",
-      "matching_time": 0.0008533000946044922,
+      "matching_time": 0.0013852119445800781,
       "num_solutions": 1,
       "success": true
     },
@@ -79,13 +79,13 @@
         "total_gt_matches": 0,
         "total_pred_matches": 20,
         "experiment_type": "pgm_real_47_topfloor_",
-        "matching_time": 0.0006773471832275391,
+        "matching_time": 0.000835418701171875,
         "num_solutions": 1,
         "success": true,
         "environment": "47_topfloor_"
       },
       "experiment_type": "pgm_real_47_topfloor_",
-      "matching_time": 0.0006773471832275391,
+      "matching_time": 0.000835418701171875,
       "num_solutions": 1,
       "success": true
     },
@@ -116,13 +116,13 @@
         "total_gt_matches": 19,
         "total_pred_matches": 29,
         "experiment_type": "pgm_real_CF12",
-        "matching_time": 0.0004799365997314453,
+        "matching_time": 0.0009257793426513672,
         "num_solutions": 1,
         "success": true,
         "environment": "CF12"
       },
       "experiment_type": "pgm_real_CF12",
-      "matching_time": 0.0004799365997314453,
+      "matching_time": 0.0009257793426513672,
       "num_solutions": 1,
       "success": true
     }

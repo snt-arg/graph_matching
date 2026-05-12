@@ -14,13 +14,19 @@ from tqdm import tqdm
 
 
 # ── Matcher / dataset selection ───────────────────────────────────────────────
-# USE_PGM=True  → run with PGM_env (Python 3.11, has PyTorch/moviepy)
-# USE_PGM=False → run with system Python 3.12 (has clipperpy/ROS packages)
-USE_PGM = True
+# MATCHER="pgm"      → GNN-based partial graph matcher (PGM_env, needs torch + trained model)
+# MATCHER="classic"  → CLIPPER-based GraphMatcher (system Python 3.12, ROS env)
+# MATCHER="dry_run"  → numpy-only stand-in for the GNN: random embeddings, affinity,
+#                      Sinkhorn S, and permutation, all sized to the actual input graphs.
+#                      For dashboard development when the GNN environment is unavailable.
+MATCHER = "dry_run"
+assert MATCHER in {"pgm", "classic", "dry_run"}, f"Unknown MATCHER: {MATCHER!r}"
+# Derived flag: existing branches use USE_PGM as "follow the GNN-style path".
+USE_PGM = MATCHER != "classic"
 
 
 # Dataset selection — pick one: "synthetic", "msd", "real"
-DATASET = "msd"
+DATASET = "real"
 
 
 # MSD split to evaluate — pick one: "train", "valid", "test"
@@ -107,13 +113,29 @@ AFFINITY_STD_THRESHOLD = None # e.g. 0.5, 1.0, 2.0
 CLASSIC_TIMEOUT_S = 60  # e.g. 10, 30, 60
 
 
-if USE_PGM:
+# Resolve sibling-repo paths relative to this script so the same code works
+# regardless of who runs it (root, adminpc, CI, ...).
+# __file__ → .../<workspace>/src/graph_matching/graph_matching/matching_synthetic_dataset.py
+_WORKSPACE_SRC = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PGM_PATH = os.path.join(_WORKSPACE_SRC, 'graph_matching_gnn', 'graph_matching')
+
+if MATCHER == "pgm":
     import torch
-    PGM_PATH = '/root/workspace/src/graph_matching_gnn/graph_matching'
     if PGM_PATH not in sys.path:
         sys.path.insert(0, PGM_PATH)
     from PGM_class import PartialGraphMatching, MatchingModel_GATv2SinkhornTopK, predict_matching_matrix  # type: ignore
-else:
+elif MATCHER == "dry_run":
+    if PGM_PATH not in sys.path:
+        sys.path.insert(0, PGM_PATH)
+    from dry_run_pgm import (  # type: ignore
+        DryRunPartialGraphMatching as PartialGraphMatching,
+        MatchingModel_GATv2SinkhornTopK,
+        predict_matching_matrix,
+    )
+    import dry_run_pgm as _dry_run_pgm  # type: ignore
+    if DATASET == "msd":
+        import torch  # MSD .pkl unpickles PyG Data objects — needs torch even in dry-run
+else:  # MATCHER == "classic"
     from GraphMatcher import GraphMatcher
     if DATASET == "msd":
         import torch  # needed to unpack PyG-formatted MSD test data even without the GNN model
@@ -812,7 +834,7 @@ def run_classic_msd_experiment(data1, data2, gt_perm, original_graphs, graph_nam
 
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
-GNN_PATH = '/root/workspace/src/graph_matching_gnn/GNN'
+GNN_PATH = os.path.join(_WORKSPACE_SRC, 'graph_matching_gnn', 'GNN')
 _pgm_noise = "ws_room_dropout_noise_inc" if USE_NEW_MODEL else NOISE_CONDITION
 _pgm_model_path = os.path.join(GNN_PATH, "models", "partial_graph_matching",
                                 "ws_room_dropout_noise_inc_BCE" if USE_NEW_MODEL else NOISE_CONDITION)
@@ -820,8 +842,8 @@ MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching",
 MSD_ORIGINAL_PATH = os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal", "original.pkl")
 
 
-# Load PGM model once (only needed for pgm and msd modes)
-if USE_PGM:
+# Load PGM model once (pgm + dry_run only; classic mode skips it)
+if MATCHER == "pgm":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     pgm_model_instance = PartialGraphMatching(
         model_class=MatchingModel_GATv2SinkhornTopK,
@@ -834,6 +856,10 @@ if USE_PGM:
     )
     pgm_model_instance.load_best_model()
     print("PGM model loaded.")
+elif MATCHER == "dry_run":
+    pgm_model_instance = PartialGraphMatching(in_dim=7)
+    pgm_model_instance.load_best_model()  # no-op
+    print("Dry-run PGM stand-in ready (numpy random outputs, no model weights).")
 else:
     pgm_model_instance = None
 
@@ -1359,3 +1385,40 @@ if all_metrics_data:
     
 else:
     print("No successful matching results to save.")
+
+
+# ── Dry-run mode: dump per-pair intermediates for the dashboard ────────────────
+# Saves the random embeddings (h1, h2), raw affinity, instance-normed affinity,
+# Sinkhorn S, and permutation matrix produced for every input pair. One .npz
+# archive holds all arrays (keys like "pair_<i>_h1"); a JSON sidecar records the
+# pair order and the (graph_name, n_nodes, n_edges) signature used to seed each.
+if MATCHER == "dry_run":
+    dry_run_log = _dry_run_pgm.get_intermediates_log()
+    if dry_run_log:
+        results_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
+        os.makedirs(results_dir, exist_ok=True)
+        npz_arrays = {}
+        index_entries = []
+        intermediate_keys = ("h1", "h2", "affinity", "sim_normed", "S", "perm")
+        for i, ints in enumerate(dry_run_log):
+            for key in intermediate_keys:
+                npz_arrays[f"pair_{i}_{key}"] = ints[key]
+            index_entries.append({
+                "pair_index": i,
+                "signature": [list(side) for side in ints["signature"]],
+                "seed": ints["seed"],
+                "shapes": {key: list(ints[key].shape) for key in intermediate_keys},
+            })
+        npz_path = os.path.join(results_dir, "latest_intermediates.npz")
+        np.savez_compressed(npz_path, **npz_arrays)
+        sidecar_path = os.path.join(results_dir, "latest_intermediates_index.json")
+        with open(sidecar_path, "w") as f:
+            json.dump({
+                "pairs": index_entries,
+                "keys_per_pair": list(intermediate_keys),
+                "signature_format": ["(graph_name, n_nodes, n_edges) per side"],
+            }, f, indent=2)
+        print(f"Dry-run intermediates saved: {npz_path}  ({len(dry_run_log)} pairs)")
+        print(f"  index sidecar:             {sidecar_path}")
+    else:
+        print("Dry-run mode produced no intermediates (no pairs were processed).")
