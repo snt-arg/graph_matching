@@ -276,18 +276,29 @@ def _gt_edge_style_fn(gt_pairs):
     return fn
 
 
+# Neutral color for the GT-agnostic "value" mode. Must be a single-character
+# matplotlib color code: the visualizer's `_mpl_color_from_feat` only inspects
+# `viz_feat[0]` and looks it up in a fixed dict, so hex strings like "#1f77b4"
+# fail with `ValueError: '#' is not a valid value for color`. 'b' (blue) is
+# safe and visually distinct from the green/red used in the other modes.
+_VALUE_ONLY_COLOR = "b"
+
+
 def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
-                            highlight_correct=True, min_weight=0.05):
+                            mode="correct", min_weight=0.05):
     """Color bipartite edges by GT membership; alpha by matrix value.
 
-    Green if `(ai, si) ∈ gt_pairs`, red otherwise. The matrix is min-max
-    normalized to [0, 1]; the normalized value drives a "highlight weight"
-    that controls both alpha and linewidth:
-      - highlight_correct: GT-true edges → weight = norm (value→1 visible);
-                           GT-false edges → weight = 1 − norm (value→0 visible).
-      - highlight_correct=False: the mapping is swapped, so FN-like (GT-true
-                                 with low value) and FP-like (GT-false with
-                                 high value) edges become visible instead.
+    Matrix is min-max normalized to [0, 1]; the normalized value drives a
+    "highlight weight" that controls both alpha and linewidth. The mode
+    selects how the weight relates to GT membership:
+      - ``"correct"``: GT-true edges → weight = norm (value→1 visible);
+        GT-false edges → weight = 1 − norm (value→0 visible). Correct
+        predictions stand out.
+      - ``"incorrect"``: mapping swapped, so FN-like (GT-true with low
+        value) and FP-like (GT-false with high value) edges stand out.
+      - ``"value"``: weight = norm for every edge, no GT-based color
+        distinction (single neutral color). Pure "what does the matrix
+        say" view.
     Edges with weight below `min_weight` are skipped to reduce clutter.
     """
     a_index = {str(n): i for i, n in enumerate(a_nodes)}
@@ -304,25 +315,31 @@ def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
             return None
         norm = (m[i, j] - m_min) / span
         in_gt = (ai, si) in gt_pairs
-        if highlight_correct:
-            weight = norm if in_gt else (1.0 - norm)
-        else:
+        if mode == "value":
+            weight = norm
+            color = _VALUE_ONLY_COLOR
+        elif mode == "incorrect":
             weight = (1.0 - norm) if in_gt else norm
+            color = "g" if in_gt else "r"
+        else:  # "correct"
+            weight = norm if in_gt else (1.0 - norm)
+            color = "g" if in_gt else "r"
         if weight < min_weight:
             return None
-        color = "g" if in_gt else "r"
         alpha = max(0.1, min(1.0, weight))
         linewidth = 0.5 + 2.5 * weight
         return (color, linewidth, alpha)
     return fn
 
 
-def _node_aura_weights(matrix, a_nodes, s_nodes, gt_pairs, highlight_correct):
+def _node_aura_weights(matrix, a_nodes, s_nodes, gt_pairs, mode):
     """Per-node mean of the same "highlight weight" used by ``_gt_value_edge_style_fn``.
 
-    For each A node, average over all S columns: ``norm`` for GT-true cells,
-    ``1 - norm`` for GT-false cells (swapped when ``highlight_correct=False``).
-    Same for each S node averaging over A rows.
+    For each A node, average over all S columns; same for each S node
+    averaging over A rows. The cell weight depends on ``mode``:
+      - ``"correct"``: ``norm`` for GT-true cells, ``1 - norm`` otherwise.
+      - ``"incorrect"``: swapped.
+      - ``"value"``: ``norm`` everywhere (no GT distinction).
 
     Returns ``({"a_<id>": w}, {"s_<id>": w})`` with weights in ``[0, 1]``.
     """
@@ -341,10 +358,12 @@ def _node_aura_weights(matrix, a_nodes, s_nodes, gt_pairs, highlight_correct):
         if i is not None and j is not None:
             in_gt_mat[i, j] = True
 
-    if highlight_correct:
-        weights = np.where(in_gt_mat, norm, 1.0 - norm)
-    else:
+    if mode == "value":
+        weights = norm
+    elif mode == "incorrect":
         weights = np.where(in_gt_mat, 1.0 - norm, norm)
+    else:  # "correct"
+        weights = np.where(in_gt_mat, norm, 1.0 - norm)
 
     if weights.size == 0:
         return {}, {}
@@ -393,6 +412,142 @@ def _draw_node_aura(fig, prepared_graph, weights, color, size=900):
 def _pairs_from_perm(perm, g1_nodes, g2_nodes):
     rows, cols = np.where(np.asarray(perm) > 0)
     return {(str(g1_nodes[r]), str(g2_nodes[c])) for r, c in zip(rows, cols)}
+
+
+def _compute_classification_metrics(gt_pairs, pred_pairs, total):
+    """Confusion-matrix + precision / recall / F1 / accuracy / specificity.
+
+    Same formulation as ``matching_synthetic_dataset.compute_metrics``: treat
+    every (a, s) cell of the universe (size ``total``) as a binary
+    classification — class 1 if the pair is "matched". TN is the
+    cells in the universe that neither GT nor prediction marked. For the
+    combined view, ``total = |A| × |S|``; for per-edge-type views, ``total``
+    is restricted to the cells whose endpoint types satisfy the filter
+    (e.g. for room-room it's |rooms in A| × |rooms in S|).
+
+    Reimplemented locally to avoid importing the heavy
+    ``matching_synthetic_dataset`` module (top-level side effects + sklearn
+    pulled in for a handful of divisions).
+    """
+    total = max(int(total), 0)
+    gt = set(gt_pairs)
+    pred = set(pred_pairs)
+    tp = len(gt & pred)
+    fp = len(pred - gt)
+    fn = len(gt - pred)
+    tn = max(total - tp - fp - fn, 0)
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = (2 * precision * recall / (precision + recall)
+          if (precision + recall) > 0 else 0.0)
+    accuracy = (tp + tn) / total if total > 0 else 0.0
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    return {
+        "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+        "precision": precision, "recall": recall,
+        "f1_score": f1, "accuracy": accuracy, "specificity": specificity,
+        "total": total, "gt_total": len(gt), "pred_total": len(pred),
+    }
+
+
+# Order matters: drives the order of rows inside a metrics box.
+_METRIC_ROW_SPEC = (
+    ("precision",   "Precision"),
+    ("recall",      "Recall"),
+    ("f1_score",    "F1"),
+    ("accuracy",    "Accuracy"),
+    ("specificity", "Specificity"),
+    ("tp",          "TP"),
+    ("fp",          "FP"),
+    ("fn",          "FN"),
+    ("tn",          "TN"),
+    ("gt_total",    "GT pairs"),
+    ("pred_total",  "Pred pairs"),
+)
+
+
+def _build_metric_rows(parent_layout):
+    """Append metric label/value rows to ``parent_layout``.
+
+    Returns ``{key: QLabel}`` so callers can mutate values in place. Each row
+    is its own widget so the labels can sit on the left and the values
+    right-aligned via a stretch.
+    """
+    labels = {}
+    for key, text in _METRIC_ROW_SPEC:
+        row = QWidget()
+        rl = QHBoxLayout(row)
+        rl.setContentsMargins(0, 0, 0, 0)
+        rl.setSpacing(6)
+        rl.addWidget(QLabel(f"{text}:"))
+        rl.addStretch(1)
+        v = QLabel("—")
+        v.setStyleSheet("font-family: monospace;")
+        rl.addWidget(v)
+        parent_layout.addWidget(row)
+        labels[key] = v
+    return labels
+
+
+class _CollapsibleSection(QWidget):
+    """A header with a Down/Right-arrow toggle that hides/shows its body.
+
+    The arrow is a ``QToolButton`` with ``ToolButtonTextBesideIcon`` so the
+    title and arrow share a single click target. Callers add metric rows
+    into ``body_layout()`` — the body is a vertical layout that the toggle
+    `setVisible`s on click.
+    """
+
+    def __init__(self, title, parent=None, expanded=True):
+        super().__init__(parent)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        self._toggle = QToolButton()
+        self._toggle.setText(title)
+        self._toggle.setCheckable(True)
+        self._toggle.setChecked(expanded)
+        self._toggle.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._toggle.setArrowType(Qt.DownArrow if expanded else Qt.RightArrow)
+        self._toggle.setStyleSheet(
+            "QToolButton { border: none; font-weight: bold; padding: 2px 0; }"
+        )
+        self._toggle.toggled.connect(self._on_toggle)
+        outer.addWidget(self._toggle)
+        self._body = QWidget()
+        self._body_layout = QVBoxLayout(self._body)
+        self._body_layout.setContentsMargins(12, 2, 8, 6)
+        self._body_layout.setSpacing(2)
+        outer.addWidget(self._body)
+        self._body.setVisible(expanded)
+
+    def _on_toggle(self, checked):
+        self._body.setVisible(checked)
+        self._toggle.setArrowType(Qt.DownArrow if checked else Qt.RightArrow)
+
+    def body_layout(self):
+        return self._body_layout
+
+
+# Predicates for the per-edge-type breakdowns. Same A/S sides as everywhere
+# else: a pair ``(a_id, s_id)`` is classified by the types of its two
+# endpoints. "cross" merges both directions (A=room/S=ws and A=ws/S=room)
+# per user request ("room-ws or viceversa").
+_EDGE_TYPE_PREDICATES = {
+    "room-room": lambda at, st: at == "room" and st == "room",
+    "ws-ws":     lambda at, st: at == "ws" and st == "ws",
+    "room-ws":   lambda at, st: (at == "room" and st == "ws")
+                                 or (at == "ws" and st == "room"),
+}
+
+
+def _node_type_map(graph):
+    """``{node_id_as_str: type_string}`` from a GraphWrapper.
+
+    Used to evaluate the edge-type predicates against pair sets and to
+    count the per-type universe for the TN denominator.
+    """
+    return {str(n): a.get("type") for n, a in graph.graph.nodes(data=True)}
 
 
 class DryRunMatcher:
@@ -1281,6 +1436,35 @@ class Dashboard(QMainWindow):
         self._affinity_panel = GraphPanel("A + S — affinity")
         self._simnormed_panel = GraphPanel("A + S — sim_normed")
 
+        # Metrics column for the right of the grid. Top is the combined
+        # (all-types) box, below it three collapsible sections — one per
+        # edge type (room-room, ws-ws, room-ws). Built before the grid
+        # placement so the container exists when it's `addWidget`-ed.
+        self._metrics_container = QWidget()
+        _mc_layout = QVBoxLayout(self._metrics_container)
+        _mc_layout.setContentsMargins(0, 0, 0, 0)
+        _mc_layout.setSpacing(4)
+
+        self._metrics_box = QGroupBox("Metrics")
+        _combined_layout = QVBoxLayout(self._metrics_box)
+        _combined_layout.setContentsMargins(8, 6, 8, 6)
+        _combined_layout.setSpacing(2)
+        self._metric_labels = _build_metric_rows(_combined_layout)
+        _mc_layout.addWidget(self._metrics_box)
+
+        # Per-edge-type sections. Each one is a collapsible header + metric
+        # rows; refs to value labels live in `_metric_labels_by_type[key]`
+        # so `_update_metrics` can fill them. Collapsed by default so the
+        # combined box stays the focal point; arrow click expands.
+        self._metric_labels_by_type = {}
+        for _et_key in _EDGE_TYPE_PREDICATES:
+            _sec = _CollapsibleSection(_et_key, expanded=False)
+            self._metric_labels_by_type[_et_key] = _build_metric_rows(
+                _sec.body_layout()
+            )
+            _mc_layout.addWidget(_sec)
+        _mc_layout.addStretch(1)
+
         self._panel_positions = {}
         self._panels = []
         self._switchable_panels = (self._a_panel, self._s_panel, self._gt_panel)
@@ -1297,6 +1481,15 @@ class Dashboard(QMainWindow):
             self._panels.append(panel)
             panel.expand_toggled.connect(self._toggle_panel_expand)
             panel.view_changed.connect(self._on_panel_view_changed)
+        # Metrics column sits at row 1 col 3, aligned with the matching 3D
+        # panels (row 0 col 3 stays empty). Column 3 has no stretch factor
+        # so the column stays at its content width; the six 3D panels keep
+        # their existing column shares.
+        self._grid.addWidget(self._metrics_container, 1, 3)
+        self._grid.setColumnStretch(0, 1)
+        self._grid.setColumnStretch(1, 1)
+        self._grid.setColumnStretch(2, 1)
+        self._grid.setColumnStretch(3, 0)
         for sp in self._switchable_panels:
             sp.mode_changed.connect(self._on_panel_mode_changed)
 
@@ -1371,16 +1564,22 @@ class Dashboard(QMainWindow):
         self._gt_overlay_cb.toggled.connect(self._kick_refresh)
         matching_row.addWidget(self._gt_overlay_cb)
 
-        self._highlight_correct_cb = QCheckBox("Highlight correct")
-        self._highlight_correct_cb.setChecked(True)
-        self._highlight_correct_cb.setToolTip(
-            "On: GT-true edges with value→1 and GT-false edges with value→0 "
-            "are most visible (correct predictions stand out). Off: FN-like "
-            "(GT-true with low value) and FP-like (GT-false with high value) "
-            "edges stand out instead."
+        matching_row.addWidget(QLabel("Highlight:"))
+        self._highlight_mode_combo = QComboBox()
+        # Order matches the _HIGHLIGHT_MODES list below; keep in sync.
+        self._highlight_mode_combo.addItems(["Correct", "Incorrect", "Value only"])
+        self._highlight_mode_combo.setCurrentIndex(0)
+        self._highlight_mode_combo.setToolTip(
+            "Correct: GT-true edges with value→1 and GT-false edges with "
+            "value→0 are most visible (correct predictions stand out).\n"
+            "Incorrect: FN-like (GT-true with low value) and FP-like "
+            "(GT-false with high value) edges stand out instead.\n"
+            "Value only: GT membership is ignored — every edge uses a single "
+            "neutral color and transparency tracks the raw normalized matrix "
+            "value."
         )
-        self._highlight_correct_cb.toggled.connect(self._kick_refresh)
-        matching_row.addWidget(self._highlight_correct_cb)
+        self._highlight_mode_combo.currentIndexChanged.connect(self._kick_refresh)
+        matching_row.addWidget(self._highlight_mode_combo)
 
         self._node_aura_cb = QCheckBox("Highlight per node")
         self._node_aura_cb.setChecked(False)
@@ -1646,6 +1845,7 @@ class Dashboard(QMainWindow):
         enable_hover = self._hover_cb.isChecked()
         a_nodes = self._current_a_nodes
         s_nodes = self._current_s_nodes
+        self._update_metrics(a_nodes, s_nodes)
         dx, dy, theta = (
             self._dx_spin.value(),
             self._dy_spin.value(),
@@ -1694,29 +1894,40 @@ class Dashboard(QMainWindow):
             if gt_overlay else []
         )
 
-        highlight_correct = self._highlight_correct_cb.isChecked()
-        highlight_mode = "correct" if highlight_correct else "incorrect"
-        # All three bottom panels share the same edge-style scheme: green for
-        # GT-true edges, red for GT-false; alpha+linewidth driven by the
-        # min-max-normalized matrix value, with the highlight-correct toggle
-        # deciding whether correctly- or incorrectly-scored edges stand out.
-        gt_value_legend = [
-            _make_match_legend_proxy("green", "GT-true (α∝correctness)"),
-            _make_match_legend_proxy("red", "GT-false (α∝correctness)"),
+        # Combo index → mode token (kept in sync with the QComboBox addItems
+        # order in __init__). Three modes: GT-correct highlighting, GT-incorrect
+        # highlighting, and a GT-agnostic value-only view.
+        highlight_mode = ("correct", "incorrect", "value")[
+            self._highlight_mode_combo.currentIndex()
         ]
+        title_suffix = "value only" if highlight_mode == "value" else f"highlight {highlight_mode}"
+        # In "value" mode every edge uses a single neutral color (no GT
+        # distinction). In the other two modes, green = GT-true, red =
+        # GT-false; alpha+linewidth track how strongly that edge matches
+        # the chosen "correct" vs "incorrect" emphasis.
+        if highlight_mode == "value":
+            gt_value_legend = [
+                _make_match_legend_proxy(_VALUE_ONLY_COLOR, "matrix value (α∝value)"),
+            ]
+            aura_color = _VALUE_ONLY_COLOR
+            aura_label = "node aura (α∝mean value)"
+        else:
+            gt_value_legend = [
+                _make_match_legend_proxy("green", "GT-true (α∝correctness)"),
+                _make_match_legend_proxy("red", "GT-false (α∝correctness)"),
+            ]
+            aura_color = "green" if highlight_mode == "correct" else "red"
+            aura_label = f"node aura (α∝mean {highlight_mode})"
         show_aura = self._node_aura_cb.isChecked()
-        aura_color = "green" if highlight_correct else "red"
         aura_legend = (
-            [_make_match_legend_proxy(aura_color,
-                                      f"node aura (α∝mean {highlight_mode})")]
-            if show_aura else []
+            [_make_match_legend_proxy(aura_color, aura_label)] if show_aura else []
         )
 
         def _aura_for(matrix):
             a_w, s_w = _node_aura_weights(
                 matrix,
                 self._current_a_nodes, self._current_s_nodes,
-                self._current_gt, highlight_correct,
+                self._current_gt, highlight_mode,
             )
             return {"weights": {**a_w, **s_w}, "color": aura_color}
 
@@ -1730,7 +1941,7 @@ class Dashboard(QMainWindow):
                     self._current_a_nodes,
                     self._current_s_nodes,
                     self._current_gt,
-                    highlight_correct=highlight_correct,
+                    mode=highlight_mode,
                 ),
             )
             dryrun_inset = None
@@ -1753,7 +1964,7 @@ class Dashboard(QMainWindow):
                 }
             self._dryrun_panel.set_graph(
                 perm_combined,
-                f"{self._current_env} - A + S (Hungarian perm, highlight {highlight_mode})",
+                f"{self._current_env} - A + S (Hungarian perm, {title_suffix})",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -1771,7 +1982,7 @@ class Dashboard(QMainWindow):
                     self._current_a_nodes,
                     self._current_s_nodes,
                     self._current_gt,
-                    highlight_correct=highlight_correct,
+                    mode=highlight_mode,
                 ),
             )
             affinity_inset = None
@@ -1785,7 +1996,7 @@ class Dashboard(QMainWindow):
                 }
             self._affinity_panel.set_graph(
                 affinity_combined,
-                f"{self._current_env} - A + S (affinity, highlight {highlight_mode})",
+                f"{self._current_env} - A + S (affinity, {title_suffix})",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -1803,7 +2014,7 @@ class Dashboard(QMainWindow):
                     self._current_a_nodes,
                     self._current_s_nodes,
                     self._current_gt,
-                    highlight_correct=highlight_correct,
+                    mode=highlight_mode,
                 ),
             )
             simnormed_inset = None
@@ -1817,7 +2028,7 @@ class Dashboard(QMainWindow):
                 }
             self._simnormed_panel.set_graph(
                 simnormed_combined,
-                f"{self._current_env} - A + S (sim_normed, highlight {highlight_mode})",
+                f"{self._current_env} - A + S (sim_normed, {title_suffix})",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -1827,6 +2038,53 @@ class Dashboard(QMainWindow):
             )
 
         self._apply_shared_view()
+
+    def _update_metrics(self, a_nodes, s_nodes):
+        """Refresh the combined + per-edge-type Metrics boxes.
+
+        Called from `_refresh_combined` so the panels track GT edits (toggled
+        in the GT editor) and matcher re-runs. Denominator for the combined
+        box is the full |A|×|S| Cartesian product (same convention as
+        `matching_synthetic_dataset.compute_metrics`); for the per-type
+        boxes it's the count of cells whose endpoints satisfy the type
+        predicate (e.g. |rooms in A| × |rooms in S| for room-room).
+        """
+        total_all = len(a_nodes) * len(s_nodes)
+        combined = _compute_classification_metrics(
+            self._current_gt, self._current_pred, total_all,
+        )
+        self._fill_metric_labels(self._metric_labels, combined)
+
+        a_types = _node_type_map(self._current_a)
+        s_types = _node_type_map(self._current_s)
+        # Cache node types in the same str-keyed form pairs use, so the
+        # predicate lookups below match the pair-set element ids.
+        a_str = [str(n) for n in a_nodes]
+        s_str = [str(n) for n in s_nodes]
+        for key, predicate in _EDGE_TYPE_PREDICATES.items():
+            gt_sub = {
+                p for p in self._current_gt
+                if predicate(a_types.get(p[0]), s_types.get(p[1]))
+            }
+            pred_sub = {
+                p for p in self._current_pred
+                if predicate(a_types.get(p[0]), s_types.get(p[1]))
+            }
+            total_sub = sum(
+                1 for an in a_str for sn in s_str
+                if predicate(a_types.get(an), s_types.get(sn))
+            )
+            m = _compute_classification_metrics(gt_sub, pred_sub, total_sub)
+            self._fill_metric_labels(self._metric_labels_by_type[key], m)
+
+    @staticmethod
+    def _fill_metric_labels(labels, metrics):
+        for key, label in labels.items():
+            v = metrics.get(key)
+            if isinstance(v, float):
+                label.setText(f"{v:.3f}")
+            else:
+                label.setText(str(v))
 
     def _on_panel_view_changed(self, elev, azim):
         self._shared_view = (elev, azim)
