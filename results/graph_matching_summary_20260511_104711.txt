@@ -1,0 +1,40 @@
+GRAPH MATCHING PERFORMANCE ANALYSIS
+==================================================
+
+Generated: 2026-05-11T10:46:12.163692
+Dataset:   graph_dicts/
+Total:     3 experiments
+
+
+Rooms: 4
+  Success Rate  : 100.0%
+  Avg Time      : 0.0055s ± 0.0000s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=1 unambiguous) ---
+  Precision   : 0.0000 ± 0.0000
+  Recall      : 0.0000 ± 0.0000
+  F1-Score    : 0.0000 ± 0.0000
+  Accuracy    : 0.9500 ± 0.0000
+  Specificity : 0.9500 ± 0.0000
+
+Rooms: 6
+  Success Rate  : 100.0%
+  Avg Time      : 0.0759s ± 0.0000s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=1 unambiguous) ---
+  Precision   : 0.3448 ± 0.0000
+  Recall      : 0.5263 ± 0.0000
+  F1-Score    : 0.4167 ± 0.0000
+  Accuracy    : 0.9707 ± 0.0000
+  Specificity : 0.9797 ± 0.0000
+
+Rooms: 7
+  Success Rate  : 100.0%
+  Avg Time      : 0.0575s ± 0.0000s
+  Avg Solutions : 1.00 ± 0.00
+  --- Classification metrics (N=1 unambiguous) ---
+  Precision   : 0.7667 ± 0.0000
+  Recall      : 0.9200 ± 0.0000
+  F1-Score    : 0.8364 ± 0.0000
+  Accuracy    : 0.9912 ± 0.0000
+  Specificity : 0.9930 ± 0.0000

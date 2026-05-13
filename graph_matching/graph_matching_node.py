@@ -175,21 +175,131 @@ class GraphMatchingNode(Node):
             self.get_logger().info("No pickle files found in the graph_dicts directory")
             return loaded_graphs
 
+        class _CompatUnpickler(pickle.Unpickler):
+            """Remap old module path 'graph_wrapper' → 'situational_graphs_wrapper'."""
+            def find_class(self, module, name):
+                module = module.replace('graph_wrapper', 'situational_graphs_wrapper', 1)
+                return super().find_class(module, name)
+
         for pickle_file in pickle_files:
             file_path = os.path.join(pickle_dir, pickle_file)
             try:
                 with open(file_path, 'rb') as f:
-                    graph_wrapper = pickle.load(f)
-                    graph_name = graph_wrapper.name if hasattr(graph_wrapper, 'name') else pickle_file[:-4]
-                    self.gm.graphs[graph_name] = graph_wrapper
-                    loaded_graphs[graph_name] = graph_wrapper
-                    self.get_logger().info(f"Loaded graph: {graph_name} from {pickle_file} "
-                                           f"({graph_wrapper.get_total_number_nodes()} nodes)")
+                    graph_wrapper = _CompatUnpickler(f).load()
+
+                # Raw nx.DiGraph saved by the non-GNN code path — wrap it so
+                # GraphWrapper methods are available (fixes get_total_number_nodes crash)
+                if isinstance(graph_wrapper, (nx.DiGraph, nx.Graph)):
+                    graph_wrapper = GraphWrapper(graph_obj=graph_wrapper)
+
+                # nx.DiGraph.name defaults to '' — use the filename instead
+                stored_name = graph_wrapper.name if hasattr(graph_wrapper, 'name') else ''
+                if not stored_name:
+                    graph_wrapper.set_name(pickle_file[:-4])
+
+                graph_name = graph_wrapper.name
+                self.gm.graphs[graph_name] = graph_wrapper
+                loaded_graphs[graph_name] = graph_wrapper
+                self.get_logger().info(f"Loaded graph: {graph_name} from {pickle_file} "
+                                       f"({graph_wrapper.get_total_number_nodes()} nodes)")
             except Exception as e:
                 self.get_logger().error(f"Failed to load pickle file {pickle_file}: {str(e)}")
 
         self.get_logger().info(f"Loaded {len(loaded_graphs)} graphs from pickle files")
         return loaded_graphs
+
+    def _adapt_online_to_gnn_format(self, graph_wrapper):
+        """Convert pre-GNN format (Plane/Finite Room nodes) to GNN format (ws/room).
+
+        Handles three cases that break the offline pipeline:
+          1. Container is a raw nx.DiGraph instead of GraphWrapper  (already fixed by
+             load_all_pickle_graphs, but guarded here defensively)
+          2. name is empty or wrong
+          3. Nodes still have the original Plane/Finite Room types from graph_callback's
+             first save path (before GNN conversion fires)
+
+        Plane nodes are renamed '{id}_s0' and populated with center/normal/length/limits
+        derived from Geometric_info.  Edges are remapped to the new IDs.  Nodes that are
+        already in GNN format (type 'ws' or 'room') are kept unchanged.
+        """
+        inner = graph_wrapper.graph if hasattr(graph_wrapper, 'graph') else graph_wrapper
+        G_out = nx.DiGraph()
+
+        # Build old→new ID mapping (Plane nodes get a _s0 split suffix)
+        id_map = {}
+        for node_id in inner.nodes():
+            attrs = inner.nodes[node_id]
+            node_id_str = str(node_id)
+            if attrs.get('type') == 'Plane' and '_s' not in node_id_str:
+                id_map[node_id] = f"{node_id_str}_s0"
+            else:
+                id_map[node_id] = node_id_str
+
+        for node_id, attrs in inner.nodes(data=True):
+            new_id = id_map[node_id]
+            t = attrs.get('type', '')
+            geom = attrs.get('Geometric_info', np.zeros(6))
+
+            if t in ('Finite Room', 'room'):
+                center = [float(geom[0]), float(geom[1])]
+                G_out.add_node(new_id,
+                    type='room',
+                    center=center,
+                    normal=[0.0, 0.0],
+                    length=-1.0,
+                    original_type='Finite Room',
+                    original_attrs={'Geometric_info': geom,
+                                    'draw_pos': np.array(center),
+                                    'type': 'Finite Room'},
+                    Geometric_info=geom,
+                    draw_pos=np.array(center))
+
+            elif t == 'Plane':
+                normal_2d = np.array([float(geom[3]), float(geom[4])]) if len(geom) >= 5 else np.array([1., 0.])
+                mag = np.linalg.norm(normal_2d)
+                if mag > 1e-6:
+                    normal_2d = normal_2d / mag
+                tangent = np.array([-normal_2d[1], normal_2d[0]])
+                center_3d = np.array([float(geom[0]), float(geom[1]),
+                                      float(geom[2]) if len(geom) > 2 else 0.])
+                raw_len = attrs.get('length')
+                if raw_len is None:
+                    length = 2.0
+                elif isinstance(raw_len, np.ndarray):
+                    length = float(raw_len[0]) if len(raw_len) > 0 else 2.0
+                else:
+                    length = float(raw_len)
+                half = length / 2.0
+                ep1 = np.array([center_3d[0] - tangent[0]*half,
+                                center_3d[1] - tangent[1]*half, 0.])
+                ep2 = np.array([center_3d[0] + tangent[0]*half,
+                                center_3d[1] + tangent[1]*half, 0.])
+                G_out.add_node(new_id,
+                    type='ws',
+                    center=[float(center_3d[0]), float(center_3d[1])],
+                    normal=normal_2d.tolist(),
+                    length=length,
+                    limits=[ep1, ep2],
+                    original_type='Plane',
+                    original_attrs={'Geometric_info': geom,
+                                    'draw_pos': geom[:2],
+                                    'type': 'Plane'},
+                    original_id=str(node_id).split('_s')[0])
+
+            else:
+                # Already GNN format (ws) or unknown — keep as-is
+                G_out.add_node(new_id, **attrs)
+
+        # Remap edges to new node IDs
+        for u, v in inner.edges():
+            new_u = id_map.get(u, str(u))
+            new_v = id_map.get(v, str(v))
+            if G_out.has_node(new_u) and G_out.has_node(new_v):
+                G_out.add_edge(new_u, new_v)
+
+        adapted = GraphWrapper(graph_obj=G_out)
+        adapted.set_name("Online")
+        return adapted
 
     def match_loaded_graphs(self):
         """Load already GNN-converted graphs and run PGM matching."""
@@ -852,17 +962,17 @@ class GraphMatchingNode(Node):
                 G.graph.add_edge(ws_neighbors[0], ws_neighbors[-1])
 
         
-        # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
-        # Training data has every ws connected to exactly one room — orphan ws nodes
-        # are a structural pattern the GNN was never trained on and hurt match quality.
-        orphan_ws = [
-            n for n, d in G.graph.nodes(data=True)
-            if d.get("type") == "ws"
-            and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
-        ]
-        if orphan_ws:
-            self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
-            G.graph.remove_nodes_from(orphan_ws)
+        # # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
+        # # Training data has every ws connected to exactly one room — orphan ws nodes
+        # # are a structural pattern the GNN was never trained on and hurt match quality.
+        # orphan_ws = [
+        #     n for n, d in G.graph.nodes(data=True)
+        #     if d.get("type") == "ws"
+        #     and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
+        # ]
+        # if orphan_ws:
+        #     self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
+        #     G.graph.remove_nodes_from(orphan_ws)
 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
@@ -1227,7 +1337,7 @@ class GraphMatchingNode(Node):
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
-        if graph["name"] == "Online" and len(room_ids)>=4:
+        if graph["name"] == "Online" and len(room_ids)>=3:
             self.get_logger().info(f"Starting match!")
             # Save Online pickle here — every time matching fires — so the pickle
             # always holds the most recent >= 4-room state used for matching.
@@ -1748,9 +1858,35 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
+
+        if "Online" in graph_matching_node.gm.graphs:
+            online = graph_matching_node.gm.graphs["Online"]
+
+            # Check 1: must be a GraphWrapper (has GNN methods)
+            check1 = hasattr(online, 'get_total_number_nodes')
+            # Check 2: name must be 'Online'
+            check2 = getattr(online, 'name', '') == 'Online'
+            # Check 3: all node types must be GNN format ('ws'/'room'), not pre-GNN ('Plane'/'Finite Room')
+            inner = online.graph if hasattr(online, 'graph') else online
+            node_types = {d.get('type') for _, d in inner.nodes(data=True)}
+            check3 = bool(node_types) and not bool(node_types & {'Plane', 'Finite Room'})
+
+            if not (check1 and check2 and check3):
+                issues = []
+                if not check1: issues.append('not a GraphWrapper')
+                if not check2: issues.append(f"name={getattr(online, 'name', '?')!r} (expected 'Online')")
+                if not check3: issues.append(f"pre-GNN node types present: {node_types}")
+                graph_matching_node.get_logger().warn(
+                    f"Online graph needs adaptation — {'; '.join(issues)}")
+                online = graph_matching_node._adapt_online_to_gnn_format(online)
+                graph_matching_node.gm.graphs["Online"] = online
+                node_types_after = {d.get('type') for _, d in online.graph.nodes(data=True)}
+                graph_matching_node.get_logger().info(
+                    f"Online graph adapted: {online.get_total_number_nodes()} nodes, "
+                    f"types: {node_types_after}")
 
         if "Online" not in graph_matching_node.gm.graphs:
             graph_matching_node.get_logger().warn("No Online graph found in graph_dicts, skipping debug offline mode")
@@ -1775,7 +1911,7 @@ def main(args=None):
                 g_viz.from_2D_to_3D()
                 g_viz._add_complete_viz_attributes_to_graph()
                 visualize_nxgraph_3d(g_viz, gname, visualize_alone=True,
-                                     include_node_ids=False, blocking=False)
+                                     include_node_ids=True, blocking=False)
         plt.show(block=True)  # block here until both windows are closed
 
         result = graph_matching_node.match_loaded_graphs()

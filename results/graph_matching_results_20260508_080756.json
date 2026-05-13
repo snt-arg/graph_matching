@@ -1,0 +1,5421 @@
+{
+  "metadata": {
+    "timestamp": "2026-05-08T08:07:56.413212",
+    "total_experiments": 150,
+    "dataset_file": "/root/workspace/src/graph_matching_gnn/GNN/preprocessed/partial_graph_matching/ws_room_dropout_noise/valid_dataset.pkl",
+    "description": "Graph matching performance metrics collected from MSD dataset experiments",
+    "score_threshold": null,
+    "sinkhorn_threshold": null,
+    "acc_threshold": null,
+    "mc_samples": 0,
+    "std_threshold": null,
+    "mc_affinity_samples": 0,
+    "affinity_std_threshold": null,
+    "dataset": "msd",
+    "noise_condition": "ws_room_dropout_noise"
+  },
+  "experiments": [
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2158,
+            4
+          ],
+          [
+            4,
+            42
+          ]
+        ],
+        "true_positives": 42.0,
+        "true_negatives": 2158.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9130434782608695,
+        "recall": 0.9130434782608695,
+        "f1_score": 0.9130434782608695,
+        "accuracy": 0.9963768115942029,
+        "specificity": 0.9981498612395929,
+        "correct_matches": 42,
+        "total_gt_matches": 46,
+        "total_pred_matches": 46,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.1600656509399414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.1600656509399414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3078,
+            2
+          ],
+          [
+            2,
+            53
+          ]
+        ],
+        "true_positives": 53.0,
+        "true_negatives": 3078.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9636363636363636,
+        "recall": 0.9636363636363636,
+        "f1_score": 0.9636363636363636,
+        "accuracy": 0.9987240829346092,
+        "specificity": 0.9993506493506493,
+        "correct_matches": 53,
+        "total_gt_matches": 55,
+        "total_pred_matches": 55,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013998746871948242,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013998746871948242,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4224,
+            1
+          ],
+          [
+            1,
+            64
+          ]
+        ],
+        "true_positives": 64.0,
+        "true_negatives": 4224.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9846153846153847,
+        "recall": 0.9846153846153847,
+        "f1_score": 0.9846153846153847,
+        "accuracy": 0.9995337995337995,
+        "specificity": 0.9997633136094675,
+        "correct_matches": 64,
+        "total_gt_matches": 65,
+        "total_pred_matches": 65,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.011130809783935547,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.011130809783935547,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1122,
+            0
+          ],
+          [
+            0,
+            34
+          ]
+        ],
+        "true_positives": 34.0,
+        "true_negatives": 1122.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 34,
+        "total_gt_matches": 34,
+        "total_pred_matches": 34,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005370616912841797,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005370616912841797,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1935,
+            1
+          ],
+          [
+            1,
+            43
+          ]
+        ],
+        "true_positives": 43.0,
+        "true_negatives": 1935.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9772727272727273,
+        "recall": 0.9772727272727273,
+        "f1_score": 0.9772727272727273,
+        "accuracy": 0.998989898989899,
+        "specificity": 0.9994834710743802,
+        "correct_matches": 43,
+        "total_gt_matches": 44,
+        "total_pred_matches": 44,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006661176681518555,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006661176681518555,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3189,
+            3
+          ],
+          [
+            3,
+            54
+          ]
+        ],
+        "true_positives": 54.0,
+        "true_negatives": 3189.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9473684210526315,
+        "recall": 0.9473684210526315,
+        "f1_score": 0.9473684210526315,
+        "accuracy": 0.9981532779316713,
+        "specificity": 0.9990601503759399,
+        "correct_matches": 54,
+        "total_gt_matches": 57,
+        "total_pred_matches": 57,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008667945861816406,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008667945861816406,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            930,
+            0
+          ],
+          [
+            0,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 930.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 31,
+        "total_gt_matches": 31,
+        "total_pred_matches": 31,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.019964218139648438,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.019964218139648438,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3540,
+            0
+          ],
+          [
+            0,
+            60
+          ]
+        ],
+        "true_positives": 60.0,
+        "true_negatives": 3540.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 60,
+        "total_gt_matches": 60,
+        "total_pred_matches": 60,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00902104377746582,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00902104377746582,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2450,
+            0
+          ],
+          [
+            0,
+            50
+          ]
+        ],
+        "true_positives": 50.0,
+        "true_negatives": 2450.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 50,
+        "total_gt_matches": 50,
+        "total_pred_matches": 50,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006326913833618164,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006326913833618164,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            702,
+            0
+          ],
+          [
+            0,
+            27
+          ]
+        ],
+        "true_positives": 27.0,
+        "true_negatives": 702.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 27,
+        "total_gt_matches": 27,
+        "total_pred_matches": 27,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.004138946533203125,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.004138946533203125,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5694,
+            6
+          ],
+          [
+            6,
+            69
+          ]
+        ],
+        "true_positives": 69.0,
+        "true_negatives": 5694.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.92,
+        "recall": 0.92,
+        "f1_score": 0.92,
+        "accuracy": 0.9979220779220779,
+        "specificity": 0.9989473684210526,
+        "correct_matches": 69,
+        "total_gt_matches": 75,
+        "total_pred_matches": 75,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03775358200073242,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03775358200073242,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6885,
+            3
+          ],
+          [
+            3,
+            79
+          ]
+        ],
+        "true_positives": 79.0,
+        "true_negatives": 6885.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9634146341463414,
+        "recall": 0.9634146341463414,
+        "f1_score": 0.9634146341463414,
+        "accuracy": 0.9991391678622669,
+        "specificity": 0.9995644599303136,
+        "correct_matches": 79,
+        "total_gt_matches": 82,
+        "total_pred_matches": 82,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.012016057968139648,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.012016057968139648,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2754,
+            2
+          ],
+          [
+            2,
+            50
+          ]
+        ],
+        "true_positives": 50.0,
+        "true_negatives": 2754.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9615384615384616,
+        "recall": 0.9615384615384616,
+        "f1_score": 0.9615384615384616,
+        "accuracy": 0.9985754985754985,
+        "specificity": 0.9992743105950653,
+        "correct_matches": 50,
+        "total_gt_matches": 52,
+        "total_pred_matches": 52,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.016467809677124023,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.016467809677124023,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6886,
+            3
+          ],
+          [
+            3,
+            80
+          ]
+        ],
+        "true_positives": 80.0,
+        "true_negatives": 6886.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.963855421686747,
+        "recall": 0.963855421686747,
+        "f1_score": 0.963855421686747,
+        "accuracy": 0.9991394148020654,
+        "specificity": 0.9995645231528524,
+        "correct_matches": 80,
+        "total_gt_matches": 83,
+        "total_pred_matches": 83,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01362466812133789,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01362466812133789,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2548,
+            2
+          ],
+          [
+            2,
+            49
+          ]
+        ],
+        "true_positives": 49.0,
+        "true_negatives": 2548.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9607843137254902,
+        "recall": 0.9607843137254902,
+        "f1_score": 0.9607843137254902,
+        "accuracy": 0.9984621299500193,
+        "specificity": 0.9992156862745099,
+        "correct_matches": 49,
+        "total_gt_matches": 51,
+        "total_pred_matches": 51,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00734400749206543,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00734400749206543,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6160,
+            2
+          ],
+          [
+            2,
+            76
+          ]
+        ],
+        "true_positives": 76.0,
+        "true_negatives": 6160.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9743589743589743,
+        "recall": 0.9743589743589743,
+        "f1_score": 0.9743589743589743,
+        "accuracy": 0.9993589743589744,
+        "specificity": 0.9996754300551769,
+        "correct_matches": 76,
+        "total_gt_matches": 78,
+        "total_pred_matches": 78,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.030952930450439453,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.030952930450439453,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            8010,
+            0
+          ],
+          [
+            0,
+            90
+          ]
+        ],
+        "true_positives": 90.0,
+        "true_negatives": 8010.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 90,
+        "total_gt_matches": 90,
+        "total_pred_matches": 90,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.012320518493652344,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.012320518493652344,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1892,
+            0
+          ],
+          [
+            0,
+            44
+          ]
+        ],
+        "true_positives": 44.0,
+        "true_negatives": 1892.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 44,
+        "total_gt_matches": 44,
+        "total_pred_matches": 44,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006013154983520508,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006013154983520508,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3538,
+            2
+          ],
+          [
+            2,
+            58
+          ]
+        ],
+        "true_positives": 58.0,
+        "true_negatives": 3538.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9666666666666667,
+        "recall": 0.9666666666666667,
+        "f1_score": 0.9666666666666667,
+        "accuracy": 0.9988888888888889,
+        "specificity": 0.9994350282485875,
+        "correct_matches": 58,
+        "total_gt_matches": 60,
+        "total_pred_matches": 60,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008501052856445312,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008501052856445312,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1806,
+            0
+          ],
+          [
+            0,
+            43
+          ]
+        ],
+        "true_positives": 43.0,
+        "true_negatives": 1806.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 43,
+        "total_gt_matches": 43,
+        "total_pred_matches": 43,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006582021713256836,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006582021713256836,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2700,
+            4
+          ],
+          [
+            4,
+            48
+          ]
+        ],
+        "true_positives": 48.0,
+        "true_negatives": 2700.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9230769230769231,
+        "recall": 0.9230769230769231,
+        "f1_score": 0.9230769230769231,
+        "accuracy": 0.9970972423802612,
+        "specificity": 0.9985207100591716,
+        "correct_matches": 48,
+        "total_gt_matches": 52,
+        "total_pred_matches": 52,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007624626159667969,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007624626159667969,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2904,
+            8
+          ],
+          [
+            8,
+            44
+          ]
+        ],
+        "true_positives": 44.0,
+        "true_negatives": 2904.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8461538461538461,
+        "recall": 0.8461538461538461,
+        "f1_score": 0.8461538461538461,
+        "accuracy": 0.9946018893387314,
+        "specificity": 0.9972527472527473,
+        "correct_matches": 44,
+        "total_gt_matches": 52,
+        "total_pred_matches": 52,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00810098648071289,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00810098648071289,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5328,
+            1
+          ],
+          [
+            1,
+            72
+          ]
+        ],
+        "true_positives": 72.0,
+        "true_negatives": 5328.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9863013698630136,
+        "recall": 0.9863013698630136,
+        "f1_score": 0.9863013698630136,
+        "accuracy": 0.9996297667530544,
+        "specificity": 0.99981234753237,
+        "correct_matches": 72,
+        "total_gt_matches": 73,
+        "total_pred_matches": 73,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.015031576156616211,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.015031576156616211,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1435,
+            5
+          ],
+          [
+            5,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 1435.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8611111111111112,
+        "recall": 0.8611111111111112,
+        "f1_score": 0.8611111111111112,
+        "accuracy": 0.9932249322493225,
+        "specificity": 0.9965277777777778,
+        "correct_matches": 31,
+        "total_gt_matches": 36,
+        "total_pred_matches": 36,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006274700164794922,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006274700164794922,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4482,
+            6
+          ],
+          [
+            6,
+            60
+          ]
+        ],
+        "true_positives": 60.0,
+        "true_negatives": 4482.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9090909090909091,
+        "recall": 0.9090909090909091,
+        "f1_score": 0.9090909090909091,
+        "accuracy": 0.997364953886693,
+        "specificity": 0.9986631016042781,
+        "correct_matches": 60,
+        "total_gt_matches": 66,
+        "total_pred_matches": 66,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.02365589141845703,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.02365589141845703,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 11,
+      "n_rooms_a_graphs": 14,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            10918,
+            2
+          ],
+          [
+            2,
+            102
+          ]
+        ],
+        "true_positives": 102.0,
+        "true_negatives": 10918.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9807692307692307,
+        "recall": 0.9807692307692307,
+        "f1_score": 0.9807692307692307,
+        "accuracy": 0.9996371552975326,
+        "specificity": 0.9998168498168498,
+        "correct_matches": 102,
+        "total_gt_matches": 104,
+        "total_pred_matches": 104,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.020038127899169922,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.020038127899169922,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3538,
+            2
+          ],
+          [
+            2,
+            57
+          ]
+        ],
+        "true_positives": 57.0,
+        "true_negatives": 3538.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9661016949152542,
+        "recall": 0.9661016949152542,
+        "f1_score": 0.9661016949152542,
+        "accuracy": 0.9988885801611559,
+        "specificity": 0.9994350282485875,
+        "correct_matches": 57,
+        "total_gt_matches": 59,
+        "total_pred_matches": 59,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.017066240310668945,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.017066240310668945,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3363,
+            1
+          ],
+          [
+            1,
+            57
+          ]
+        ],
+        "true_positives": 57.0,
+        "true_negatives": 3363.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9827586206896551,
+        "recall": 0.9827586206896551,
+        "f1_score": 0.9827586206896551,
+        "accuracy": 0.9994155464640561,
+        "specificity": 0.9997027348394768,
+        "correct_matches": 57,
+        "total_gt_matches": 58,
+        "total_pred_matches": 58,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008003473281860352,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008003473281860352,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7310,
+            0
+          ],
+          [
+            0,
+            86
+          ]
+        ],
+        "true_positives": 86.0,
+        "true_negatives": 7310.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 86,
+        "total_gt_matches": 86,
+        "total_pred_matches": 86,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.014698266983032227,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.014698266983032227,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3135,
+            1
+          ],
+          [
+            1,
+            55
+          ]
+        ],
+        "true_positives": 55.0,
+        "true_negatives": 3135.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9821428571428571,
+        "recall": 0.9821428571428571,
+        "f1_score": 0.9821428571428571,
+        "accuracy": 0.9993734335839599,
+        "specificity": 0.9996811224489796,
+        "correct_matches": 55,
+        "total_gt_matches": 56,
+        "total_pred_matches": 56,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00797128677368164,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00797128677368164,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1368,
+            1
+          ],
+          [
+            1,
+            36
+          ]
+        ],
+        "true_positives": 36.0,
+        "true_negatives": 1368.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.972972972972973,
+        "recall": 0.972972972972973,
+        "f1_score": 0.972972972972973,
+        "accuracy": 0.9985775248933144,
+        "specificity": 0.9992695398100804,
+        "correct_matches": 36,
+        "total_gt_matches": 37,
+        "total_pred_matches": 37,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006245136260986328,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006245136260986328,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2112,
+            4
+          ],
+          [
+            4,
+            42
+          ]
+        ],
+        "true_positives": 42.0,
+        "true_negatives": 2112.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9130434782608695,
+        "recall": 0.9130434782608695,
+        "f1_score": 0.9130434782608695,
+        "accuracy": 0.996299722479186,
+        "specificity": 0.998109640831758,
+        "correct_matches": 42,
+        "total_gt_matches": 46,
+        "total_pred_matches": 46,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0075914859771728516,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0075914859771728516,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4160,
+            0
+          ],
+          [
+            0,
+            65
+          ]
+        ],
+        "true_positives": 65.0,
+        "true_negatives": 4160.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 65,
+        "total_gt_matches": 65,
+        "total_pred_matches": 65,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00850534439086914,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00850534439086914,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4754,
+            6
+          ],
+          [
+            6,
+            62
+          ]
+        ],
+        "true_positives": 62.0,
+        "true_negatives": 4754.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9117647058823529,
+        "recall": 0.9117647058823529,
+        "f1_score": 0.9117647058823528,
+        "accuracy": 0.9975144987572494,
+        "specificity": 0.9987394957983193,
+        "correct_matches": 62,
+        "total_gt_matches": 68,
+        "total_pred_matches": 68,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03652310371398926,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03652310371398926,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3540,
+            0
+          ],
+          [
+            0,
+            60
+          ]
+        ],
+        "true_positives": 60.0,
+        "true_negatives": 3540.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 60,
+        "total_gt_matches": 60,
+        "total_pred_matches": 60,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009235858917236328,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009235858917236328,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3782,
+            0
+          ],
+          [
+            0,
+            62
+          ]
+        ],
+        "true_positives": 62.0,
+        "true_negatives": 3782.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 62,
+        "total_gt_matches": 62,
+        "total_pred_matches": 62,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008096456527709961,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008096456527709961,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            597,
+            3
+          ],
+          [
+            3,
+            21
+          ]
+        ],
+        "true_positives": 21.0,
+        "true_negatives": 597.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.875,
+        "recall": 0.875,
+        "f1_score": 0.875,
+        "accuracy": 0.9903846153846154,
+        "specificity": 0.995,
+        "correct_matches": 21,
+        "total_gt_matches": 24,
+        "total_pred_matches": 24,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006636381149291992,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006636381149291992,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3420,
+            2
+          ],
+          [
+            2,
+            57
+          ]
+        ],
+        "true_positives": 57.0,
+        "true_negatives": 3420.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9661016949152542,
+        "recall": 0.9661016949152542,
+        "f1_score": 0.9661016949152542,
+        "accuracy": 0.9988509049123815,
+        "specificity": 0.9994155464640561,
+        "correct_matches": 57,
+        "total_gt_matches": 59,
+        "total_pred_matches": 59,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008914947509765625,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008914947509765625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3480,
+            1
+          ],
+          [
+            1,
+            58
+          ]
+        ],
+        "true_positives": 58.0,
+        "true_negatives": 3480.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9830508474576272,
+        "recall": 0.9830508474576272,
+        "f1_score": 0.9830508474576272,
+        "accuracy": 0.9994350282485875,
+        "specificity": 0.9997127262280954,
+        "correct_matches": 58,
+        "total_gt_matches": 59,
+        "total_pred_matches": 59,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008095026016235352,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008095026016235352,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 13,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4479,
+            6
+          ],
+          [
+            6,
+            59
+          ]
+        ],
+        "true_positives": 59.0,
+        "true_negatives": 4479.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9076923076923077,
+        "recall": 0.9076923076923077,
+        "f1_score": 0.9076923076923076,
+        "accuracy": 0.9973626373626374,
+        "specificity": 0.9986622073578595,
+        "correct_matches": 59,
+        "total_gt_matches": 65,
+        "total_pred_matches": 65,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.02487969398498535,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.02487969398498535,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3780,
+            2
+          ],
+          [
+            2,
+            59
+          ]
+        ],
+        "true_positives": 59.0,
+        "true_negatives": 3780.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9672131147540983,
+        "recall": 0.9672131147540983,
+        "f1_score": 0.9672131147540983,
+        "accuracy": 0.9989591465001301,
+        "specificity": 0.9994711792702274,
+        "correct_matches": 59,
+        "total_gt_matches": 61,
+        "total_pred_matches": 61,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009182214736938477,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009182214736938477,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3965,
+            3
+          ],
+          [
+            3,
+            59
+          ]
+        ],
+        "true_positives": 59.0,
+        "true_negatives": 3965.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9516129032258065,
+        "recall": 0.9516129032258065,
+        "f1_score": 0.9516129032258065,
+        "accuracy": 0.9985111662531018,
+        "specificity": 0.9992439516129032,
+        "correct_matches": 59,
+        "total_gt_matches": 62,
+        "total_pred_matches": 62,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00968170166015625,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00968170166015625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3306,
+            0
+          ],
+          [
+            0,
+            58
+          ]
+        ],
+        "true_positives": 58.0,
+        "true_negatives": 3306.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 58,
+        "total_gt_matches": 58,
+        "total_pred_matches": 58,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03306126594543457,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03306126594543457,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5112,
+            0
+          ],
+          [
+            0,
+            72
+          ]
+        ],
+        "true_positives": 72.0,
+        "true_negatives": 5112.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 72,
+        "total_gt_matches": 72,
+        "total_pred_matches": 72,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008915424346923828,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008915424346923828,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2808,
+            1
+          ],
+          [
+            1,
+            52
+          ]
+        ],
+        "true_positives": 52.0,
+        "true_negatives": 2808.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9811320754716981,
+        "recall": 0.9811320754716981,
+        "f1_score": 0.9811320754716981,
+        "accuracy": 0.9993011879804332,
+        "specificity": 0.9996440014239943,
+        "correct_matches": 52,
+        "total_gt_matches": 53,
+        "total_pred_matches": 53,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007869720458984375,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007869720458984375,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2808,
+            1
+          ],
+          [
+            1,
+            52
+          ]
+        ],
+        "true_positives": 52.0,
+        "true_negatives": 2808.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9811320754716981,
+        "recall": 0.9811320754716981,
+        "f1_score": 0.9811320754716981,
+        "accuracy": 0.9993011879804332,
+        "specificity": 0.9996440014239943,
+        "correct_matches": 52,
+        "total_gt_matches": 53,
+        "total_pred_matches": 53,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01098179817199707,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01098179817199707,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5550,
+            0
+          ],
+          [
+            0,
+            75
+          ]
+        ],
+        "true_positives": 75.0,
+        "true_negatives": 5550.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 75,
+        "total_gt_matches": 75,
+        "total_pred_matches": 75,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.018755674362182617,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.018755674362182617,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3024,
+            1
+          ],
+          [
+            1,
+            54
+          ]
+        ],
+        "true_positives": 54.0,
+        "true_negatives": 3024.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9818181818181818,
+        "recall": 0.9818181818181818,
+        "f1_score": 0.9818181818181818,
+        "accuracy": 0.9993506493506493,
+        "specificity": 0.9996694214876033,
+        "correct_matches": 54,
+        "total_gt_matches": 55,
+        "total_pred_matches": 55,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007822513580322266,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007822513580322266,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4897,
+            3
+          ],
+          [
+            3,
+            67
+          ]
+        ],
+        "true_positives": 67.0,
+        "true_negatives": 4897.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9571428571428572,
+        "recall": 0.9571428571428572,
+        "f1_score": 0.9571428571428572,
+        "accuracy": 0.9987927565392354,
+        "specificity": 0.9993877551020408,
+        "correct_matches": 67,
+        "total_gt_matches": 70,
+        "total_pred_matches": 70,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.016227006912231445,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.016227006912231445,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3022,
+            3
+          ],
+          [
+            3,
+            52
+          ]
+        ],
+        "true_positives": 52.0,
+        "true_negatives": 3022.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9454545454545454,
+        "recall": 0.9454545454545454,
+        "f1_score": 0.9454545454545454,
+        "accuracy": 0.9980519480519481,
+        "specificity": 0.9990082644628099,
+        "correct_matches": 52,
+        "total_gt_matches": 55,
+        "total_pred_matches": 55,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00878763198852539,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00878763198852539,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1980,
+            0
+          ],
+          [
+            0,
+            45
+          ]
+        ],
+        "true_positives": 45.0,
+        "true_negatives": 1980.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 45,
+        "total_gt_matches": 45,
+        "total_pred_matches": 45,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009424209594726562,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009424209594726562,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 13,
+      "n_rooms_a_graphs": 13,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            10606,
+            3
+          ],
+          [
+            3,
+            100
+          ]
+        ],
+        "true_positives": 100.0,
+        "true_negatives": 10606.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.970873786407767,
+        "recall": 0.970873786407767,
+        "f1_score": 0.970873786407767,
+        "accuracy": 0.9994398805078417,
+        "specificity": 0.9997172212272599,
+        "correct_matches": 100,
+        "total_gt_matches": 103,
+        "total_pred_matches": 103,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.036002159118652344,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.036002159118652344,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1332,
+            0
+          ],
+          [
+            0,
+            37
+          ]
+        ],
+        "true_positives": 37.0,
+        "true_negatives": 1332.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 37,
+        "total_gt_matches": 37,
+        "total_pred_matches": 37,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006242513656616211,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006242513656616211,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3538,
+            2
+          ],
+          [
+            2,
+            58
+          ]
+        ],
+        "true_positives": 58.0,
+        "true_negatives": 3538.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9666666666666667,
+        "recall": 0.9666666666666667,
+        "f1_score": 0.9666666666666667,
+        "accuracy": 0.9988888888888889,
+        "specificity": 0.9994350282485875,
+        "correct_matches": 58,
+        "total_gt_matches": 60,
+        "total_pred_matches": 60,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00747370719909668,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00747370719909668,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7049,
+            6
+          ],
+          [
+            6,
+            77
+          ]
+        ],
+        "true_positives": 77.0,
+        "true_negatives": 7049.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.927710843373494,
+        "recall": 0.927710843373494,
+        "f1_score": 0.927710843373494,
+        "accuracy": 0.9983188568226394,
+        "specificity": 0.9991495393338058,
+        "correct_matches": 77,
+        "total_gt_matches": 83,
+        "total_pred_matches": 83,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.06941819190979004,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.06941819190979004,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1054,
+            2
+          ],
+          [
+            2,
+            30
+          ]
+        ],
+        "true_positives": 30.0,
+        "true_negatives": 1054.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9375,
+        "recall": 0.9375,
+        "f1_score": 0.9375,
+        "accuracy": 0.9963235294117647,
+        "specificity": 0.9981060606060606,
+        "correct_matches": 30,
+        "total_gt_matches": 32,
+        "total_pred_matches": 32,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005955696105957031,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005955696105957031,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            992,
+            0
+          ],
+          [
+            0,
+            32
+          ]
+        ],
+        "true_positives": 32.0,
+        "true_negatives": 992.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 32,
+        "total_gt_matches": 32,
+        "total_pred_matches": 32,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.004747152328491211,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.004747152328491211,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 4,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            650,
+            0
+          ],
+          [
+            0,
+            26
+          ]
+        ],
+        "true_positives": 26.0,
+        "true_negatives": 650.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 26,
+        "total_gt_matches": 26,
+        "total_pred_matches": 26,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010138511657714844,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010138511657714844,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3842,
+            2
+          ],
+          [
+            2,
+            60
+          ]
+        ],
+        "true_positives": 60.0,
+        "true_negatives": 3842.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871,
+        "f1_score": 0.967741935483871,
+        "accuracy": 0.9989759344598055,
+        "specificity": 0.9994797086368367,
+        "correct_matches": 60,
+        "total_gt_matches": 62,
+        "total_pred_matches": 62,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0345005989074707,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0345005989074707,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            10488,
+            12
+          ],
+          [
+            12,
+            88
+          ]
+        ],
+        "true_positives": 88.0,
+        "true_negatives": 10488.0,
+        "false_positives": 12.0,
+        "false_negatives": 12.0,
+        "precision": 0.88,
+        "recall": 0.88,
+        "f1_score": 0.88,
+        "accuracy": 0.9977358490566037,
+        "specificity": 0.9988571428571429,
+        "correct_matches": 88,
+        "total_gt_matches": 100,
+        "total_pred_matches": 100,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.015727996826171875,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.015727996826171875,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1435,
+            5
+          ],
+          [
+            5,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 1435.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8611111111111112,
+        "recall": 0.8611111111111112,
+        "f1_score": 0.8611111111111112,
+        "accuracy": 0.9932249322493225,
+        "specificity": 0.9965277777777778,
+        "correct_matches": 31,
+        "total_gt_matches": 36,
+        "total_pred_matches": 36,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007444858551025391,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007444858551025391,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            838,
+            3
+          ],
+          [
+            3,
+            26
+          ]
+        ],
+        "true_positives": 26.0,
+        "true_negatives": 838.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.896551724137931,
+        "recall": 0.896551724137931,
+        "f1_score": 0.896551724137931,
+        "accuracy": 0.993103448275862,
+        "specificity": 0.9964328180737217,
+        "correct_matches": 26,
+        "total_gt_matches": 29,
+        "total_pred_matches": 29,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005222320556640625,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005222320556640625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2352,
+            0
+          ],
+          [
+            0,
+            49
+          ]
+        ],
+        "true_positives": 49.0,
+        "true_negatives": 2352.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 49,
+        "total_gt_matches": 49,
+        "total_pred_matches": 49,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006428956985473633,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006428956985473633,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2023,
+            2
+          ],
+          [
+            2,
+            43
+          ]
+        ],
+        "true_positives": 43.0,
+        "true_negatives": 2023.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9555555555555556,
+        "recall": 0.9555555555555556,
+        "f1_score": 0.9555555555555556,
+        "accuracy": 0.9980676328502416,
+        "specificity": 0.9990123456790123,
+        "correct_matches": 43,
+        "total_gt_matches": 45,
+        "total_pred_matches": 45,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009082555770874023,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009082555770874023,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2300,
+            3
+          ],
+          [
+            3,
+            44
+          ]
+        ],
+        "true_positives": 44.0,
+        "true_negatives": 2300.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9361702127659575,
+        "recall": 0.9361702127659575,
+        "f1_score": 0.9361702127659575,
+        "accuracy": 0.9974468085106383,
+        "specificity": 0.998697351280938,
+        "correct_matches": 44,
+        "total_gt_matches": 47,
+        "total_pred_matches": 47,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0076444149017333984,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0076444149017333984,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1080,
+            5
+          ],
+          [
+            5,
+            26
+          ]
+        ],
+        "true_positives": 26.0,
+        "true_negatives": 1080.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8387096774193549,
+        "recall": 0.8387096774193549,
+        "f1_score": 0.8387096774193549,
+        "accuracy": 0.9910394265232975,
+        "specificity": 0.9953917050691244,
+        "correct_matches": 26,
+        "total_gt_matches": 31,
+        "total_pred_matches": 31,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.030346155166625977,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.030346155166625977,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5390,
+            6
+          ],
+          [
+            6,
+            65
+          ]
+        ],
+        "true_positives": 65.0,
+        "true_negatives": 5390.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9154929577464789,
+        "recall": 0.9154929577464789,
+        "f1_score": 0.9154929577464789,
+        "accuracy": 0.997805011889519,
+        "specificity": 0.9988880652335063,
+        "correct_matches": 65,
+        "total_gt_matches": 71,
+        "total_pred_matches": 71,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.04892373085021973,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.04892373085021973,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1023,
+            1
+          ],
+          [
+            1,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 1023.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.96875,
+        "recall": 0.96875,
+        "f1_score": 0.96875,
+        "accuracy": 0.9981060606060606,
+        "specificity": 0.9990234375,
+        "correct_matches": 31,
+        "total_gt_matches": 32,
+        "total_pred_matches": 32,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005015134811401367,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005015134811401367,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3479,
+            2
+          ],
+          [
+            2,
+            57
+          ]
+        ],
+        "true_positives": 57.0,
+        "true_negatives": 3479.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9661016949152542,
+        "recall": 0.9661016949152542,
+        "f1_score": 0.9661016949152542,
+        "accuracy": 0.9988700564971752,
+        "specificity": 0.9994254524561907,
+        "correct_matches": 57,
+        "total_gt_matches": 59,
+        "total_pred_matches": 59,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.07040047645568848,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.07040047645568848,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2701,
+            3
+          ],
+          [
+            3,
+            49
+          ]
+        ],
+        "true_positives": 49.0,
+        "true_negatives": 2701.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9423076923076923,
+        "recall": 0.9423076923076923,
+        "f1_score": 0.9423076923076923,
+        "accuracy": 0.997822931785196,
+        "specificity": 0.9988905325443787,
+        "correct_matches": 49,
+        "total_gt_matches": 52,
+        "total_pred_matches": 52,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007003307342529297,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007003307342529297,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1968,
+            6
+          ],
+          [
+            6,
+            36
+          ]
+        ],
+        "true_positives": 36.0,
+        "true_negatives": 1968.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "f1_score": 0.8571428571428571,
+        "accuracy": 0.9940476190476191,
+        "specificity": 0.9969604863221885,
+        "correct_matches": 36,
+        "total_gt_matches": 42,
+        "total_pred_matches": 42,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.014475584030151367,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.014475584030151367,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            728,
+            1
+          ],
+          [
+            1,
+            26
+          ]
+        ],
+        "true_positives": 26.0,
+        "true_negatives": 728.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9629629629629629,
+        "recall": 0.9629629629629629,
+        "f1_score": 0.9629629629629629,
+        "accuracy": 0.9973544973544973,
+        "specificity": 0.9986282578875172,
+        "correct_matches": 26,
+        "total_gt_matches": 27,
+        "total_pred_matches": 27,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.004225254058837891,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.004225254058837891,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1933,
+            3
+          ],
+          [
+            3,
+            41
+          ]
+        ],
+        "true_positives": 41.0,
+        "true_negatives": 1933.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9318181818181818,
+        "recall": 0.9318181818181818,
+        "f1_score": 0.9318181818181818,
+        "accuracy": 0.996969696969697,
+        "specificity": 0.9984504132231405,
+        "correct_matches": 41,
+        "total_gt_matches": 44,
+        "total_pred_matches": 44,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.08266711235046387,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.08266711235046387,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1636,
+            4
+          ],
+          [
+            4,
+            36
+          ]
+        ],
+        "true_positives": 36.0,
+        "true_negatives": 1636.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9952380952380953,
+        "specificity": 0.9975609756097561,
+        "correct_matches": 36,
+        "total_gt_matches": 40,
+        "total_pred_matches": 40,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006304025650024414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006304025650024414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            10403,
+            1
+          ],
+          [
+            1,
+            101
+          ]
+        ],
+        "true_positives": 101.0,
+        "true_negatives": 10403.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9901960784313726,
+        "recall": 0.9901960784313726,
+        "f1_score": 0.9901960784313726,
+        "accuracy": 0.9998096325909004,
+        "specificity": 0.9999038831218762,
+        "correct_matches": 101,
+        "total_gt_matches": 102,
+        "total_pred_matches": 102,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.041535139083862305,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.041535139083862305,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2115,
+            1
+          ],
+          [
+            1,
+            45
+          ]
+        ],
+        "true_positives": 45.0,
+        "true_negatives": 2115.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9782608695652174,
+        "recall": 0.9782608695652174,
+        "f1_score": 0.9782608695652174,
+        "accuracy": 0.9990749306197965,
+        "specificity": 0.9995274102079396,
+        "correct_matches": 45,
+        "total_gt_matches": 46,
+        "total_pred_matches": 46,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006699323654174805,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006699323654174805,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1088,
+            1
+          ],
+          [
+            1,
+            32
+          ]
+        ],
+        "true_positives": 32.0,
+        "true_negatives": 1088.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9696969696969697,
+        "recall": 0.9696969696969697,
+        "f1_score": 0.9696969696969697,
+        "accuracy": 0.9982174688057041,
+        "specificity": 0.9990817263544536,
+        "correct_matches": 32,
+        "total_gt_matches": 33,
+        "total_pred_matches": 33,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005722999572753906,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005722999572753906,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3720,
+            1
+          ],
+          [
+            1,
+            60
+          ]
+        ],
+        "true_positives": 60.0,
+        "true_negatives": 3720.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9836065573770492,
+        "recall": 0.9836065573770492,
+        "f1_score": 0.9836065573770492,
+        "accuracy": 0.9994711792702274,
+        "specificity": 0.999731255038968,
+        "correct_matches": 60,
+        "total_gt_matches": 61,
+        "total_pred_matches": 61,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.02697896957397461,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.02697896957397461,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4896,
+            3
+          ],
+          [
+            3,
+            66
+          ]
+        ],
+        "true_positives": 66.0,
+        "true_negatives": 4896.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9565217391304348,
+        "recall": 0.9565217391304348,
+        "f1_score": 0.9565217391304348,
+        "accuracy": 0.998792270531401,
+        "specificity": 0.9993876301285977,
+        "correct_matches": 66,
+        "total_gt_matches": 69,
+        "total_pred_matches": 69,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010576486587524414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010576486587524414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1480,
+            2
+          ],
+          [
+            2,
+            36
+          ]
+        ],
+        "true_positives": 36.0,
+        "true_negatives": 1480.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9473684210526315,
+        "recall": 0.9473684210526315,
+        "f1_score": 0.9473684210526315,
+        "accuracy": 0.9973684210526316,
+        "specificity": 0.9986504723346828,
+        "correct_matches": 36,
+        "total_gt_matches": 38,
+        "total_pred_matches": 38,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005805492401123047,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005805492401123047,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 11,
+      "n_rooms_a_graphs": 13,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            10098,
+            2
+          ],
+          [
+            2,
+            98
+          ]
+        ],
+        "true_positives": 98.0,
+        "true_negatives": 10098.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.98,
+        "recall": 0.98,
+        "f1_score": 0.98,
+        "accuracy": 0.9996078431372549,
+        "specificity": 0.9998019801980198,
+        "correct_matches": 98,
+        "total_gt_matches": 100,
+        "total_pred_matches": 100,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01592707633972168,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01592707633972168,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3535,
+            5
+          ],
+          [
+            5,
+            54
+          ]
+        ],
+        "true_positives": 54.0,
+        "true_negatives": 3535.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.9152542372881356,
+        "recall": 0.9152542372881356,
+        "f1_score": 0.9152542372881356,
+        "accuracy": 0.9972214504028897,
+        "specificity": 0.998587570621469,
+        "correct_matches": 54,
+        "total_gt_matches": 59,
+        "total_pred_matches": 59,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013068914413452148,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013068914413452148,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1558,
+            2
+          ],
+          [
+            2,
+            37
+          ]
+        ],
+        "true_positives": 37.0,
+        "true_negatives": 1558.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9487179487179487,
+        "recall": 0.9487179487179487,
+        "f1_score": 0.9487179487179487,
+        "accuracy": 0.9974984365228268,
+        "specificity": 0.9987179487179487,
+        "correct_matches": 37,
+        "total_gt_matches": 39,
+        "total_pred_matches": 39,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005993843078613281,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005993843078613281,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2646,
+            4
+          ],
+          [
+            4,
+            46
+          ]
+        ],
+        "true_positives": 46.0,
+        "true_negatives": 2646.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.92,
+        "recall": 0.92,
+        "f1_score": 0.92,
+        "accuracy": 0.997037037037037,
+        "specificity": 0.9984905660377359,
+        "correct_matches": 46,
+        "total_gt_matches": 50,
+        "total_pred_matches": 50,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.07603287696838379,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.07603287696838379,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3964,
+            4
+          ],
+          [
+            4,
+            58
+          ]
+        ],
+        "true_positives": 58.0,
+        "true_negatives": 3964.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9354838709677419,
+        "recall": 0.9354838709677419,
+        "f1_score": 0.9354838709677419,
+        "accuracy": 0.998014888337469,
+        "specificity": 0.998991935483871,
+        "correct_matches": 58,
+        "total_gt_matches": 62,
+        "total_pred_matches": 62,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.021357059478759766,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.021357059478759766,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 12,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5102,
+            8
+          ],
+          [
+            8,
+            62
+          ]
+        ],
+        "true_positives": 62.0,
+        "true_negatives": 5102.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8857142857142857,
+        "recall": 0.8857142857142857,
+        "f1_score": 0.8857142857142857,
+        "accuracy": 0.9969111969111969,
+        "specificity": 0.9984344422700587,
+        "correct_matches": 62,
+        "total_gt_matches": 70,
+        "total_pred_matches": 70,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010524272918701172,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010524272918701172,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5183,
+            1
+          ],
+          [
+            1,
+            71
+          ]
+        ],
+        "true_positives": 71.0,
+        "true_negatives": 5183.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9861111111111112,
+        "recall": 0.9861111111111112,
+        "f1_score": 0.9861111111111112,
+        "accuracy": 0.9996194824961948,
+        "specificity": 0.9998070987654321,
+        "correct_matches": 71,
+        "total_gt_matches": 72,
+        "total_pred_matches": 72,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03486943244934082,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03486943244934082,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4154,
+            4
+          ],
+          [
+            4,
+            59
+          ]
+        ],
+        "true_positives": 59.0,
+        "true_negatives": 4154.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9365079365079365,
+        "recall": 0.9365079365079365,
+        "f1_score": 0.9365079365079365,
+        "accuracy": 0.998104714522625,
+        "specificity": 0.9990379990379991,
+        "correct_matches": 59,
+        "total_gt_matches": 63,
+        "total_pred_matches": 63,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010078191757202148,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010078191757202148,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1802,
+            4
+          ],
+          [
+            4,
+            38
+          ]
+        ],
+        "true_positives": 38.0,
+        "true_negatives": 1802.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9047619047619048,
+        "recall": 0.9047619047619048,
+        "f1_score": 0.9047619047619048,
+        "accuracy": 0.9956709956709957,
+        "specificity": 0.9977851605758582,
+        "correct_matches": 38,
+        "total_gt_matches": 42,
+        "total_pred_matches": 42,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.014600753784179688,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.014600753784179688,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1680,
+            1
+          ],
+          [
+            1,
+            40
+          ]
+        ],
+        "true_positives": 40.0,
+        "true_negatives": 1680.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.975609756097561,
+        "recall": 0.975609756097561,
+        "f1_score": 0.975609756097561,
+        "accuracy": 0.9988385598141696,
+        "specificity": 0.9994051160023796,
+        "correct_matches": 40,
+        "total_gt_matches": 41,
+        "total_pred_matches": 41,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007722377777099609,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007722377777099609,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1054,
+            2
+          ],
+          [
+            2,
+            30
+          ]
+        ],
+        "true_positives": 30.0,
+        "true_negatives": 1054.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9375,
+        "recall": 0.9375,
+        "f1_score": 0.9375,
+        "accuracy": 0.9963235294117647,
+        "specificity": 0.9981060606060606,
+        "correct_matches": 30,
+        "total_gt_matches": 32,
+        "total_pred_matches": 32,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005128383636474609,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005128383636474609,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            960,
+            1
+          ],
+          [
+            1,
+            30
+          ]
+        ],
+        "true_positives": 30.0,
+        "true_negatives": 960.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871,
+        "f1_score": 0.967741935483871,
+        "accuracy": 0.9979838709677419,
+        "specificity": 0.9989594172736732,
+        "correct_matches": 30,
+        "total_gt_matches": 31,
+        "total_pred_matches": 31,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005213260650634766,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005213260650634766,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3024,
+            1
+          ],
+          [
+            1,
+            54
+          ]
+        ],
+        "true_positives": 54.0,
+        "true_negatives": 3024.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9818181818181818,
+        "recall": 0.9818181818181818,
+        "f1_score": 0.9818181818181818,
+        "accuracy": 0.9993506493506493,
+        "specificity": 0.9996694214876033,
+        "correct_matches": 54,
+        "total_gt_matches": 55,
+        "total_pred_matches": 55,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.04978227615356445,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.04978227615356445,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6399,
+            1
+          ],
+          [
+            1,
+            79
+          ]
+        ],
+        "true_positives": 79.0,
+        "true_negatives": 6399.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9875,
+        "recall": 0.9875,
+        "f1_score": 0.9875,
+        "accuracy": 0.9996913580246913,
+        "specificity": 0.99984375,
+        "correct_matches": 79,
+        "total_gt_matches": 80,
+        "total_pred_matches": 80,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010818958282470703,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010818958282470703,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3354,
+            6
+          ],
+          [
+            6,
+            50
+          ]
+        ],
+        "true_positives": 50.0,
+        "true_negatives": 3354.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8928571428571429,
+        "recall": 0.8928571428571429,
+        "f1_score": 0.8928571428571429,
+        "accuracy": 0.9964871194379391,
+        "specificity": 0.9982142857142857,
+        "correct_matches": 50,
+        "total_gt_matches": 56,
+        "total_pred_matches": 56,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03090500831604004,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03090500831604004,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2595,
+            5
+          ],
+          [
+            5,
+            45
+          ]
+        ],
+        "true_positives": 45.0,
+        "true_negatives": 2595.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9962264150943396,
+        "specificity": 0.9980769230769231,
+        "correct_matches": 45,
+        "total_gt_matches": 50,
+        "total_pred_matches": 50,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.023822784423828125,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.023822784423828125,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2650,
+            2
+          ],
+          [
+            2,
+            49
+          ]
+        ],
+        "true_positives": 49.0,
+        "true_negatives": 2650.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9607843137254902,
+        "recall": 0.9607843137254902,
+        "f1_score": 0.9607843137254902,
+        "accuracy": 0.998520162782094,
+        "specificity": 0.9992458521870287,
+        "correct_matches": 49,
+        "total_gt_matches": 51,
+        "total_pred_matches": 51,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03781723976135254,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03781723976135254,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2859,
+            3
+          ],
+          [
+            3,
+            50
+          ]
+        ],
+        "true_positives": 50.0,
+        "true_negatives": 2859.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9433962264150944,
+        "recall": 0.9433962264150944,
+        "f1_score": 0.9433962264150944,
+        "accuracy": 0.9979416809605489,
+        "specificity": 0.9989517819706499,
+        "correct_matches": 50,
+        "total_gt_matches": 53,
+        "total_pred_matches": 53,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010451793670654297,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010451793670654297,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            13221,
+            3
+          ],
+          [
+            3,
+            111
+          ]
+        ],
+        "true_positives": 111.0,
+        "true_negatives": 13221.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9736842105263158,
+        "recall": 0.9736842105263158,
+        "f1_score": 0.9736842105263158,
+        "accuracy": 0.9995501574448943,
+        "specificity": 0.9997731397459165,
+        "correct_matches": 111,
+        "total_gt_matches": 114,
+        "total_pred_matches": 114,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.05399918556213379,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.05399918556213379,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1978,
+            2
+          ],
+          [
+            2,
+            42
+          ]
+        ],
+        "true_positives": 42.0,
+        "true_negatives": 1978.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9545454545454546,
+        "recall": 0.9545454545454546,
+        "f1_score": 0.9545454545454546,
+        "accuracy": 0.9980237154150198,
+        "specificity": 0.998989898989899,
+        "correct_matches": 42,
+        "total_gt_matches": 44,
+        "total_pred_matches": 44,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007211446762084961,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007211446762084961,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 11,
+      "n_rooms_a_graphs": 12,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            9601,
+            3
+          ],
+          [
+            3,
+            95
+          ]
+        ],
+        "true_positives": 95.0,
+        "true_negatives": 9601.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9693877551020408,
+        "recall": 0.9693877551020408,
+        "f1_score": 0.9693877551020408,
+        "accuracy": 0.9993815708101422,
+        "specificity": 0.9996876301541024,
+        "correct_matches": 95,
+        "total_gt_matches": 98,
+        "total_pred_matches": 98,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013795852661132812,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013795852661132812,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5110,
+            2
+          ],
+          [
+            2,
+            69
+          ]
+        ],
+        "true_positives": 69.0,
+        "true_negatives": 5110.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.971830985915493,
+        "recall": 0.971830985915493,
+        "f1_score": 0.971830985915493,
+        "accuracy": 0.9992282461894656,
+        "specificity": 0.9996087636932708,
+        "correct_matches": 69,
+        "total_gt_matches": 71,
+        "total_pred_matches": 71,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009519100189208984,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009519100189208984,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2303,
+            1
+          ],
+          [
+            1,
+            47
+          ]
+        ],
+        "true_positives": 47.0,
+        "true_negatives": 2303.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9791666666666666,
+        "recall": 0.9791666666666666,
+        "f1_score": 0.9791666666666666,
+        "accuracy": 0.9991496598639455,
+        "specificity": 0.9995659722222222,
+        "correct_matches": 47,
+        "total_gt_matches": 48,
+        "total_pred_matches": 48,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008522272109985352,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008522272109985352,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 12,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6229,
+            8
+          ],
+          [
+            8,
+            69
+          ]
+        ],
+        "true_positives": 69.0,
+        "true_negatives": 6229.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.8961038961038961,
+        "recall": 0.8961038961038961,
+        "f1_score": 0.8961038961038962,
+        "accuracy": 0.9974659486854609,
+        "specificity": 0.9987173320506654,
+        "correct_matches": 69,
+        "total_gt_matches": 77,
+        "total_pred_matches": 77,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013522863388061523,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013522863388061523,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4760,
+            1
+          ],
+          [
+            1,
+            68
+          ]
+        ],
+        "true_positives": 68.0,
+        "true_negatives": 4760.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9855072463768116,
+        "recall": 0.9855072463768116,
+        "f1_score": 0.9855072463768116,
+        "accuracy": 0.9995859213250518,
+        "specificity": 0.9997899600924176,
+        "correct_matches": 68,
+        "total_gt_matches": 69,
+        "total_pred_matches": 69,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009038925170898438,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009038925170898438,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1554,
+            6
+          ],
+          [
+            6,
+            33
+          ]
+        ],
+        "true_positives": 33.0,
+        "true_negatives": 1554.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.8461538461538461,
+        "recall": 0.8461538461538461,
+        "f1_score": 0.8461538461538461,
+        "accuracy": 0.9924953095684803,
+        "specificity": 0.9961538461538462,
+        "correct_matches": 33,
+        "total_gt_matches": 39,
+        "total_pred_matches": 39,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005662202835083008,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005662202835083008,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1848,
+            1
+          ],
+          [
+            1,
+            42
+          ]
+        ],
+        "true_positives": 42.0,
+        "true_negatives": 1848.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9767441860465116,
+        "recall": 0.9767441860465116,
+        "f1_score": 0.9767441860465116,
+        "accuracy": 0.9989429175475687,
+        "specificity": 0.9994591671173607,
+        "correct_matches": 42,
+        "total_gt_matches": 43,
+        "total_pred_matches": 43,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006484031677246094,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006484031677246094,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4214,
+            7
+          ],
+          [
+            7,
+            56
+          ]
+        ],
+        "true_positives": 56.0,
+        "true_negatives": 4214.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.8888888888888888,
+        "recall": 0.8888888888888888,
+        "f1_score": 0.8888888888888888,
+        "accuracy": 0.9967320261437909,
+        "specificity": 0.9983416252072969,
+        "correct_matches": 56,
+        "total_gt_matches": 63,
+        "total_pred_matches": 63,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009098052978515625,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009098052978515625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4464,
+            9
+          ],
+          [
+            9,
+            54
+          ]
+        ],
+        "true_positives": 54.0,
+        "true_negatives": 4464.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "f1_score": 0.8571428571428571,
+        "accuracy": 0.996031746031746,
+        "specificity": 0.9979879275653923,
+        "correct_matches": 54,
+        "total_gt_matches": 63,
+        "total_pred_matches": 63,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010112285614013672,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010112285614013672,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 3,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            754,
+            2
+          ],
+          [
+            2,
+            25
+          ]
+        ],
+        "true_positives": 25.0,
+        "true_negatives": 754.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9259259259259259,
+        "recall": 0.9259259259259259,
+        "f1_score": 0.9259259259259259,
+        "accuracy": 0.9948914431673053,
+        "specificity": 0.9973544973544973,
+        "correct_matches": 25,
+        "total_gt_matches": 27,
+        "total_pred_matches": 27,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0060842037200927734,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0060842037200927734,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1848,
+            1
+          ],
+          [
+            1,
+            42
+          ]
+        ],
+        "true_positives": 42.0,
+        "true_negatives": 1848.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9767441860465116,
+        "recall": 0.9767441860465116,
+        "f1_score": 0.9767441860465116,
+        "accuracy": 0.9989429175475687,
+        "specificity": 0.9994591671173607,
+        "correct_matches": 42,
+        "total_gt_matches": 43,
+        "total_pred_matches": 43,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0062372684478759766,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0062372684478759766,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5316,
+            9
+          ],
+          [
+            9,
+            62
+          ]
+        ],
+        "true_positives": 62.0,
+        "true_negatives": 5316.0,
+        "false_positives": 9.0,
+        "false_negatives": 9.0,
+        "precision": 0.8732394366197183,
+        "recall": 0.8732394366197183,
+        "f1_score": 0.8732394366197183,
+        "accuracy": 0.9966641957005189,
+        "specificity": 0.9983098591549295,
+        "correct_matches": 62,
+        "total_gt_matches": 71,
+        "total_pred_matches": 71,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.011056184768676758,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.011056184768676758,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5852,
+            0
+          ],
+          [
+            0,
+            77
+          ]
+        ],
+        "true_positives": 77.0,
+        "true_negatives": 5852.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 77,
+        "total_gt_matches": 77,
+        "total_pred_matches": 77,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.014219522476196289,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.014219522476196289,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4344,
+            8
+          ],
+          [
+            8,
+            56
+          ]
+        ],
+        "true_positives": 56.0,
+        "true_negatives": 4344.0,
+        "false_positives": 8.0,
+        "false_negatives": 8.0,
+        "precision": 0.875,
+        "recall": 0.875,
+        "f1_score": 0.875,
+        "accuracy": 0.9963768115942029,
+        "specificity": 0.9981617647058824,
+        "correct_matches": 56,
+        "total_gt_matches": 64,
+        "total_pred_matches": 64,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.02056598663330078,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.02056598663330078,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1676,
+            4
+          ],
+          [
+            4,
+            36
+          ]
+        ],
+        "true_positives": 36.0,
+        "true_negatives": 1676.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9,
+        "recall": 0.9,
+        "f1_score": 0.9,
+        "accuracy": 0.9953488372093023,
+        "specificity": 0.9976190476190476,
+        "correct_matches": 36,
+        "total_gt_matches": 40,
+        "total_pred_matches": 40,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006043195724487305,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006043195724487305,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            896,
+            3
+          ],
+          [
+            3,
+            26
+          ]
+        ],
+        "true_positives": 26.0,
+        "true_negatives": 896.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.896551724137931,
+        "recall": 0.896551724137931,
+        "f1_score": 0.896551724137931,
+        "accuracy": 0.9935344827586207,
+        "specificity": 0.996662958843159,
+        "correct_matches": 26,
+        "total_gt_matches": 29,
+        "total_pred_matches": 29,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.011880874633789062,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.011880874633789062,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2395,
+            5
+          ],
+          [
+            5,
+            43
+          ]
+        ],
+        "true_positives": 43.0,
+        "true_negatives": 2395.0,
+        "false_positives": 5.0,
+        "false_negatives": 5.0,
+        "precision": 0.8958333333333334,
+        "recall": 0.8958333333333334,
+        "f1_score": 0.8958333333333334,
+        "accuracy": 0.9959150326797386,
+        "specificity": 0.9979166666666667,
+        "correct_matches": 43,
+        "total_gt_matches": 48,
+        "total_pred_matches": 48,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008701562881469727,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008701562881469727,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7049,
+            6
+          ],
+          [
+            6,
+            77
+          ]
+        ],
+        "true_positives": 77.0,
+        "true_negatives": 7049.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.927710843373494,
+        "recall": 0.927710843373494,
+        "f1_score": 0.927710843373494,
+        "accuracy": 0.9983188568226394,
+        "specificity": 0.9991495393338058,
+        "correct_matches": 77,
+        "total_gt_matches": 83,
+        "total_pred_matches": 83,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.1342322826385498,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.1342322826385498,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2254,
+            2
+          ],
+          [
+            2,
+            45
+          ]
+        ],
+        "true_positives": 45.0,
+        "true_negatives": 2254.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9574468085106383,
+        "recall": 0.9574468085106383,
+        "f1_score": 0.9574468085106385,
+        "accuracy": 0.9982631350412505,
+        "specificity": 0.999113475177305,
+        "correct_matches": 45,
+        "total_gt_matches": 47,
+        "total_pred_matches": 47,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00764155387878418,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00764155387878418,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1122,
+            0
+          ],
+          [
+            0,
+            34
+          ]
+        ],
+        "true_positives": 34.0,
+        "true_negatives": 1122.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 34,
+        "total_gt_matches": 34,
+        "total_pred_matches": 34,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006262302398681641,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006262302398681641,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1120,
+            2
+          ],
+          [
+            2,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 1120.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9393939393939394,
+        "recall": 0.9393939393939394,
+        "f1_score": 0.9393939393939394,
+        "accuracy": 0.9965367965367965,
+        "specificity": 0.9982174688057041,
+        "correct_matches": 31,
+        "total_gt_matches": 33,
+        "total_pred_matches": 33,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.012285470962524414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.012285470962524414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5624,
+            1
+          ],
+          [
+            1,
+            74
+          ]
+        ],
+        "true_positives": 74.0,
+        "true_negatives": 5624.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9866666666666667,
+        "recall": 0.9866666666666667,
+        "f1_score": 0.9866666666666668,
+        "accuracy": 0.9996491228070176,
+        "specificity": 0.9998222222222222,
+        "correct_matches": 74,
+        "total_gt_matches": 75,
+        "total_pred_matches": 75,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.009927034378051758,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.009927034378051758,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2398,
+            3
+          ],
+          [
+            3,
+            46
+          ]
+        ],
+        "true_positives": 46.0,
+        "true_negatives": 2398.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9387755102040817,
+        "recall": 0.9387755102040817,
+        "f1_score": 0.9387755102040817,
+        "accuracy": 0.9975510204081632,
+        "specificity": 0.9987505206164098,
+        "correct_matches": 46,
+        "total_gt_matches": 49,
+        "total_pred_matches": 49,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.08403849601745605,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.08403849601745605,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3248,
+            1
+          ],
+          [
+            1,
+            56
+          ]
+        ],
+        "true_positives": 56.0,
+        "true_negatives": 3248.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9824561403508771,
+        "recall": 0.9824561403508771,
+        "f1_score": 0.9824561403508771,
+        "accuracy": 0.999395039322444,
+        "specificity": 0.9996922129886119,
+        "correct_matches": 56,
+        "total_gt_matches": 57,
+        "total_pred_matches": 57,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01366281509399414,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01366281509399414,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            8556,
+            0
+          ],
+          [
+            0,
+            93
+          ]
+        ],
+        "true_positives": 93.0,
+        "true_negatives": 8556.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 93,
+        "total_gt_matches": 93,
+        "total_pred_matches": 93,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.012884855270385742,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.012884855270385742,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            3135,
+            1
+          ],
+          [
+            1,
+            55
+          ]
+        ],
+        "true_positives": 55.0,
+        "true_negatives": 3135.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9821428571428571,
+        "recall": 0.9821428571428571,
+        "f1_score": 0.9821428571428571,
+        "accuracy": 0.9993734335839599,
+        "specificity": 0.9996811224489796,
+        "correct_matches": 55,
+        "total_gt_matches": 56,
+        "total_pred_matches": 56,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01740550994873047,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01740550994873047,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4550,
+            4
+          ],
+          [
+            4,
+            62
+          ]
+        ],
+        "true_positives": 62.0,
+        "true_negatives": 4550.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.9393939393939394,
+        "recall": 0.9393939393939394,
+        "f1_score": 0.9393939393939394,
+        "accuracy": 0.9982683982683983,
+        "specificity": 0.9991216512955643,
+        "correct_matches": 62,
+        "total_gt_matches": 66,
+        "total_pred_matches": 66,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010277271270751953,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010277271270751953,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1326,
+            4
+          ],
+          [
+            4,
+            31
+          ]
+        ],
+        "true_positives": 31.0,
+        "true_negatives": 1326.0,
+        "false_positives": 4.0,
+        "false_negatives": 4.0,
+        "precision": 0.8857142857142857,
+        "recall": 0.8857142857142857,
+        "f1_score": 0.8857142857142857,
+        "accuracy": 0.9941391941391942,
+        "specificity": 0.9969924812030075,
+        "correct_matches": 31,
+        "total_gt_matches": 35,
+        "total_pred_matches": 35,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.00797271728515625,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.00797271728515625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4020,
+            10
+          ],
+          [
+            10,
+            52
+          ]
+        ],
+        "true_positives": 52.0,
+        "true_negatives": 4020.0,
+        "false_positives": 10.0,
+        "false_negatives": 10.0,
+        "precision": 0.8387096774193549,
+        "recall": 0.8387096774193549,
+        "f1_score": 0.8387096774193549,
+        "accuracy": 0.9951124144672532,
+        "specificity": 0.9975186104218362,
+        "correct_matches": 52,
+        "total_gt_matches": 62,
+        "total_pred_matches": 62,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.008890151977539062,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.008890151977539062,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1406,
+            0
+          ],
+          [
+            0,
+            38
+          ]
+        ],
+        "true_positives": 38.0,
+        "true_negatives": 1406.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 38,
+        "total_gt_matches": 38,
+        "total_pred_matches": 38,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.0057201385498046875,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.0057201385498046875,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 11,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5694,
+            6
+          ],
+          [
+            6,
+            69
+          ]
+        ],
+        "true_positives": 69.0,
+        "true_negatives": 5694.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.92,
+        "recall": 0.92,
+        "f1_score": 0.92,
+        "accuracy": 0.9979220779220779,
+        "specificity": 0.9989473684210526,
+        "correct_matches": 69,
+        "total_gt_matches": 75,
+        "total_pred_matches": 75,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01109766960144043,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01109766960144043,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6886,
+            3
+          ],
+          [
+            3,
+            80
+          ]
+        ],
+        "true_positives": 80.0,
+        "true_negatives": 6886.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.963855421686747,
+        "recall": 0.963855421686747,
+        "f1_score": 0.963855421686747,
+        "accuracy": 0.9991394148020654,
+        "specificity": 0.9995645231528524,
+        "correct_matches": 80,
+        "total_gt_matches": 83,
+        "total_pred_matches": 83,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013168811798095703,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013168811798095703,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            992,
+            0
+          ],
+          [
+            0,
+            32
+          ]
+        ],
+        "true_positives": 32.0,
+        "true_negatives": 992.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 32,
+        "total_gt_matches": 32,
+        "total_pred_matches": 32,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005720853805541992,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005720853805541992,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            725,
+            3
+          ],
+          [
+            3,
+            23
+          ]
+        ],
+        "true_positives": 23.0,
+        "true_negatives": 725.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.8846153846153846,
+        "recall": 0.8846153846153846,
+        "f1_score": 0.8846153846153846,
+        "accuracy": 0.9920424403183024,
+        "specificity": 0.9958791208791209,
+        "correct_matches": 23,
+        "total_gt_matches": 26,
+        "total_pred_matches": 26,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005175352096557617,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005175352096557617,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1599,
+            1
+          ],
+          [
+            1,
+            39
+          ]
+        ],
+        "true_positives": 39.0,
+        "true_negatives": 1599.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.975,
+        "recall": 0.975,
+        "f1_score": 0.975,
+        "accuracy": 0.998780487804878,
+        "specificity": 0.999375,
+        "correct_matches": 39,
+        "total_gt_matches": 40,
+        "total_pred_matches": 40,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.03532695770263672,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.03532695770263672,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4160,
+            0
+          ],
+          [
+            0,
+            65
+          ]
+        ],
+        "true_positives": 65.0,
+        "true_negatives": 4160.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 65,
+        "total_gt_matches": 65,
+        "total_pred_matches": 65,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.032523155212402344,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.032523155212402344,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2496,
+            3
+          ],
+          [
+            3,
+            46
+          ]
+        ],
+        "true_positives": 46.0,
+        "true_negatives": 2496.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9387755102040817,
+        "recall": 0.9387755102040817,
+        "f1_score": 0.9387755102040817,
+        "accuracy": 0.9976452119309263,
+        "specificity": 0.9987995198079231,
+        "correct_matches": 46,
+        "total_gt_matches": 49,
+        "total_pred_matches": 49,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007565498352050781,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007565498352050781,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1517,
+            3
+          ],
+          [
+            3,
+            35
+          ]
+        ],
+        "true_positives": 35.0,
+        "true_negatives": 1517.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9210526315789473,
+        "recall": 0.9210526315789473,
+        "f1_score": 0.9210526315789473,
+        "accuracy": 0.9961489088575096,
+        "specificity": 0.9980263157894737,
+        "correct_matches": 35,
+        "total_gt_matches": 38,
+        "total_pred_matches": 38,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007061004638671875,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007061004638671875,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4160,
+            0
+          ],
+          [
+            0,
+            65
+          ]
+        ],
+        "true_positives": 65.0,
+        "true_negatives": 4160.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 65,
+        "total_gt_matches": 65,
+        "total_pred_matches": 65,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.01221776008605957,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.01221776008605957,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            4824,
+            6
+          ],
+          [
+            6,
+            64
+          ]
+        ],
+        "true_positives": 64.0,
+        "true_negatives": 4824.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9142857142857143,
+        "recall": 0.9142857142857143,
+        "f1_score": 0.9142857142857143,
+        "accuracy": 0.9975510204081632,
+        "specificity": 0.9987577639751553,
+        "correct_matches": 64,
+        "total_gt_matches": 70,
+        "total_pred_matches": 70,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.030417919158935547,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.030417919158935547,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7482,
+            0
+          ],
+          [
+            0,
+            87
+          ]
+        ],
+        "true_positives": 87.0,
+        "true_negatives": 7482.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 87,
+        "total_gt_matches": 87,
+        "total_pred_matches": 87,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.013326168060302734,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.013326168060302734,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            7480,
+            2
+          ],
+          [
+            2,
+            84
+          ]
+        ],
+        "true_positives": 84.0,
+        "true_negatives": 7480.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9767441860465116,
+        "recall": 0.9767441860465116,
+        "f1_score": 0.9767441860465116,
+        "accuracy": 0.9994714587737844,
+        "specificity": 0.9997326917936381,
+        "correct_matches": 84,
+        "total_gt_matches": 86,
+        "total_pred_matches": 86,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.02488112449645996,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.02488112449645996,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 10,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            6320,
+            0
+          ],
+          [
+            0,
+            80
+          ]
+        ],
+        "true_positives": 80.0,
+        "true_negatives": 6320.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 80,
+        "total_gt_matches": 80,
+        "total_pred_matches": 80,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.017928123474121094,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.017928123474121094,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 10,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            9989,
+            7
+          ],
+          [
+            7,
+            91
+          ]
+        ],
+        "true_positives": 91.0,
+        "true_negatives": 9989.0,
+        "false_positives": 7.0,
+        "false_negatives": 7.0,
+        "precision": 0.9285714285714286,
+        "recall": 0.9285714285714286,
+        "f1_score": 0.9285714285714286,
+        "accuracy": 0.9986130374479889,
+        "specificity": 0.9992997198879552,
+        "correct_matches": 91,
+        "total_gt_matches": 98,
+        "total_pred_matches": 98,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.028408527374267578,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.028408527374267578,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 11,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5998,
+            6
+          ],
+          [
+            6,
+            70
+          ]
+        ],
+        "true_positives": 70.0,
+        "true_negatives": 5998.0,
+        "false_positives": 6.0,
+        "false_negatives": 6.0,
+        "precision": 0.9210526315789473,
+        "recall": 0.9210526315789473,
+        "f1_score": 0.9210526315789473,
+        "accuracy": 0.9980263157894737,
+        "specificity": 0.9990006662225184,
+        "correct_matches": 70,
+        "total_gt_matches": 76,
+        "total_pred_matches": 76,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.011709451675415039,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.011709451675415039,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 5,
+      "n_rooms_a_graphs": 6,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2208,
+            1
+          ],
+          [
+            1,
+            46
+          ]
+        ],
+        "true_positives": 46.0,
+        "true_negatives": 2208.0,
+        "false_positives": 1.0,
+        "false_negatives": 1.0,
+        "precision": 0.9787234042553191,
+        "recall": 0.9787234042553191,
+        "f1_score": 0.9787234042553191,
+        "accuracy": 0.999113475177305,
+        "specificity": 0.9995473064735174,
+        "correct_matches": 46,
+        "total_gt_matches": 47,
+        "total_pred_matches": 47,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006657838821411133,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006657838821411133,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1258,
+            2
+          ],
+          [
+            2,
+            33
+          ]
+        ],
+        "true_positives": 33.0,
+        "true_negatives": 1258.0,
+        "false_positives": 2.0,
+        "false_negatives": 2.0,
+        "precision": 0.9428571428571428,
+        "recall": 0.9428571428571428,
+        "f1_score": 0.9428571428571428,
+        "accuracy": 0.9969111969111969,
+        "specificity": 0.9984126984126984,
+        "correct_matches": 33,
+        "total_gt_matches": 35,
+        "total_pred_matches": 35,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.005893230438232422,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.005893230438232422,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 9,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            5550,
+            0
+          ],
+          [
+            0,
+            75
+          ]
+        ],
+        "true_positives": 75.0,
+        "true_negatives": 5550.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 75,
+        "total_gt_matches": 75,
+        "total_pred_matches": 75,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.010250091552734375,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.010250091552734375,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2021,
+            3
+          ],
+          [
+            3,
+            41
+          ]
+        ],
+        "true_positives": 41.0,
+        "true_negatives": 2021.0,
+        "false_positives": 3.0,
+        "false_negatives": 3.0,
+        "precision": 0.9318181818181818,
+        "recall": 0.9318181818181818,
+        "f1_score": 0.9318181818181818,
+        "accuracy": 0.9970986460348162,
+        "specificity": 0.9985177865612648,
+        "correct_matches": 41,
+        "total_gt_matches": 44,
+        "total_pred_matches": 44,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.006615877151489258,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.006615877151489258,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 8,
+      "n_rooms_a_graphs": 9,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            2550,
+            0
+          ],
+          [
+            0,
+            51
+          ]
+        ],
+        "true_positives": 51.0,
+        "true_negatives": 2550.0,
+        "false_positives": 0.0,
+        "false_negatives": 0.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "specificity": 1.0,
+        "correct_matches": 51,
+        "total_gt_matches": 51,
+        "total_pred_matches": 51,
+        "experiment_type": "pgm_msd",
+        "matching_time": 0.007054567337036133,
+        "num_solutions": 1,
+        "success": true
+      },
+      "experiment_type": "pgm_msd",
+      "matching_time": 0.007054567337036133,
+      "num_solutions": 1,
+      "success": true
+    }
+  ],
+  "mc_uncertainty": {},
+  "mc_affinity_uncertainty": {}
+}

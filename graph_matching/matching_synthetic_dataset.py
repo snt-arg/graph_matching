@@ -24,21 +24,26 @@ DATASET = "msd"
 
 
 # MSD split to evaluate — pick one: "train", "valid", "test"
-SPLIT = "valid"
+SPLIT = "test"
 
 
-# Noise condition for MSD dataset — pick one:
-#   "ws_dropout_noise"        → WS noise only
-#   "room_dropout_noise"      → Room noise only
-#   "ws_room_dropout_noise"   → WS + Room noise (combined)
+# Noise condition for MSD dataset — selects which test dataset to evaluate on.
+# Pick one:
+#   "ws_dropout_noise"          → WS noise only
+#   "room_dropout_noise"        → Room noise only
+#   "ws_room_dropout_noise"     → WS + Room noise (combined)
 #   "ws_room_dropout_noise_inc" → WS + Room noise incremental
 NOISE_CONDITION = "ws_room_dropout_noise"
 
 
-# When True, uses the ws_room_dropout_noise_inc_BCE model
-# (trained with BCE loss on the incremental noise condition)
-# instead of the model derived from NOISE_CONDITION above.
-USE_NEW_MODEL = True
+# Model to load — selects the trained weights and the matching model architecture.
+# This is independent of NOISE_CONDITION: you can test any model on any dataset.
+# Pick one:
+#   "ws_room_dropout_noise"             → MatchingModel_GATv2SinkhornTopK  (original, TopK)
+#   "ws_room_dropout_noise_inc_BCE"     → MatchingModel_MLPGATv2SinkhornBCE  (MLP + BCE)
+#   "ws_room_dropout_noise_inc_BCE_noMLP" → MatchingModel_GATv2Sinkhorn  (no MLP, BCE)
+#   "ws_room_dropout_noise_inc_WBCE"    → MatchingModel_MLPGATv2SinkhornWBCE  (MLP + weighted BCE)
+MODEL = "ws_room_dropout_noise_inc_WBCE"
 
 
 # Post soft-topk threshold.
@@ -70,7 +75,7 @@ ACC_THRESHOLD = None # e.g. -1.0, 0.0, 1.0 — None disables
 # and averages the soft matrices before Hungarian. Also stores per-entry
 # uncertainty (std across passes) in experiment results.
 # Set to 0 to disable (standard single-pass inference).
-MC_SAMPLES = 0  # e.g. 10, 30, 50
+MC_SAMPLES = 0 # e.g. 10, 30, 50
 
 
 # MC Dropout std threshold (PGM only, requires MC_SAMPLES > 0).
@@ -112,7 +117,12 @@ if USE_PGM:
     PGM_PATH = '/root/workspace/src/graph_matching_gnn/graph_matching'
     if PGM_PATH not in sys.path:
         sys.path.insert(0, PGM_PATH)
-    from PGM_class import PartialGraphMatching, MatchingModel_GATv2SinkhornTopK, predict_matching_matrix  # type: ignore
+    from PGM_class import (PartialGraphMatching,  # type: ignore
+                           MatchingModel_GATv2SinkhornTopK,
+                           MatchingModel_MLPGATv2SinkhornBCE,
+                           MatchingModel_GATv2Sinkhorn,
+                           MatchingModel_MLPGATv2SinkhornWBCE,
+                           predict_matching_matrix)
 else:
     from GraphMatcher import GraphMatcher
     if DATASET == "msd":
@@ -405,7 +415,93 @@ def process_node_saved_graph(graph):
 
 
 
-REAL_ENVS = ["47_basement_Unsplitted", "47_topfloor_", "CF12"]
+REAL_ENVS = ["47_basement", "47_topfloor_", "CF12"]
+
+
+def _adapt_to_gnn_format(graph_wrapper, name):
+    """Convert a pre-GNN graph (Plane/Finite Room nodes) to GNN format (ws/room).
+
+    Mirrors the same logic as GraphMatchingNode._adapt_online_to_gnn_format so
+    post-processed pickles with the original node types can be used here too.
+    Plane nodes are renamed '{id}_s0' and get center/normal/length/limits from
+    Geometric_info.  Nodes already in GNN format are kept unchanged.
+    """
+    inner = graph_wrapper.graph if hasattr(graph_wrapper, 'graph') else graph_wrapper
+    G_out = nx.DiGraph()
+
+    id_map = {}
+    for node_id in inner.nodes():
+        attrs = inner.nodes[node_id]
+        node_id_str = str(node_id)
+        if attrs.get('type') == 'Plane' and '_s' not in node_id_str:
+            id_map[node_id] = f"{node_id_str}_s0"
+        else:
+            id_map[node_id] = node_id_str
+
+    for node_id, attrs in inner.nodes(data=True):
+        new_id = id_map[node_id]
+        t = attrs.get('type', '')
+        geom = attrs.get('Geometric_info', np.zeros(6))
+
+        if t in ('Finite Room', 'room'):
+            center = [float(geom[0]), float(geom[1])]
+            G_out.add_node(new_id,
+                type='room',
+                center=center,
+                normal=[0.0, 0.0],
+                length=-1.0,
+                original_type='Finite Room',
+                original_attrs={'Geometric_info': geom,
+                                'draw_pos': np.array(center),
+                                'type': 'Finite Room'},
+                Geometric_info=geom,
+                draw_pos=np.array(center))
+
+        elif t == 'Plane':
+            normal_2d = np.array([float(geom[3]), float(geom[4])]) if len(geom) >= 5 else np.array([1., 0.])
+            mag = np.linalg.norm(normal_2d)
+            if mag > 1e-6:
+                normal_2d = normal_2d / mag
+            tangent = np.array([-normal_2d[1], normal_2d[0]])
+            center_3d = np.array([float(geom[0]), float(geom[1]),
+                                  float(geom[2]) if len(geom) > 2 else 0.])
+            raw_len = attrs.get('length')
+            if raw_len is None:
+                length = 2.0
+            elif isinstance(raw_len, np.ndarray):
+                length = float(raw_len[0]) if len(raw_len) > 0 else 2.0
+            else:
+                length = float(raw_len)
+            half = length / 2.0
+            ep1 = np.array([center_3d[0] - tangent[0]*half,
+                            center_3d[1] - tangent[1]*half, 0.])
+            ep2 = np.array([center_3d[0] + tangent[0]*half,
+                            center_3d[1] + tangent[1]*half, 0.])
+            G_out.add_node(new_id,
+                type='ws',
+                center=[float(center_3d[0]), float(center_3d[1])],
+                normal=normal_2d.tolist(),
+                length=length,
+                limits=[ep1, ep2],
+                original_type='Plane',
+                original_attrs={'Geometric_info': geom,
+                                'draw_pos': geom[:2],
+                                'type': 'Plane'},
+                original_id=str(node_id).split('_s')[0])
+
+        else:
+            # Already GNN format (ws) or unknown — keep as-is
+            G_out.add_node(new_id, **attrs)
+
+    for u, v in inner.edges():
+        new_u = id_map.get(u, str(u))
+        new_v = id_map.get(v, str(v))
+        if G_out.has_node(new_u) and G_out.has_node(new_v):
+            G_out.add_edge(new_u, new_v)
+
+    adapted = GraphWrapper(graph_obj=G_out)
+    adapted.set_name(name)
+    return adapted
 
 
 def load_real_graphs(env_name):
@@ -426,25 +522,76 @@ def load_real_graphs(env_name):
     graph_dicts_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "graph_dicts", env_name)
 
 
+    class _CompatUnpickler(pickle.Unpickler):
+        """Remap old module path 'graph_wrapper' → 'situational_graphs_wrapper'."""
+        def find_class(self, module, name):
+            module = module.replace('graph_wrapper', 'situational_graphs_wrapper', 1)
+            return super().find_class(module, name)
+
     def _load_graph_pkl(path):
+        graph_name = os.path.splitext(os.path.basename(path))[0]  # e.g. 'Online' or 'Prior'
         with open(path, 'rb') as f:
-            obj = pickle.load(f)
-        # Node-saved pkls contain a raw NX DiGraph; GNN pkls contain a GraphWrapper.
-        if isinstance(obj, GraphWrapper):
-            return obj
-        return GraphWrapper(graph_obj=obj)
+            obj = _CompatUnpickler(f).load()
+
+        # Check 1: must be a GraphWrapper
+        if not isinstance(obj, GraphWrapper):
+            obj = GraphWrapper(graph_obj=obj)
+
+        # Check 2: name must match the filename (DiGraph.name defaults to '')
+        if not getattr(obj, 'name', ''):
+            obj.set_name(graph_name)
+
+        # Check 3: nodes must be in GNN format (ws/room, not Plane/Finite Room)
+        node_types = {attrs.get('type') for _, attrs in obj.graph.nodes(data=True)}
+        if node_types & {'Plane', 'Finite Room'}:
+            issues = f"pre-GNN node types: {node_types}"
+            print(f"[{graph_name}] Graph needs adaptation — {issues}")
+            obj = _adapt_to_gnn_format(obj, graph_name)
+            node_types_after = {attrs.get('type') for _, attrs in obj.graph.nodes(data=True)}
+            print(f"[{graph_name}] Adapted: {obj.get_total_number_nodes()} nodes, types: {node_types_after}")
+
+        return obj
 
 
     a_graph = _load_graph_pkl(os.path.join(graph_dicts_path, "Prior.pkl"))
     s_graph = _load_graph_pkl(os.path.join(graph_dicts_path, "Online.pkl"))
 
 
-    # Sanitize numpy arrays so the PGM feature builder (list concatenation) works correctly
+    # Sanitize attributes so the PGM feature builder (list concatenation) works correctly.
+    # Mirrors graph_matching_node.py::convert_wrapper_to_gnn_format:
+    #   room → center from Geometric_info[:2], normal always [0., 0.]
+    #   ws   → center from Geometric_info[:2], normal normalized from Geometric_info[3:5]
+    # Geometric_info is read from the node's own attrs first, then from original_attrs.
+    # center and normal are always clamped to exactly 2 elements so the PGM feature
+    # vector is uniformly sized across all nodes.
     for g in (a_graph, s_graph):
         for _, attrs in g.graph.nodes(data=True):
-            for key in ("center", "normal"):
-                if key in attrs and hasattr(attrs[key], "tolist"):
-                    attrs[key] = attrs[key].tolist()
+            t = attrs.get('type', '')
+            geom = attrs.get('Geometric_info')
+            if geom is None:
+                geom = attrs.get('original_attrs', {}).get('Geometric_info', np.zeros(6))
+            geom = np.array(geom, dtype=float)
+
+            # center: fill from Geometric_info[:2] if absent, then clamp to 2D
+            if 'center' not in attrs:
+                attrs['center'] = geom[:2].tolist() if len(geom) >= 2 else [0., 0.]
+            c = attrs['center']
+            if hasattr(c, 'tolist'):
+                c = c.tolist()
+            attrs['center'] = list(c[:2])
+
+            # normal: room always [0,0]; ws from Geometric_info[3:5] normalized, then clamp to 2D
+            if t == 'room':
+                attrs['normal'] = [0., 0.]
+            else:
+                if 'normal' not in attrs:
+                    normal_vec = geom[3:5] if len(geom) >= 5 else np.array([0., 0.])
+                    mag = np.linalg.norm(normal_vec)
+                    attrs['normal'] = (normal_vec / mag).tolist() if mag > 1e-6 else [0., 0.]
+                n = attrs['normal']
+                if hasattr(n, 'tolist'):
+                    n = n.tolist()
+                attrs['normal'] = list(n[:2])
 
 
     # Load and parse ground truth — store as [[prior_id, online_id]] = [[A, S]]
@@ -813,9 +960,23 @@ def run_classic_msd_experiment(data1, data2, gt_perm, original_graphs, graph_nam
 
 pickle_datasets_path = "/home/adminpc/datasets_matching/pickles"
 GNN_PATH = '/root/workspace/src/graph_matching_gnn/GNN'
-_pgm_noise = "ws_room_dropout_noise_inc" if USE_NEW_MODEL else NOISE_CONDITION
-_pgm_model_path = os.path.join(GNN_PATH, "models", "partial_graph_matching",
-                                "ws_room_dropout_noise_inc_BCE" if USE_NEW_MODEL else NOISE_CONDITION)
+
+# Map MODEL name → (model_class, preprocessed_data_subfolder)
+# The data subfolder is where training data (mean/std normalization) was stored.
+_MODEL_CONFIGS = {
+    "ws_room_dropout_noise":              (MatchingModel_GATv2SinkhornTopK,       "ws_room_dropout_noise"),
+    "ws_room_dropout_noise_inc_BCE":      (MatchingModel_MLPGATv2SinkhornBCE,     "ws_room_dropout_noise_inc"),
+    "ws_room_dropout_noise_inc_BCE_noMLP":(MatchingModel_GATv2Sinkhorn,           "ws_room_dropout_noise_inc"),
+    "ws_room_dropout_noise_inc_WBCE":     (MatchingModel_MLPGATv2SinkhornWBCE,    "ws_room_dropout_noise_inc"),
+} if USE_PGM else {}
+
+if USE_PGM and MODEL not in _MODEL_CONFIGS:
+    raise ValueError(f"Unknown MODEL '{MODEL}'. Choose from: {list(_MODEL_CONFIGS.keys())}")
+
+_model_class, _pgm_noise = _MODEL_CONFIGS.get(MODEL, (None, None))
+_pgm_model_path = os.path.join(GNN_PATH, "models", "partial_graph_matching", MODEL)
+
+# NOISE_CONDITION selects which test dataset to evaluate on (independent of MODEL)
 MSD_TEST_PATH = os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", NOISE_CONDITION, f"{SPLIT}_dataset.pkl")
 MSD_ORIGINAL_PATH = os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal", "original.pkl")
 
@@ -824,7 +985,7 @@ MSD_ORIGINAL_PATH = os.path.join(GNN_PATH, "preprocessed", "graph_matching", "eq
 if USE_PGM:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     pgm_model_instance = PartialGraphMatching(
-        model_class=MatchingModel_GATv2SinkhornTopK,
+        model_class=_model_class,
         data_paths={
             "equal":   os.path.join(GNN_PATH, "preprocessed", "graph_matching", "equal"),
             "partial": os.path.join(GNN_PATH, "preprocessed", "partial_graph_matching", _pgm_noise),
@@ -833,7 +994,7 @@ if USE_PGM:
         device=device, in_dim=7,
     )
     pgm_model_instance.load_best_model()
-    print("PGM model loaded.")
+    print(f"PGM model loaded: {MODEL}")
 else:
     pgm_model_instance = None
 
@@ -1172,6 +1333,7 @@ elif DATASET == "real":
     # ── Real environment dataset (graph_dicts/<env>/) ─────────────────────────
     exp_type = 'pgm_real' if USE_PGM else 'classic_real'
     summary_rows = []  # collect per-env results for the summary table
+    real_env_soft_data = {}  # env_name → {full_tp, full_fp, hard_tp, hard_fp}
 
 
     for env_name in REAL_ENVS:
@@ -1197,6 +1359,14 @@ elif DATASET == "real":
                 gt_match = map_gt_to_unsplit_ids(gt_match)
 
 
+        # Filter isolated nodes (no edges) from both graphs before matching
+        for label, g in (("Prior", a_graph), ("Online", s_graph)):
+            isolated = [n for n in g.graph.nodes() if g.graph.degree(n) == 0]
+            if isolated:
+                g.graph.remove_nodes_from(isolated)
+                print(f"[{env_name}] {label}: removed {len(isolated)} isolated nodes "
+                      f"({g.graph.number_of_nodes()} remaining)")
+
         if USE_PGM:
             results = run_pgm_matching_experiment(
                 pgm_model_instance, a_graph, s_graph, gt_match,
@@ -1204,6 +1374,44 @@ elif DATASET == "real":
                 sinkhorn_threshold=SINKHORN_THRESHOLD, score_threshold=SCORE_THRESHOLD, acc_threshold=ACC_THRESHOLD, mc_samples=MC_SAMPLES, std_threshold=STD_THRESHOLD,
                 mc_affinity_samples=MC_AFFINITY_SAMPLES, affinity_std_threshold=AFFINITY_STD_THRESHOLD
             )
+
+            # ── Collect Sinkhorn TP/FP scores for distribution plot ──────────
+            if gt_match and results['matches_node_ids']:
+                g1 = a_graph.graph
+                g2 = s_graph.graph
+                g1_nodes = list(g1.nodes())
+                g2_nodes = list(g2.nodes())
+                N1, N2 = len(g1_nodes), len(g2_nodes)
+                g1_idx = {str(n): i for i, n in enumerate(g1_nodes)}
+                g2_idx = {str(n): j for j, n in enumerate(g2_nodes)}
+
+                soft_S = pgm_model_instance.infer_matching(g1, g2, discrete=False).cpu().numpy()
+
+                gt_mask = np.zeros((N1, N2))
+                for prior_id, online_id in gt_match:
+                    i = g1_idx.get(str(prior_id))
+                    j = g2_idx.get(str(online_id))
+                    if i is not None and j is not None:
+                        gt_mask[i, j] = 1.0
+
+                hard_mask = np.zeros((N1, N2))
+                for pair in results['matches_node_ids'][0]:
+                    i = g1_idx.get(str(pair[0]))
+                    j = g2_idx.get(str(pair[1]))
+                    if i is not None and j is not None:
+                        hard_mask[i, j] = 1.0
+
+                real_env_soft_data[env_name] = {
+                    'full_tp': soft_S[gt_mask == 1].flatten(),
+                    'full_fp': soft_S[gt_mask == 0].flatten(),
+                    'hard_tp': soft_S[(hard_mask == 1) & (gt_mask == 1)].flatten(),
+                    'hard_fp': soft_S[(hard_mask == 1) & (gt_mask == 0)].flatten(),
+                }
+                print(f"[{env_name}] Sinkhorn scores collected — "
+                      f"full TP={len(real_env_soft_data[env_name]['full_tp'])}, "
+                      f"FP={len(real_env_soft_data[env_name]['full_fp'])} | "
+                      f"hard TP={len(real_env_soft_data[env_name]['hard_tp'])}, "
+                      f"FP={len(real_env_soft_data[env_name]['hard_fp'])}")
         else:
             results = run_graph_matching_experiment(
                 a_graph, s_graph, gt_match,
@@ -1253,6 +1461,62 @@ elif DATASET == "real":
         else:
             print(f"  {row['env']:<22} {'n/a':>10} {'n/a':>8} {'n/a':>8} {'n/a':>10} {row['time']:>9.3f}")
     print(f"{'='*72}")
+
+    # ── Sinkhorn TP/FP distribution plots (one figure per environment) ────────
+    if real_env_soft_data:
+        from scipy.stats import gaussian_kde
+        import matplotlib.gridspec as gridspec
+
+        results_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
+        os.makedirs(results_dir, exist_ok=True)
+        colors = {'tp': '#2ca02c', 'fp': '#d62728'}
+        x_range = np.linspace(0, 1, 500)
+
+        def _kde_plot(ax, arr, color, label):
+            if len(arr) == 0:
+                return
+            if len(arr) == 1:
+                ax.axvline(arr[0], color=color, linewidth=2, linestyle='--', label=label)
+                return
+            kde = gaussian_kde(arr)
+            y = kde(x_range)
+            ax.plot(x_range, y, color=color, linewidth=2, label=label)
+            ax.fill_between(x_range, y, alpha=0.15, color=color)
+
+        for env_name, scores in real_env_soft_data.items():
+            fig = plt.figure(figsize=(13, 5))
+            fig.suptitle(f"{env_name} — Sinkhorn Score Distributions: TP vs FP", fontsize=13)
+            gs = gridspec.GridSpec(1, 2, wspace=0.35)
+            ax_full = fig.add_subplot(gs[0])
+            ax_hard = fig.add_subplot(gs[1])
+
+            _kde_plot(ax_full, scores['full_tp'], colors['tp'],
+                      f"GT match (TP)  n={len(scores['full_tp']):,}")
+            _kde_plot(ax_full, scores['full_fp'], colors['fp'],
+                      f"GT non-match (FP)  n={len(scores['full_fp']):,}")
+            ax_full.set_xlim(0, 1)
+            ax_full.set_xlabel("Sinkhorn score")
+            ax_full.set_ylabel("Density")
+            ax_full.set_title("All Sinkhorn entries\n(full matrix)")
+            ax_full.legend(fontsize=9)
+            ax_full.grid(True, alpha=0.3)
+
+            _kde_plot(ax_hard, scores['hard_tp'], colors['tp'],
+                      f"Correct assignment (TP)  n={len(scores['hard_tp'])}")
+            _kde_plot(ax_hard, scores['hard_fp'], colors['fp'],
+                      f"Wrong assignment (FP)   n={len(scores['hard_fp'])}")
+            ax_hard.set_xlim(0, 1)
+            ax_hard.set_xlabel("Sinkhorn score")
+            ax_hard.set_ylabel("Density")
+            ax_hard.set_title("Hungarian-selected pairs only\n(final assignments)")
+            ax_hard.legend(fontsize=9)
+            ax_hard.grid(True, alpha=0.3)
+
+            fig.tight_layout()
+            plot_path = os.path.join(results_dir, f"{env_name}_sinkhorn_tp_fp.png")
+            fig.savefig(plot_path, dpi=150, bbox_inches='tight')
+            print(f"Sinkhorn TP/FP plot saved: {plot_path}")
+            plt.show()
 
 
 else:
@@ -1312,6 +1576,7 @@ if all_metrics_data:
         'affinity_std_threshold': AFFINITY_STD_THRESHOLD,
         'dataset': DATASET,
         'noise_condition': NOISE_CONDITION,
+        'model': MODEL if USE_PGM else None,
     }
 
 

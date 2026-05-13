@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "timestamp": "2026-05-11T09:09:38.730058",
+    "total_experiments": 3,
+    "dataset_file": "graph_dicts/",
+    "description": "Graph matching performance metrics collected from real environment dataset experiments",
+    "score_threshold": null,
+    "sinkhorn_threshold": null,
+    "acc_threshold": null,
+    "mc_samples": 10,
+    "std_threshold": null,
+    "mc_affinity_samples": 0,
+    "affinity_std_threshold": null,
+    "dataset": "real",
+    "noise_condition": "ws_room_dropout_noise"
+  },
+  "experiments": [
+    {
+      "n_rooms_s_graphs": 7,
+      "n_rooms_a_graphs": 7,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            1705,
+            30
+          ],
+          [
+            25,
+            0
+          ]
+        ],
+        "true_positives": 0.0,
+        "true_negatives": 1705.0,
+        "false_positives": 30.0,
+        "false_negatives": 25.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.96875,
+        "specificity": 0.9827089337175793,
+        "correct_matches": 0,
+        "total_gt_matches": 25,
+        "total_pred_matches": 30,
+        "experiment_type": "pgm_real_47_basement",
+        "matching_time": 0.150634765625,
+        "num_solutions": 1,
+        "success": true,
+        "environment": "47_basement"
+      },
+      "experiment_type": "pgm_real_47_basement",
+      "matching_time": 0.150634765625,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 4,
+      "n_rooms_a_graphs": 5,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            380,
+            20
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "true_positives": 0.0,
+        "true_negatives": 380.0,
+        "false_positives": 20.0,
+        "false_negatives": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.95,
+        "specificity": 0.95,
+        "correct_matches": 0,
+        "total_gt_matches": 0,
+        "total_pred_matches": 20,
+        "experiment_type": "pgm_real_47_topfloor_",
+        "matching_time": 0.08083629608154297,
+        "num_solutions": 1,
+        "success": true,
+        "environment": "47_topfloor_"
+      },
+      "experiment_type": "pgm_real_47_topfloor_",
+      "matching_time": 0.08083629608154297,
+      "num_solutions": 1,
+      "success": true
+    },
+    {
+      "n_rooms_s_graphs": 6,
+      "n_rooms_a_graphs": 8,
+      "metrics": {
+        "confusion_matrix": [
+          [
+            892,
+            17
+          ],
+          [
+            7,
+            12
+          ]
+        ],
+        "true_positives": 12.0,
+        "true_negatives": 892.0,
+        "false_positives": 17.0,
+        "false_negatives": 7.0,
+        "precision": 0.41379310344827586,
+        "recall": 0.631578947368421,
+        "f1_score": 0.5,
+        "accuracy": 0.9741379310344828,
+        "specificity": 0.9812981298129813,
+        "correct_matches": 12,
+        "total_gt_matches": 19,
+        "total_pred_matches": 29,
+        "experiment_type": "pgm_real_CF12",
+        "matching_time": 0.11429858207702637,
+        "num_solutions": 1,
+        "success": true,
+        "environment": "CF12"
+      },
+      "experiment_type": "pgm_real_CF12",
+      "matching_time": 0.11429858207702637,
+      "num_solutions": 1,
+      "success": true
+    }
+  ],
+  "mc_uncertainty": {},
+  "mc_affinity_uncertainty": {}
+}
