@@ -888,7 +888,7 @@ class GraphMatchingNode(Node):
         # there should be a clear gap between the small cluster of wall-pair distances
         # and the next group of unrelated segment distances.
         # Typical wall thickness in SLAM environments: 0.05 – 0.30 m.
-        WALL_PAIR_THRESHOLD = 0.25  # meters — adjust based on [WALL-PAIR] log output
+        WALL_PAIR_THRESHOLD = 1.0  # meters — adjust based on [WALL-PAIR] log output
 
         for i in range(len(ws_ids_list)):
             for j in range(i + 1, len(ws_ids_list)):
@@ -965,14 +965,14 @@ class GraphMatchingNode(Node):
         # # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
         # # Training data has every ws connected to exactly one room — orphan ws nodes
         # # are a structural pattern the GNN was never trained on and hurt match quality.
-        # orphan_ws = [
-        #     n for n, d in G.graph.nodes(data=True)
-        #     if d.get("type") == "ws"
-        #     and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
-        # ]
-        # if orphan_ws:
-        #     self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
-        #     G.graph.remove_nodes_from(orphan_ws)
+        orphan_ws = [
+            n for n, d in G.graph.nodes(data=True)
+            if d.get("type") == "ws"
+            and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
+        ]
+        if orphan_ws:
+            self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
+            G.graph.remove_nodes_from(orphan_ws)
 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
@@ -1858,7 +1858,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 

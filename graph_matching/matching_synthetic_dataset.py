@@ -20,7 +20,7 @@ USE_PGM = True
 
 
 # Dataset selection — pick one: "synthetic", "msd", "real"
-DATASET = "msd"
+DATASET = "real"
 
 
 # MSD split to evaluate — pick one: "train", "valid", "test"
@@ -415,7 +415,7 @@ def process_node_saved_graph(graph):
 
 
 
-REAL_ENVS = ["47_basement", "47_topfloor_", "CF12"]
+REAL_ENVS = ["47_basement_", "47_topfloor_", "CF12"]
 
 
 def _adapt_to_gnn_format(graph_wrapper, name):

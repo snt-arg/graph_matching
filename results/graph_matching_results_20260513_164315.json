@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-05-13T16:44:55.611637",
+    "timestamp": "2026-05-13T16:43:15.154654",
     "total_experiments": 3,
     "dataset_file": "graph_dicts/",
     "description": "Graph matching performance metrics collected from real environment dataset experiments",
@@ -42,14 +42,14 @@
         "correct_matches": 0,
         "total_gt_matches": 19,
         "total_pred_matches": 15,
-        "experiment_type": "pgm_real_47_basement_",
-        "matching_time": 0.05588579177856445,
+        "experiment_type": "pgm_real_47_basement",
+        "matching_time": 0.10699462890625,
         "num_solutions": 1,
         "success": true,
-        "environment": "47_basement_"
+        "environment": "47_basement"
       },
-      "experiment_type": "pgm_real_47_basement_",
-      "matching_time": 0.05588579177856445,
+      "experiment_type": "pgm_real_47_basement",
+      "matching_time": 0.10699462890625,
       "num_solutions": 1,
       "success": true
     },
@@ -80,13 +80,13 @@
         "total_gt_matches": 0,
         "total_pred_matches": 20,
         "experiment_type": "pgm_real_47_topfloor_",
-        "matching_time": 0.02802896499633789,
+        "matching_time": 0.0031485557556152344,
         "num_solutions": 1,
         "success": true,
         "environment": "47_topfloor_"
       },
       "experiment_type": "pgm_real_47_topfloor_",
-      "matching_time": 0.02802896499633789,
+      "matching_time": 0.0031485557556152344,
       "num_solutions": 1,
       "success": true
     },
@@ -117,13 +117,13 @@
         "total_gt_matches": 19,
         "total_pred_matches": 29,
         "experiment_type": "pgm_real_CF12",
-        "matching_time": 0.009902477264404297,
+        "matching_time": 0.003184795379638672,
         "num_solutions": 1,
         "success": true,
         "environment": "CF12"
       },
       "experiment_type": "pgm_real_CF12",
-      "matching_time": 0.009902477264404297,
+      "matching_time": 0.003184795379638672,
       "num_solutions": 1,
       "success": true
     }

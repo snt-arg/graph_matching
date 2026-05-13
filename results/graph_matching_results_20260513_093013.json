@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-05-13T16:44:55.611637",
+    "timestamp": "2026-05-13T09:30:13.475837",
     "total_experiments": 3,
     "dataset_file": "graph_dicts/",
     "description": "Graph matching performance metrics collected from real environment dataset experiments",
@@ -17,13 +17,13 @@
   },
   "experiments": [
     {
-      "n_rooms_s_graphs": 3,
+      "n_rooms_s_graphs": 4,
       "n_rooms_a_graphs": 7,
       "metrics": {
         "confusion_matrix": [
           [
-            692,
-            15
+            561,
+            20
           ],
           [
             19,
@@ -31,25 +31,25 @@
           ]
         ],
         "true_positives": 0.0,
-        "true_negatives": 692.0,
-        "false_positives": 15.0,
+        "true_negatives": 561.0,
+        "false_positives": 20.0,
         "false_negatives": 19.0,
         "precision": 0.0,
         "recall": 0.0,
         "f1_score": 0.0,
-        "accuracy": 0.953168044077135,
-        "specificity": 0.9787835926449788,
+        "accuracy": 0.935,
+        "specificity": 0.9655765920826161,
         "correct_matches": 0,
         "total_gt_matches": 19,
-        "total_pred_matches": 15,
-        "experiment_type": "pgm_real_47_basement_",
-        "matching_time": 0.05588579177856445,
+        "total_pred_matches": 20,
+        "experiment_type": "pgm_real_47_basement",
+        "matching_time": 0.040628671646118164,
         "num_solutions": 1,
         "success": true,
-        "environment": "47_basement_"
+        "environment": "47_basement"
       },
-      "experiment_type": "pgm_real_47_basement_",
-      "matching_time": 0.05588579177856445,
+      "experiment_type": "pgm_real_47_basement",
+      "matching_time": 0.040628671646118164,
       "num_solutions": 1,
       "success": true
     },
@@ -80,13 +80,13 @@
         "total_gt_matches": 0,
         "total_pred_matches": 20,
         "experiment_type": "pgm_real_47_topfloor_",
-        "matching_time": 0.02802896499633789,
+        "matching_time": 0.004304409027099609,
         "num_solutions": 1,
         "success": true,
         "environment": "47_topfloor_"
       },
       "experiment_type": "pgm_real_47_topfloor_",
-      "matching_time": 0.02802896499633789,
+      "matching_time": 0.004304409027099609,
       "num_solutions": 1,
       "success": true
     },
@@ -117,13 +117,13 @@
         "total_gt_matches": 19,
         "total_pred_matches": 29,
         "experiment_type": "pgm_real_CF12",
-        "matching_time": 0.009902477264404297,
+        "matching_time": 0.05219626426696777,
         "num_solutions": 1,
         "success": true,
         "environment": "CF12"
       },
       "experiment_type": "pgm_real_CF12",
-      "matching_time": 0.009902477264404297,
+      "matching_time": 0.05219626426696777,
       "num_solutions": 1,
       "success": true
     }
