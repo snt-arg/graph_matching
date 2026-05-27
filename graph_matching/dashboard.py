@@ -60,6 +60,15 @@ from situational_graphs_datasets.InteractiveGraphVisualizer import InteractiveGr
 
 GRAPH_DICTS_DIR = Path(__file__).parent / "graph_dicts"
 
+# ── Model selection ────────────────────────────────────────────────────────────
+# Edit this line to switch the GNN model used by the dashboard.
+# Pick one:
+#   "ws_room_dropout_noise"               → MatchingModel_GATv2SinkhornTopK   (original, TopK)
+#   "ws_room_dropout_noise_inc_BCE"       → MatchingModel_MLPGATv2SinkhornBCE  (MLP + BCE)
+#   "ws_room_dropout_noise_inc_BCE_noMLP" → MatchingModel_GATv2Sinkhorn        (no MLP, BCE)
+#   "ws_room_dropout_noise_inc_WBCE"      → MatchingModel_MLPGATv2SinkhornWBCE (MLP + weighted BCE)
+MODEL = "ws_room_dropout_noise_inc_BCE"
+
 # Make the dry-run matcher importable: it lives in the sibling graph_matching_gnn repo.
 _WORKSPACE_SRC = Path(__file__).resolve().parent.parent.parent
 _PGM_PATH = str(_WORKSPACE_SRC / "graph_matching_gnn" / "graph_matching")
@@ -589,16 +598,27 @@ class GnnMatcher:
     name = "gnn"
     display = "real GNN (PartialGraphMatching)"
 
-    def __init__(self, model_save_path, data_paths):
+    def __init__(self, model_save_path, data_paths, model_class_name):
         # Heavy imports happen here so dry-run mode doesn't pay for torch /
         # torch_geometric / etc. at startup.
         import torch  # noqa: E402
         from PGM_class import (  # noqa: E402
             PartialGraphMatching,
             MatchingModel_GATv2SinkhornTopK,
+            MatchingModel_MLPGATv2SinkhornBCE,
+            MatchingModel_GATv2Sinkhorn,
+            MatchingModel_MLPGATv2SinkhornWBCE,
             nx_to_pyg_data_preserve_order,
             normalize_graph,
         )
+
+        _class_map = {
+            "MatchingModel_GATv2SinkhornTopK":    MatchingModel_GATv2SinkhornTopK,
+            "MatchingModel_MLPGATv2SinkhornBCE":  MatchingModel_MLPGATv2SinkhornBCE,
+            "MatchingModel_GATv2Sinkhorn":        MatchingModel_GATv2Sinkhorn,
+            "MatchingModel_MLPGATv2SinkhornWBCE": MatchingModel_MLPGATv2SinkhornWBCE,
+        }
+        model_class = _class_map[model_class_name]
 
         self._torch = torch
         self._nx_to_pyg = nx_to_pyg_data_preserve_order
@@ -608,7 +628,7 @@ class GnnMatcher:
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         self._pgm = PartialGraphMatching(
-            model_class=MatchingModel_GATv2SinkhornTopK,
+            model_class=model_class,
             data_paths=data_paths,
             model_save_path=model_save_path,
             device=self._device,
@@ -1823,8 +1843,18 @@ class Dashboard(QMainWindow):
         new_s = ed_s.full_graph if ed_s is not None else self._current_s
         if new_a is None or new_s is None:
             return
+        print("[RECOMPUTING matching WITH GNN matcher]")
         self._current_a = new_a
         self._current_s = new_s
+        # The editor graphs go through from_2D_to_3D(), which stores centers as
+        # 3D numpy arrays. Normalize to 2D Python lists before GNN matching,
+        # the same way load_env_graphs() sanitizes the initially loaded graphs.
+        for g_wrapper in (new_a, new_s):
+            for _, attrs in g_wrapper.graph.nodes(data=True):
+                for key in ("center", "normal"):
+                    if key in attrs:
+                        v = attrs[key]
+                        attrs[key] = (v.tolist() if hasattr(v, "tolist") else list(v))[:2]
         pred, ints, a_nodes, s_nodes = self._matcher.match(new_a, new_s)
         self._current_pred = pred
         self._current_ints = ints
@@ -2125,35 +2155,44 @@ class Dashboard(QMainWindow):
 
 
 _DEFAULT_GNN_PATH = _WORKSPACE_SRC / "graph_matching_gnn" / "GNN"
-_DEFAULT_MODEL_SAVE_PATH = (
-    _DEFAULT_GNN_PATH / "models" / "partial_graph_matching"
-    / "ws_room_dropout_noise_inc_BCE"
-)
+
+# Maps model name → (model_class_name, partial_data_subfolder).
+# model_class_name is resolved at runtime inside GnnMatcher to avoid importing
+# torch at module load time.
+_MODEL_CONFIGS = {
+    "ws_room_dropout_noise":               ("MatchingModel_GATv2SinkhornTopK",    "ws_room_dropout_noise"),
+    "ws_room_dropout_noise_inc_BCE":       ("MatchingModel_MLPGATv2SinkhornBCE",  "ws_room_dropout_noise_inc"),
+    "ws_room_dropout_noise_inc_BCE_noMLP": ("MatchingModel_GATv2Sinkhorn",        "ws_room_dropout_noise_inc"),
+    "ws_room_dropout_noise_inc_WBCE":      ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+}
 _DEFAULT_DATA_EQUAL = _DEFAULT_GNN_PATH / "preprocessed" / "graph_matching" / "equal"
-_DEFAULT_DATA_PARTIAL = (
-    _DEFAULT_GNN_PATH / "preprocessed" / "partial_graph_matching"
-    / "ws_room_dropout_noise_inc"
-)
 
 
 def _build_matcher(args):
     if args.dry_run:
         return DryRunMatcher()
-    model_save_path = Path(args.model_save_path)
-    data_equal = Path(args.data_equal_path)
-    data_partial = Path(args.data_partial_path)
+
+    if MODEL not in _MODEL_CONFIGS:
+        raise SystemExit(
+            f"Unknown MODEL '{MODEL}'. Choose from: {list(_MODEL_CONFIGS.keys())}"
+        )
+    model_class_name, data_subfolder = _MODEL_CONFIGS[MODEL]
+    model_save_path = _DEFAULT_GNN_PATH / "models" / "partial_graph_matching" / MODEL
+    data_equal = _DEFAULT_DATA_EQUAL
+    data_partial = _DEFAULT_GNN_PATH / "preprocessed" / "partial_graph_matching" / data_subfolder
+
     missing = [p for p in (model_save_path, data_equal, data_partial) if not p.exists()]
     if missing:
         raise SystemExit(
             "Real-GNN mode selected but the following path(s) don't exist:\n"
             + "\n".join(f"  - {p}" for p in missing)
-            + "\n\nEither pass --dry-run to use the random dry-run matcher, or "
-            + "point --model-save-path / --data-equal-path / --data-partial-path "
-            + "at the correct locations."
+            + "\n\nEither set MODEL to a valid entry in _MODEL_CONFIGS, or pass "
+            + "--dry-run to use the random dry-run matcher."
         )
     return GnnMatcher(
         model_save_path=str(model_save_path),
         data_paths={"equal": str(data_equal), "partial": str(data_partial)},
+        model_class_name=model_class_name,
     )
 
 
@@ -2166,21 +2205,6 @@ def _parse_args(argv):
         "--dry-run", action="store_true",
         help="Use the random-data dry-run matcher (skips loading the real GNN "
              "model). Default is to load the real GNN.",
-    )
-    parser.add_argument(
-        "--model-save-path", default=str(_DEFAULT_MODEL_SAVE_PATH),
-        help="Directory with best_val_model.pt and best_params.json. "
-             "Default: %(default)s",
-    )
-    parser.add_argument(
-        "--data-equal-path", default=str(_DEFAULT_DATA_EQUAL),
-        help="Path to the 'equal' preprocessed dataset directory. "
-             "Default: %(default)s",
-    )
-    parser.add_argument(
-        "--data-partial-path", default=str(_DEFAULT_DATA_PARTIAL),
-        help="Path to the 'partial' preprocessed dataset directory. "
-             "Default: %(default)s",
     )
     return parser.parse_args(argv)
 
