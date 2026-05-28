@@ -234,6 +234,15 @@ def _initial_dx(a, s):
     return (a_cx + a_r + padding + s_r) - s_cx
 
 
+def _align_transform(a, s):
+    """(dx, dy) that snaps S's centroid onto A's centroid (graphs overlap)."""
+    a_cx, _ = _x_center_and_radius(a)
+    s_cx, _ = _x_center_and_radius(s)
+    a_cy, _ = _y_center_and_radius(a)
+    s_cy, _ = _y_center_and_radius(s)
+    return a_cx - s_cx, a_cy - s_cy
+
+
 def _combine_graphs(a, s, dx, dy, theta_deg, edge_style_fn):
     """Build the A+S composite graph with B translated/rotated and bipartite
     cross-edges styled by ``edge_style_fn(ai, si)``.
@@ -583,6 +592,9 @@ class DryRunMatcher:
     name = "dry-run"
     display = "dry-run matcher (random embeddings)"
 
+    def clear_cache(self):
+        pass  # dry-run cache lives in _dry_run_pgm; not safe to clear globally
+
     def match(self, a, s):
         g1, g2 = a.graph, s.graph
         ints = _dry_run_pgm._get_or_make(g1, g2)
@@ -653,6 +665,9 @@ class GnnMatcher:
         self._mean = self._pgm.mean
         self._std = self._pgm.std
         self._cache = {}
+
+    def clear_cache(self):
+        self._cache.clear()
 
     @staticmethod
     def _signature(g1, g2):
@@ -925,6 +940,11 @@ class Zoom3DToolbar(NavigationToolbar2QT):
         factor = 1.25 if modifiers & Qt.ShiftModifier else 0.8
         _scale_3d_axes(self.canvas.figure, factor)
         self.canvas.draw_idle()
+        # Our zoom is a one-shot action, not a modal toggle — immediately
+        # uncheck the toolbar button so it doesn't appear stuck "active".
+        action = self._actions.get("zoom")
+        if action is not None:
+            action.setChecked(False)
 
 
 def _all_cids(fig):
@@ -1564,6 +1584,17 @@ class Dashboard(QMainWindow):
         self._theta_spin.setSuffix(" °")
         general_row.addWidget(self._theta_spin)
 
+        general_row.addSpacing(6)
+        self._align_btn = QPushButton("Align centers")
+        self._align_btn.setToolTip(
+            "Stores the centroid-to-centroid offset for S internally. "
+            "Nothing changes visually — the display layout is untouched. "
+            "Press Recompute afterwards to re-run the matcher with S's "
+            "features shifted onto A's origin."
+        )
+        self._align_btn.clicked.connect(self._on_align_graphs)
+        general_row.addWidget(self._align_btn)
+
         general_row.addSpacing(12)
         self._node_ids_cb = QCheckBox("Show node IDs")
         self._node_ids_cb.setChecked(False)
@@ -1650,6 +1681,7 @@ class Dashboard(QMainWindow):
         self._current_s_nodes = []
         self._current_env = None
         self._shared_view = None  # (elev, azim) propagated across all panels
+        self._gt_editor_key = None  # guards GT editor rebuilds in _refresh_combined
 
         # Debounce timer: a spinbox drag or a burst of toggles coalesces into
         # one refresh ~120 ms after the user pauses. Connections go through
@@ -1674,10 +1706,17 @@ class Dashboard(QMainWindow):
     def _on_env_change(self, env_name):
         if not env_name:
             return
-        a, s, gt = load_env_graphs(env_name)
+        try:
+            a, s, gt = load_env_graphs(env_name)
+            pred, ints, a_nodes, s_nodes = self._matcher.match(a, s)
+        except Exception as exc:
+            print(
+                f"[ERROR] Failed to load environment '{env_name}': {exc}",
+                file=sys.stderr,
+            )
+            return
         self._current_a, self._current_s = a, s
         self._current_gt = gt
-        pred, ints, a_nodes, s_nodes = self._matcher.match(a, s)
         self._current_pred = pred
         self._current_ints = ints
         self._current_a_nodes = a_nodes
@@ -1722,7 +1761,7 @@ class Dashboard(QMainWindow):
         enable_hover = self._hover_cb.isChecked()
         if render_viz:
             panel.viz_panel.set_graph(
-                _prepare_for_viz(graph),
+                graph,
                 f"{self._current_env} - {role}",
                 include_node_ids=show_ids,
                 enable_hover=enable_hover,
@@ -1832,6 +1871,47 @@ class Dashboard(QMainWindow):
                 self._s_panel, self._current_s, "S", render_editor=False,
             )
 
+    def _on_align_graphs(self):
+        """Shift S's features so its centroid overlaps A's centroid.
+
+        ``_current_s`` is mutated in-place, then the visualization spinboxes
+        are compensated by the same delta so the combined panels (GT, dry-run,
+        etc.) continue to show A and S side-by-side — only the S standalone
+        panel (and its editor) will reflect the translated graph. Press
+        Recompute afterwards to re-run the matcher on the aligned S.
+        """
+        if self._current_a is None or self._current_s is None:
+            return
+        align_dx, align_dy = _align_transform(self._current_a, self._current_s)
+        if abs(align_dx) < 1e-9 and abs(align_dy) < 1e-9:
+            return  # already aligned, nothing to do
+
+        # Shift _current_s features permanently.
+        _transform_b_inplace(self._current_s, align_dx, align_dy, 0.0)
+
+        # Subtract the same delta from the visualization spinboxes so that
+        # combined-panel displays (which add spinbox offset on top of features)
+        # continue to render S at the same screen position.
+        new_dx = self._dx_spin.value() - align_dx
+        new_dy = self._dy_spin.value() - align_dy
+        blockers = [QSignalBlocker(self._dx_spin), QSignalBlocker(self._dy_spin)]
+        self._dx_spin.setValue(new_dx)
+        self._dy_spin.setValue(new_dy)
+        del blockers
+
+        # id(_current_s) is unchanged but its content changed — force GT editor
+        # key to invalidate so the editor rebuilds with the new coordinates.
+        self._gt_editor_key = None
+
+        # Re-render the S standalone panel (viz + editor) to show the shifted
+        # graph, then refresh the combined panels so the GT panel (and others)
+        # also redraw. The spinbox compensation means S appears at the same
+        # visual position in the combined panels — but the GT editor rebuild
+        # (triggered by _gt_editor_key = None above) still needs to run, and
+        # _apply_shared_view is called at the tail of _refresh_combined.
+        self._render_side_panel(self._s_panel, self._current_s, "S")
+        self._refresh_combined()
+
     def _kick_refresh(self, *_args):
         """Restart the debounce timer ignoring whatever payload the signal
         carries. See the comment next to `_refresh_timer` for why we don't
@@ -1857,27 +1937,38 @@ class Dashboard(QMainWindow):
         new_s = ed_s.full_graph if ed_s is not None else self._current_s
         if new_a is None or new_s is None:
             return
+        # Always force a fresh GNN forward pass. The cache key only covers
+        # (name, |V|, |E|), so feature-only changes (e.g. "Align centers",
+        # node position edits) would otherwise return stale cached results.
+        self._matcher.clear_cache()
         print("[RECOMPUTING matching WITH GNN matcher]")
-        self._current_a = new_a
-        self._current_s = new_s
-        # The editor graphs go through from_2D_to_3D(), which stores centers as
-        # 3D numpy arrays. Normalize to 2D Python lists before GNN matching,
-        # the same way load_env_graphs() sanitizes the initially loaded graphs.
-        for g_wrapper in (new_a, new_s):
-            for _, attrs in g_wrapper.graph.nodes(data=True):
+
+        # Editor graphs have 3D numpy coords after from_2D_to_3D(). Deep-copy
+        # before sanitizing to 2D so the IGV's live graph object is not mutated
+        # (it holds a reference and relies on its coords remaining 3D).
+        def _to_2d(gw):
+            g = copy.deepcopy(gw)
+            for _, attrs in g.graph.nodes(data=True):
                 for key in ("center", "normal"):
                     if key in attrs:
                         v = attrs[key]
                         attrs[key] = (v.tolist() if hasattr(v, "tolist") else list(v))[:2]
-        pred, ints, a_nodes, s_nodes = self._matcher.match(new_a, new_s)
+            return g
+
+        self._current_a = _to_2d(new_a)
+        self._current_s = _to_2d(new_s)
+
+        # _current_s already carries aligned features if "Align centers" was
+        # pressed before Recompute — no additional transform needed here.
+        pred, ints, a_nodes, s_nodes = self._matcher.match(self._current_a, self._current_s)
         self._current_pred = pred
         self._current_ints = ints
         self._current_a_nodes = a_nodes
         self._current_s_nodes = s_nodes
-        # Editor IGVs already reflect the edits (we just pulled from their
-        # full_graph); only the viz inner panels need to be resync'd.
-        self._render_side_panel(self._a_panel, new_a, "A", render_editor=False)
-        self._render_side_panel(self._s_panel, new_s, "S", render_editor=False)
+        # Viz inner panels re-render against the sanitized 2D base graphs;
+        # editor IGVs already reflect the edits, so no rebuild needed.
+        self._render_side_panel(self._a_panel, self._current_a, "A", render_editor=False)
+        self._render_side_panel(self._s_panel, self._current_s, "S", render_editor=False)
         self._refresh_combined()
         self._apply_shared_view()
 
@@ -1922,16 +2013,27 @@ class Dashboard(QMainWindow):
         )
         # GT editor: only GT cross-edges are drawn (vs. the full n_a×n_s
         # mesh on the viz side). Selecting 1 a_* + 1 s_* + Enter toggles a
-        # pair — see `_on_gt_editor_enter`.
-        gt_editor_graph = _build_gt_editor_graph(
-            self._current_a, self._current_s,
-            dx, dy, theta,
-            self._current_gt,
+        # pair — see `_on_gt_editor_enter`. Rebuild only when the underlying
+        # data changes (env / graphs / GT pairs) — not on every spinbox tick —
+        # so editor state (active groups, node selections) survives purely
+        # visual updates like transform adjustments.
+        gt_editor_key = (
+            self._current_env,
+            frozenset(self._current_gt),
+            id(self._current_a),
+            id(self._current_s),
         )
-        self._gt_panel.editor_panel.set_graph(
-            gt_editor_graph,
-            f"{self._current_env} - GT editor",
-        )
+        if gt_editor_key != self._gt_editor_key:
+            self._gt_editor_key = gt_editor_key
+            gt_editor_graph = _build_gt_editor_graph(
+                self._current_a, self._current_s,
+                dx, dy, theta,
+                self._current_gt,
+            )
+            self._gt_panel.editor_panel.set_graph(
+                gt_editor_graph,
+                f"{self._current_env} - GT editor",
+            )
         gt_overlay = self._current_gt if self._gt_overlay_cb.isChecked() else None
         gt_legend = (
             [_make_match_legend_proxy("black", "GT (overlay)", linewidth=1.5, alpha=0.4)]
@@ -2203,11 +2305,18 @@ def _build_matcher(args):
             + "\n\nEither set MODEL to a valid entry in _MODEL_CONFIGS, or pass "
             + "--dry-run to use the random dry-run matcher."
         )
-    return GnnMatcher(
-        model_save_path=str(model_save_path),
-        data_paths={"equal": str(data_equal), "partial": str(data_partial)},
-        model_class_name=model_class_name,
-    )
+    try:
+        return GnnMatcher(
+            model_save_path=str(model_save_path),
+            data_paths={"equal": str(data_equal), "partial": str(data_partial)},
+            model_class_name=model_class_name,
+        )
+    except ImportError as exc:
+        raise SystemExit(
+            f"GNN dependencies missing ({exc}).\n"
+            "Install torch / torch_geometric, or pass --dry-run to use the "
+            "random dry-run matcher."
+        ) from exc
 
 
 def _parse_args(argv):
