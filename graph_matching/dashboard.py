@@ -67,7 +67,7 @@ GRAPH_DICTS_DIR = Path(__file__).parent / "graph_dicts"
 #   "ws_room_dropout_noise_inc_BCE"       → MatchingModel_MLPGATv2SinkhornBCE  (MLP + BCE)
 #   "ws_room_dropout_noise_inc_BCE_noMLP" → MatchingModel_GATv2Sinkhorn        (no MLP, BCE)
 #   "ws_room_dropout_noise_inc_WBCE"      → MatchingModel_MLPGATv2SinkhornWBCE (MLP + weighted BCE)
-MODEL = "ws_room_dropout_noise_inc_BCE"
+MODEL = "ws_room_dropout_noise_inc_WBCE"
 
 # Make the dry-run matcher importable: it lives in the sibling graph_matching_gnn repo.
 _WORKSPACE_SRC = Path(__file__).resolve().parent.parent.parent
@@ -94,19 +94,28 @@ def _load_graph(path):
 
 
 def _load_ground_truth(env_name):
-    """Return a set of (a_id, s_id) string-pair tuples from ground_truth.json."""
+    """Return a set of (a_id, s_id) string-pair tuples from ground_truth.json.
+
+    The JSON uses prefixed IDs (``a_<id>`` for Prior, ``s_<id>`` for Online)
+    but graph node IDs carry no prefix, so the prefixes are stripped here.
+    """
     gt_path = GRAPH_DICTS_DIR / env_name / "ground_truth.json"
     if not gt_path.exists():
         return set()
     with open(gt_path, "r") as f:
         raw = json.load(f)
+
+    def strip(node_id, prefix):
+        s = str(node_id)
+        return s[len(prefix):] if s.startswith(prefix) else s
+
     pairs = set()
     for o_id, p_id in raw.get("rooms", {}).items():
         if p_id != "??":
-            pairs.add((str(p_id), str(o_id)))
+            pairs.add((strip(p_id, "a_"), strip(o_id, "s_")))
     for entry in raw.get("ws", []):
         if len(entry) == 2 and entry[1] != "??":
-            pairs.add((str(entry[1]), str(entry[0])))
+            pairs.add((strip(entry[1], "a_"), strip(entry[0], "s_")))
     return pairs
 
 
@@ -116,8 +125,13 @@ def load_env_graphs(env_name):
     for g in (a, s):
         for _, attrs in g.graph.nodes(data=True):
             for key in ("center", "normal"):
-                if key in attrs and hasattr(attrs[key], "tolist"):
-                    attrs[key] = attrs[key].tolist()
+                if key in attrs:
+                    v = attrs[key]
+                    if hasattr(v, "tolist"):
+                        v = v.tolist()
+                    if len(v) > 2:
+                        v = v[:2]
+                    attrs[key] = v
     gt = _load_ground_truth(env_name)
     return a, s, gt
 

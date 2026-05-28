@@ -737,7 +737,7 @@ class GraphMatchingNode(Node):
                 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
-        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=False, blocking=True)    
+        # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=True, blocking=True)    
         # G.from_3D_to_2D()
 
         
@@ -965,14 +965,14 @@ class GraphMatchingNode(Node):
         # # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
         # # Training data has every ws connected to exactly one room — orphan ws nodes
         # # are a structural pattern the GNN was never trained on and hurt match quality.
-        orphan_ws = [
-            n for n, d in G.graph.nodes(data=True)
-            if d.get("type") == "ws"
-            and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
-        ]
-        if orphan_ws:
-            self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
-            G.graph.remove_nodes_from(orphan_ws)
+        # orphan_ws = [
+        #     n for n, d in G.graph.nodes(data=True)
+        #     if d.get("type") == "ws"
+        #     and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
+        # ]
+        # if orphan_ws:
+        #     self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
+        #     G.graph.remove_nodes_from(orphan_ws)
 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
@@ -1858,7 +1858,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 
