@@ -17,6 +17,7 @@ import copy
 import json
 import pickle
 import queue as _queue
+import time
 from pathlib import Path
 
 import matplotlib
@@ -351,8 +352,10 @@ def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
             weight = norm
             color = _VALUE_ONLY_COLOR
         elif mode == "incorrect":
-            weight = (1.0 - norm) if in_gt else norm
-            color = "g" if in_gt else "r"
+            if in_gt:
+                return None
+            weight = norm
+            color = "r"
         else:  # "correct"
             weight = norm if in_gt else (1.0 - norm)
             color = "g" if in_gt else "r"
@@ -393,7 +396,7 @@ def _node_aura_weights(matrix, a_nodes, s_nodes, gt_pairs, mode):
     if mode == "value":
         weights = norm
     elif mode == "incorrect":
-        weights = np.where(in_gt_mat, 1.0 - norm, norm)
+        weights = np.where(in_gt_mat, 0.0, norm)
     else:  # "correct"
         weights = np.where(in_gt_mat, norm, 1.0 - norm)
 
@@ -495,6 +498,7 @@ _METRIC_ROW_SPEC = (
     ("tn",          "TN"),
     ("gt_total",    "GT pairs"),
     ("pred_total",  "Pred pairs"),
+    ("match_time",  "Match time (s)"),
 )
 
 
@@ -659,6 +663,7 @@ class GnnMatcher:
             model_save_path=model_save_path,
             device=self._device,
             in_dim=7,
+            inference_only=True,
         )
         self._pgm.load_best_model()
         self._model = self._pgm.model
@@ -1551,6 +1556,7 @@ class Dashboard(QMainWindow):
 
         esc = QShortcut(QKeySequence(Qt.Key_Escape), self)
         esc.activated.connect(self._collapse_expanded)
+        QApplication.instance().installEventFilter(self)
 
         # Controls grouped by scope: "General" affects every panel (A/S + all
         # combined views), "Matching" affects only the three bottom panels
@@ -1637,8 +1643,8 @@ class Dashboard(QMainWindow):
         self._highlight_mode_combo.setToolTip(
             "Correct: GT-true edges with value→1 and GT-false edges with "
             "value→0 are most visible (correct predictions stand out).\n"
-            "Incorrect: FN-like (GT-true with low value) and FP-like "
-            "(GT-false with high value) edges stand out instead.\n"
+            "Incorrect: only FP (GT-false pairs with high value) are shown in "
+            "red — GT-true pairs are hidden entirely.\n"
             "Value only: GT membership is ignored — every edge uses a single "
             "neutral color and transparency tracks the raw normalized matrix "
             "value."
@@ -1680,8 +1686,10 @@ class Dashboard(QMainWindow):
         self._current_a_nodes = []
         self._current_s_nodes = []
         self._current_env = None
+        self._match_time_s = None
         self._shared_view = None  # (elev, azim) propagated across all panels
         self._gt_editor_key = None  # guards GT editor rebuilds in _refresh_combined
+        self._undo_stack = []
 
         # Debounce timer: a spinbox drag or a burst of toggles coalesces into
         # one refresh ~120 ms after the user pauses. Connections go through
@@ -1706,9 +1714,12 @@ class Dashboard(QMainWindow):
     def _on_env_change(self, env_name):
         if not env_name:
             return
+        self._undo_stack.clear()
         try:
             a, s, gt = load_env_graphs(env_name)
+            _t0 = time.perf_counter()
             pred, ints, a_nodes, s_nodes = self._matcher.match(a, s)
+            self._match_time_s = time.perf_counter() - _t0
         except Exception as exc:
             print(
                 f"[ERROR] Failed to load environment '{env_name}': {exc}",
@@ -1812,6 +1823,7 @@ class Dashboard(QMainWindow):
         for grp_type in list(igv.active_groups.keys()):
             igv.active_groups[grp_type] = set()
 
+        pre = self._snapshot()
         changed = False
 
         # 2. Selection-toggle path (remove / explicit toggle).
@@ -1843,6 +1855,7 @@ class Dashboard(QMainWindow):
                 changed = True
 
         if changed:
+            self._push_undo(pre)
             # Rebuilds GT editor + viz from _current_gt — manual_edge entries
             # disappear from the IGV graph and reappear as proper GT edges.
             self._refresh_combined()
@@ -1886,6 +1899,7 @@ class Dashboard(QMainWindow):
         if abs(align_dx) < 1e-9 and abs(align_dy) < 1e-9:
             return  # already aligned, nothing to do
 
+        self._push_undo()
         # Shift _current_s features permanently.
         _transform_b_inplace(self._current_s, align_dx, align_dy, 0.0)
 
@@ -1918,6 +1932,203 @@ class Dashboard(QMainWindow):
         connect signals directly to `QTimer.start`."""
         self._refresh_timer.start()
 
+    _UNDO_LIMIT = 50
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.KeyPress:
+            print(f"[UNDO DBG] KeyPress key={event.key():#x} modifiers={int(event.modifiers()):#x}")
+            if event.key() == Qt.Key_Z and event.modifiers() & Qt.ShiftModifier:
+                print(f"[UNDO DBG] Shift+Z intercepted, stack size={len(self._undo_stack)}")
+                self._on_undo()
+                return True
+            if event.key() == Qt.Key_C and event.modifiers() & Qt.ShiftModifier:
+                for sp in (self._a_panel, self._s_panel):
+                    ep = sp.editor_panel
+                    if sp.is_editor and ep._canvas is not None and ep._canvas is obj and sp.editor is not None:
+                        self._split_selected_plane(sp.editor)
+                        return True
+        return False
+
+    # ── Plane split (Shift+C) ─────────────────────────────────────────────────
+
+    _SPLIT_GAP = 0.01  # gap between the two sub-planes so they don't share an endpoint
+
+    def _split_selected_plane(self, igv):
+        """Split the single selected Line node at its midpoint into two sub-planes.
+
+        Sub-plane 1 : original start → midpoint
+        Sub-plane 2 : (midpoint + gap * tangent) → original end
+
+        Both sub-planes inherit all attributes of the original (normal, type,
+        viz style, edges to neighbours). Their center is computed as the
+        midpoint of their own start/end points along the tangent direction.
+        """
+        # ── 1. Identify the selected node ────────────────────────────────────
+        all_selected = set()
+        for grp in igv.active_groups.values():
+            all_selected.update(grp)
+        if len(all_selected) != 1:
+            print(f"[SPLIT] need exactly 1 node selected, got {len(all_selected)}")
+            return
+
+        node_id = next(iter(all_selected))
+        nx_g = igv.full_graph.graph if hasattr(igv.full_graph, "graph") else igv.full_graph
+
+        if node_id not in nx_g.nodes:
+            print(f"[SPLIT] node {node_id!r} not found in graph")
+            return
+
+        attrs = dict(nx_g.nodes[node_id])
+
+        # ── 2. Confirm Line type ──────────────────────────────────────────────
+        viz_type = attrs.get("viz_type") or (attrs.get("viz") or {}).get("type", "Point")
+        if viz_type != "Line":
+            print(f"[SPLIT] node {node_id!r} is '{viz_type}', not 'Line' — nothing to split")
+            return
+
+        # ── 3. Extract start / end points from limits ─────────────────────────
+        # limits lives in attrs["limits"], attrs["viz"]["limits"], or attrs["viz_data"]
+        limits = (
+            attrs.get("limits")
+            or (attrs.get("viz") or {}).get("limits")
+            or attrs.get("viz_data")
+        )
+        if limits is None:
+            print(f"[SPLIT] node {node_id!r} has no limits / viz_data")
+            return
+
+        lim = np.asarray(limits, dtype=float)
+        if lim.ndim < 2 or lim.shape[0] < 2:
+            print(f"[SPLIT] limits shape {lim.shape} is degenerate")
+            return
+
+        p_start = lim[0].copy()
+        p_end   = lim[-1].copy()
+
+        direction = p_end - p_start
+        dir_len   = float(np.linalg.norm(direction))
+        if dir_len < 1e-9:
+            print("[SPLIT] plane has zero length — nothing to split")
+            return
+
+        tangent  = direction / dir_len          # unit vector along the plane
+        midpoint = (p_start + p_end) / 2.0
+
+        # ── 4. Compute geometry for each half ─────────────────────────────────
+        # Sub-plane 1
+        lim1    = np.array([p_start, midpoint])
+        center1 = (p_start + midpoint) / 2.0   # midpoint of the first half
+
+        # Sub-plane 2 — start slightly past the midpoint to avoid overlap
+        p2_start = midpoint + self._SPLIT_GAP * tangent
+        lim2     = np.array([p2_start, p_end])
+        center2  = (p2_start + p_end) / 2.0    # midpoint of the second half
+
+        # ── 5. Build attribute dicts for the two new nodes ────────────────────
+        def _sub_attrs(lim_arr, c_arr):
+            sub = copy.deepcopy(attrs)
+            sub["limits"]   = lim_arr.tolist()
+            sub["center"]   = c_arr.tolist()
+            sub["viz_data"] = lim_arr.tolist()
+            nested = sub.get("viz")
+            if isinstance(nested, dict):
+                nested = dict(nested)
+                nested["limits"] = lim_arr.tolist()
+                nested["center"] = c_arr.tolist()
+                sub["viz"] = nested
+            return sub
+
+        attrs1 = _sub_attrs(lim1, center1)
+        attrs2 = _sub_attrs(lim2, center2)
+
+        # ── 6. Generate two unique integer node IDs ───────────────────────────
+        existing = set(nx_g.nodes())
+        int_ids  = {int(n) for n in existing if isinstance(n, int)}
+        next_id  = max(int_ids, default=0) + 1
+        while next_id in existing:
+            next_id += 1
+        new_id1 = next_id
+        next_id += 1
+        while next_id in existing:
+            next_id += 1
+        new_id2 = next_id
+
+        # ── 7. Swap original node for the two halves ──────────────────────────
+        neighbors = [(nbr, dict(nx_g[node_id][nbr])) for nbr in nx_g.neighbors(node_id)]
+        nx_g.remove_node(node_id)
+        nx_g.add_node(new_id1, **attrs1)
+        nx_g.add_node(new_id2, **attrs2)
+        for nbr, edata in neighbors:
+            if nbr in nx_g.nodes:
+                nx_g.add_edge(new_id1, nbr, **edata)
+                nx_g.add_edge(new_id2, nbr, **edata)
+
+        # ── 8. Clear selection and redraw ─────────────────────────────────────
+        for key in list(igv.active_groups.keys()):
+            igv.active_groups[key] = set()
+        igv.draw_graph()
+        print(f"[SPLIT] {node_id!r} → {new_id1} (start→mid) + {new_id2} (mid+gap→end)")
+
+    def _snapshot(self):
+        return {
+            "gt": set(self._current_gt),
+            "a": copy.deepcopy(self._current_a),
+            "s": copy.deepcopy(self._current_s),
+            "pred": set(self._current_pred),
+            "ints": (
+                {k: np.copy(v) for k, v in self._current_ints.items()}
+                if self._current_ints is not None else None
+            ),
+            "a_nodes": list(self._current_a_nodes),
+            "s_nodes": list(self._current_s_nodes),
+            "dx": self._dx_spin.value(),
+            "dy": self._dy_spin.value(),
+            "theta": self._theta_spin.value(),
+        }
+
+    def _push_undo(self, snapshot=None):
+        try:
+            self._undo_stack.append(snapshot if snapshot is not None else self._snapshot())
+            if len(self._undo_stack) > self._UNDO_LIMIT:
+                self._undo_stack.pop(0)
+            print(f"[UNDO DBG] pushed, stack size={len(self._undo_stack)}")
+        except Exception as exc:
+            print(f"[UNDO DBG] push FAILED: {exc}")
+
+    def _on_undo(self):
+        if not self._undo_stack:
+            print("[UNDO DBG] _on_undo called but stack is empty")
+            return
+        print(f"[UNDO DBG] restoring from stack (size was {len(self._undo_stack)})")
+        snap = self._undo_stack.pop()
+        try:
+            self._current_gt = snap["gt"]
+            self._current_a = snap["a"]
+            self._current_s = snap["s"]
+            self._current_pred = snap["pred"]
+            self._current_ints = snap["ints"]
+            self._current_a_nodes = snap["a_nodes"]
+            self._current_s_nodes = snap["s_nodes"]
+            blockers = [
+                QSignalBlocker(self._dx_spin),
+                QSignalBlocker(self._dy_spin),
+                QSignalBlocker(self._theta_spin),
+            ]
+            self._dx_spin.setValue(snap["dx"])
+            self._dy_spin.setValue(snap["dy"])
+            self._theta_spin.setValue(snap["theta"])
+            del blockers
+            self._gt_editor_key = None  # force GT editor rebuild
+            self._render_side_panel(self._a_panel, self._current_a, "A")
+            self._render_side_panel(self._s_panel, self._current_s, "S")
+            self._refresh_combined()
+            self._apply_shared_view()
+            print("[UNDO DBG] restore complete")
+        except Exception as exc:
+            import traceback
+            print(f"[UNDO DBG] restore FAILED: {exc}")
+            traceback.print_exc()
+
     def _on_recompute(self):
         """Pull the edited graphs out of the editor panels and re-run the
         dry-run matcher on them, then refresh GT / dry-run / affinity /
@@ -1937,6 +2148,7 @@ class Dashboard(QMainWindow):
         new_s = ed_s.full_graph if ed_s is not None else self._current_s
         if new_a is None or new_s is None:
             return
+        self._push_undo()
         # Always force a fresh GNN forward pass. The cache key only covers
         # (name, |V|, |E|), so feature-only changes (e.g. "Align centers",
         # node position edits) would otherwise return stale cached results.
@@ -1960,7 +2172,9 @@ class Dashboard(QMainWindow):
 
         # _current_s already carries aligned features if "Align centers" was
         # pressed before Recompute — no additional transform needed here.
+        _t0 = time.perf_counter()
         pred, ints, a_nodes, s_nodes = self._matcher.match(self._current_a, self._current_s)
+        self._match_time_s = time.perf_counter() - _t0
         self._current_pred = pred
         self._current_ints = ints
         self._current_a_nodes = a_nodes
@@ -2057,13 +2271,19 @@ class Dashboard(QMainWindow):
             ]
             aura_color = _VALUE_ONLY_COLOR
             aura_label = "node aura (α∝mean value)"
-        else:
+        elif highlight_mode == "correct":
             gt_value_legend = [
-                _make_match_legend_proxy("green", "GT-true (α∝correctness)"),
-                _make_match_legend_proxy("red", "GT-false (α∝correctness)"),
+                _make_match_legend_proxy("green", "GT-true (α∝value)"),
+                _make_match_legend_proxy("red", "GT-false (α∝1−value)"),
             ]
-            aura_color = "green" if highlight_mode == "correct" else "red"
-            aura_label = f"node aura (α∝mean {highlight_mode})"
+            aura_color = "green"
+            aura_label = "node aura (α∝mean correct)"
+        else:  # incorrect
+            gt_value_legend = [
+                _make_match_legend_proxy("red", "FP — GT-false with high value (α∝value)"),
+            ]
+            aura_color = "red"
+            aura_label = "node aura (α∝mean FP weight)"
         show_aura = self._node_aura_cb.isChecked()
         aura_legend = (
             [_make_match_legend_proxy(aura_color, aura_label)] if show_aura else []
@@ -2199,6 +2419,7 @@ class Dashboard(QMainWindow):
         combined = _compute_classification_metrics(
             self._current_gt, self._current_pred, total_all,
         )
+        combined["match_time"] = self._match_time_s
         self._fill_metric_labels(self._metric_labels, combined)
 
         a_types = _node_type_map(self._current_a)
@@ -2227,7 +2448,9 @@ class Dashboard(QMainWindow):
     def _fill_metric_labels(labels, metrics):
         for key, label in labels.items():
             v = metrics.get(key)
-            if isinstance(v, float):
+            if v is None:
+                label.setText("—")
+            elif isinstance(v, float):
                 label.setText(f"{v:.3f}")
             else:
                 label.setText(str(v))

@@ -20,7 +20,7 @@ USE_PGM = True
 
 
 # Dataset selection — pick one: "synthetic", "msd", "real"
-DATASET = "real"
+DATASET = "msd"
 
 
 # MSD split to evaluate — pick one: "train", "valid", "test"
@@ -1011,9 +1011,6 @@ if DATASET == "msd":
 
     if USE_PGM:
         # ── PGM matcher path ──────────────────────────────────────────────────
-        # Reuse original graphs already loaded by the PGM model (avoids double memory cost)
-        original_graphs_raw = pgm_model_instance.original_graphs
-
 
         # ── Visualize first 20 full original graphs from the MSD test set ─────
         # for idx in range(min(20, len(msd_test_list))):
