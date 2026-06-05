@@ -882,32 +882,69 @@ class GraphMatchingNode(Node):
             self.get_logger().info(
                 f"[WALL-PAIR] 20 smallest: {[f'{d:.3f}' for d in pairwise_sorted[:20]]}")
 
-        # Step 3: connect rooms whose ws faces are close enough to form a physical wall.
-        # WALL_PAIR_THRESHOLD is the maximum center-to-center distance between the two
-        # opposing surfaces of a wall.  Tune it using the [WALL-PAIR] log lines above:
-        # there should be a clear gap between the small cluster of wall-pair distances
-        # and the next group of unrelated segment distances.
-        # Typical wall thickness in SLAM environments: 0.05 – 0.30 m.
-        WALL_PAIR_THRESHOLD = 1.0  # meters — adjust based on [WALL-PAIR] log output
+        # Step 3: connect rooms whose ws faces belong to the same physical wall.
+        #
+        # Check 1 (always): normals must be antiparallel — the two surfaces face each
+        #   other across a shared wall.
+        # Fast path (centroid dist ≤ WALL_PAIR_THRESHOLD): checks 2 and 3 skipped.
+        # Fallback (centroid dist > WALL_PAIR_THRESHOLD) — handles partial observations
+        #   where the observed centroid shifts away from the true wall centroid:
+        # Check 2: project both centers onto the normal axis through the world origin
+        #   and compare their scalar projections.  Two opposing faces of the same wall
+        #   are only wall-thickness apart along the normal regardless of how partial the
+        #   observation is, so |proj_i - proj_j| must stay within WALL_NORMAL_DIST_THRESHOLD.
+        # Check 3: project both segment endpoints onto the tangent axis and require at
+        #   least 1 % overlap of the shorter segment — they must share physical extent
+        #   along the wall surface.
+        WALL_PAIR_THRESHOLD        = 1.0   # meters — fast-path centroid distance
+        WALL_NORMAL_DIST_THRESHOLD = 0.5   # meters — max separation along wall normal
+
+        def _tangent_overlap_ratio(lims_a, lims_b, tangent_2d):
+            """Overlap / min-segment-length for projections of two segments onto tangent_2d."""
+            t = tangent_2d[:2]
+            pa = sorted([float(np.dot(np.array(ep[:2]), t)) for ep in lims_a])
+            pb = sorted([float(np.dot(np.array(ep[:2]), t)) for ep in lims_b])
+            overlap = max(0.0, min(pa[1], pb[1]) - max(pa[0], pb[0]))
+            min_len = min(pa[1] - pa[0], pb[1] - pb[0])
+            if min_len < 1e-6:
+                return 0.0
+            return overlap / min_len
 
         for i in range(len(ws_ids_list)):
             for j in range(i + 1, len(ws_ids_list)):
                 sid_i = ws_ids_list[i]
                 sid_j = ws_ids_list[j]
 
-                dist = float(np.linalg.norm(ws_center_map[sid_i] - ws_center_map[sid_j]))
-                if dist > WALL_PAIR_THRESHOLD:
-                    continue
-
-                # The two faces of a physical wall have roughly opposite normals.
-                # Skip pairs that point in the same (or perpendicular) direction.
+                # Check 1: normals must be antiparallel
                 ni = ws_normal_map[sid_i]
                 nj = ws_normal_map[sid_j]
                 ni_mag = np.linalg.norm(ni)
                 nj_mag = np.linalg.norm(nj)
-                if ni_mag > 1e-6 and nj_mag > 1e-6:
-                    dot = float(np.dot(ni / ni_mag, nj / nj_mag))
-                    if dot > 0.0:  # same half-space → not opposing faces of a wall
+                if ni_mag < 1e-6 or nj_mag < 1e-6:
+                    continue
+                ni_unit = ni / ni_mag
+                if float(np.dot(ni_unit, nj / nj_mag)) > 0.0:
+                    continue  # same half-space → not opposing faces of a wall
+
+                center_i = ws_center_map[sid_i]
+                center_j = ws_center_map[sid_j]
+                dist = float(np.linalg.norm(center_i - center_j))
+
+                if dist > WALL_PAIR_THRESHOLD:
+                    # Check 2: scalar projections of each center onto the normal axis
+                    # through the world origin must be within wall thickness
+                    proj_i = float(np.dot(center_i, ni_unit))
+                    proj_j = float(np.dot(center_j, ni_unit))
+                    if abs(proj_i - proj_j) > WALL_NORMAL_DIST_THRESHOLD:
+                        continue
+
+                    # Check 3: segment projections onto the tangent must overlap ≥ 1 %
+                    lims_i = G.graph.nodes[sid_i].get("limits")
+                    lims_j = G.graph.nodes[sid_j].get("limits")
+                    if lims_i is None or lims_j is None:
+                        continue
+                    tangent = np.array([-ni_unit[1], ni_unit[0]])
+                    if _tangent_overlap_ratio(lims_i, lims_j, tangent) < 0.01:
                         continue
 
                 room_i = ws_to_room.get(sid_i)
@@ -1858,7 +1895,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 
