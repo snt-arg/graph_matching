@@ -882,22 +882,53 @@ class GraphMatchingNode(Node):
             self.get_logger().info(
                 f"[WALL-PAIR] 20 smallest: {[f'{d:.3f}' for d in pairwise_sorted[:20]]}")
 
+        # Step 2b: log normal-axis projection distance distribution to calibrate WALL_NORMAL_DIST_THRESHOLD.
+        # Only antiparallel pairs are considered (same filter as Check 1) since those are the only
+        # candidates that will ever reach Check 2.  Look for the same cluster-gap pattern as [WALL-PAIR]:
+        # genuine wall-face pairs should cluster at small values (wall thickness); unrelated parallel
+        # walls that happen to have opposite normals should appear at larger values.
+        normal_proj_dists = []
+        for i in range(len(ws_ids_list)):
+            for j in range(i + 1, len(ws_ids_list)):
+                ni_tmp = ws_normal_map[ws_ids_list[i]]
+                nj_tmp = ws_normal_map[ws_ids_list[j]]
+                ni_mag_tmp = np.linalg.norm(ni_tmp)
+                nj_mag_tmp = np.linalg.norm(nj_tmp)
+                if ni_mag_tmp < 1e-6 or nj_mag_tmp < 1e-6:
+                    continue
+                ni_unit_tmp = ni_tmp / ni_mag_tmp
+                if float(np.dot(ni_unit_tmp, nj_tmp / nj_mag_tmp)) > 0.0:
+                    continue  # same half-space — would be rejected by Check 1
+                ci = ws_center_map[ws_ids_list[i]]
+                cj = ws_center_map[ws_ids_list[j]]
+                proj_i_tmp = float(np.dot(ci, ni_unit_tmp))
+                proj_j_tmp = float(np.dot(cj, ni_unit_tmp))
+                normal_proj_dists.append(abs(proj_i_tmp - proj_j_tmp))
+        if normal_proj_dists:
+            normal_proj_sorted = sorted(normal_proj_dists)
+            self.get_logger().info(
+                f"[NORMAL-PROJ] {len(normal_proj_dists)} antiparallel pairs | "
+                f"min={normal_proj_sorted[0]:.3f}  "
+                f"p10={np.percentile(normal_proj_dists, 10):.3f}  "
+                f"p25={np.percentile(normal_proj_dists, 25):.3f}  "
+                f"median={np.percentile(normal_proj_dists, 50):.3f}  "
+                f"p75={np.percentile(normal_proj_dists, 75):.3f}  "
+                f"max={normal_proj_sorted[-1]:.3f}")
+            self.get_logger().info(
+                f"[NORMAL-PROJ] 20 smallest: {[f'{d:.3f}' for d in normal_proj_sorted[:20]]}")
+
         # Step 3: connect rooms whose ws faces belong to the same physical wall.
         #
         # Check 1 (always): normals must be antiparallel — the two surfaces face each
         #   other across a shared wall.
-        # Fast path (centroid dist ≤ WALL_PAIR_THRESHOLD): checks 2 and 3 skipped.
-        # Fallback (centroid dist > WALL_PAIR_THRESHOLD) — handles partial observations
-        #   where the observed centroid shifts away from the true wall centroid:
-        # Check 2: project both centers onto the normal axis through the world origin
-        #   and compare their scalar projections.  Two opposing faces of the same wall
-        #   are only wall-thickness apart along the normal regardless of how partial the
-        #   observation is, so |proj_i - proj_j| must stay within WALL_NORMAL_DIST_THRESHOLD.
-        # Check 3: project both segment endpoints onto the tangent axis and require at
-        #   least 1 % overlap of the shorter segment — they must share physical extent
+        # Check 2 (always): project both centers onto the normal axis through the world
+        #   origin and compare their scalar projections.  Two opposing faces of the same
+        #   wall are only wall-thickness apart along the normal regardless of how partial
+        #   the observation is, so |proj_i - proj_j| must stay within WALL_NORMAL_DIST_THRESHOLD.
+        # Check 3 (always): project both segment endpoints onto the tangent axis and require
+        #   at least 1 % overlap of the shorter segment — they must share physical extent
         #   along the wall surface.
-        WALL_PAIR_THRESHOLD        = 1.0   # meters — fast-path centroid distance
-        WALL_NORMAL_DIST_THRESHOLD = 0.5   # meters — max separation along wall normal
+        WALL_NORMAL_DIST_THRESHOLD = 0.25   # meters — max separation along wall normal
 
         def _tangent_overlap_ratio(lims_a, lims_b, tangent_2d):
             """Overlap / min-segment-length for projections of two segments onto tangent_2d."""
@@ -926,26 +957,23 @@ class GraphMatchingNode(Node):
                 if float(np.dot(ni_unit, nj / nj_mag)) > 0.0:
                     continue  # same half-space → not opposing faces of a wall
 
+                # Check 2: scalar projections of each center onto the normal axis
+                # through the world origin must be within wall thickness
                 center_i = ws_center_map[sid_i]
                 center_j = ws_center_map[sid_j]
-                dist = float(np.linalg.norm(center_i - center_j))
+                proj_i = float(np.dot(center_i, ni_unit))
+                proj_j = float(np.dot(center_j, ni_unit))
+                if abs(proj_i - proj_j) > WALL_NORMAL_DIST_THRESHOLD:
+                    continue
 
-                if dist > WALL_PAIR_THRESHOLD:
-                    # Check 2: scalar projections of each center onto the normal axis
-                    # through the world origin must be within wall thickness
-                    proj_i = float(np.dot(center_i, ni_unit))
-                    proj_j = float(np.dot(center_j, ni_unit))
-                    if abs(proj_i - proj_j) > WALL_NORMAL_DIST_THRESHOLD:
-                        continue
-
-                    # Check 3: segment projections onto the tangent must overlap ≥ 1 %
-                    lims_i = G.graph.nodes[sid_i].get("limits")
-                    lims_j = G.graph.nodes[sid_j].get("limits")
-                    if lims_i is None or lims_j is None:
-                        continue
-                    tangent = np.array([-ni_unit[1], ni_unit[0]])
-                    if _tangent_overlap_ratio(lims_i, lims_j, tangent) < 0.01:
-                        continue
+                # Check 3: segment projections onto the tangent must overlap ≥ 1 %
+                lims_i = G.graph.nodes[sid_i].get("limits")
+                lims_j = G.graph.nodes[sid_j].get("limits")
+                if lims_i is None or lims_j is None:
+                    continue
+                tangent = np.array([-ni_unit[1], ni_unit[0]])
+                if _tangent_overlap_ratio(lims_i, lims_j, tangent) < 0.01:
+                    continue
 
                 room_i = ws_to_room.get(sid_i)
                 room_j = ws_to_room.get(sid_j)
@@ -1895,7 +1923,7 @@ def main(args=None):
     graph_matching_node = GraphMatchingNode()
 
     # Debug mode: load saved graphs and run matching without waiting for ROS messages
-    debug_offline = True  # Set to True to enable offline debug mode with saved pickles
+    debug_offline = False  # Set to True to enable offline debug mode with saved pickles
     if debug_offline:
         graph_matching_node.load_all_pickle_graphs()
 
