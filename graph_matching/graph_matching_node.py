@@ -897,8 +897,10 @@ class GraphMatchingNode(Node):
                 if ni_mag_tmp < 1e-6 or nj_mag_tmp < 1e-6:
                     continue
                 ni_unit_tmp = ni_tmp / ni_mag_tmp
-                if float(np.dot(ni_unit_tmp, nj_tmp / nj_mag_tmp)) > 0.0:
-                    continue  # same half-space — would be rejected by Check 1
+                ANTIPARALLEL_DOT_EPSILON = 0.1  # allow up to ~26° deviation from perfect antiparallel
+                dot_tmp = float(np.dot(ni_unit_tmp, nj_tmp / nj_mag_tmp))
+                if dot_tmp > -(1.0 - ANTIPARALLEL_DOT_EPSILON):
+                    continue  # dot must be in [-1, -1+epsilon] to be sufficiently antiparallel
                 ci = ws_center_map[ws_ids_list[i]]
                 cj = ws_center_map[ws_ids_list[j]]
                 proj_i_tmp = float(np.dot(ci, ni_unit_tmp))
