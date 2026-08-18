@@ -191,11 +191,21 @@ def _y_center_and_radius(g):
     return _axis_center_and_radius(g, 1)
 
 
-def _transform_b_inplace(b_graph, dx, dy, theta_rad):
-    """Rotate B around its own center then translate by (dx, dy) in XY."""
-    cx, _ = _x_center_and_radius(b_graph)
-    cy, _ = _y_center_and_radius(b_graph)
-    c = np.array([cx, cy], dtype=float)
+def _transform_b_inplace(b_graph, dx, dy, theta_rad, pivot=None):
+    """Rotate B around ``pivot`` then translate by (dx, dy) in XY.
+
+    ``pivot`` defaults to B's own bounding-box center (the original
+    behavior — used by the Drift buttons, where any consistent pivot is
+    fine since the perturbation is artificial). Callers that need a
+    geometrically meaningful pivot (e.g. a GT-matched centroid — see
+    ``_gt_rigid_alignment``) pass it explicitly.
+    """
+    if pivot is None:
+        cx, _ = _x_center_and_radius(b_graph)
+        cy, _ = _y_center_and_radius(b_graph)
+        c = np.array([cx, cy], dtype=float)
+    else:
+        c = np.asarray(pivot, dtype=float)
     R = np.array(
         [
             [np.cos(theta_rad), -np.sin(theta_rad)],
@@ -235,13 +245,81 @@ def _initial_dx(a, s):
     return (a_cx + a_r + padding + s_r) - s_cx
 
 
-def _align_transform(a, s):
-    """(dx, dy) that snaps S's centroid onto A's centroid (graphs overlap)."""
-    a_cx, _ = _x_center_and_radius(a)
-    s_cx, _ = _x_center_and_radius(s)
-    a_cy, _ = _y_center_and_radius(a)
-    s_cy, _ = _y_center_and_radius(s)
-    return a_cx - s_cx, a_cy - s_cy
+def _gt_matched_points(a, s, gt_pairs):
+    """(a_pts, s_pts) — 2D centers of the GT-matched pairs present in both
+    graphs, aligned by index (row i of each is the same pair)."""
+    a_by_str = {str(n): n for n in a.graph.nodes()}
+    s_by_str = {str(n): n for n in s.graph.nodes()}
+    a_pts, s_pts = [], []
+    for ai, si in gt_pairs:
+        a_n = a_by_str.get(ai)
+        s_n = s_by_str.get(si)
+        if a_n is None or s_n is None:
+            continue
+        a_pts.append(np.asarray(a.graph.nodes[a_n]["center"], dtype=float)[:2])
+        s_pts.append(np.asarray(s.graph.nodes[s_n]["center"], dtype=float)[:2])
+    return np.array(a_pts), np.array(s_pts)
+
+
+def _gt_rigid_alignment(a, s, gt_pairs):
+    """Best-fit rigid transform (dx, dy, theta_deg, pivot) that aligns S onto
+    A, fit on the GT-matched pairs' actual node centers (2D Kabsch/Procrustes
+    rigid registration) rather than on the graphs' bounding boxes.
+
+    This distinction matters: S is often a *partial* observation of A (an
+    online SLAM session that never saw some of A's rooms), so the two whole-
+    graph bounding boxes can differ substantially even when the region they
+    both actually cover is already correctly registered. Using bounding-box
+    centroids as the alignment target (the original implementation) then
+    drags that already-correct overlap *out* of alignment — confirmed on
+    ``47_basement``, where S only covers y ∈ [2.8, 11.0] against A's
+    y ∈ [-2.1, 10.9]: bbox-alignment shifted S by ~2.5 units and the mean
+    GT-pair position error went from 0.21 to 2.47. Fitting on GT-matched
+    pairs directly is robust to that (same case: 0.21 → 0.16).
+
+    Returns ``(dx, dy, theta_deg, pivot)`` — ``pivot`` is S's GT-matched
+    centroid; pass it straight through to
+    ``_transform_b_inplace(s, dx, dy, deg2rad(theta_deg), pivot=pivot)``.
+    Falls back to the whole-graph bounding-box centroid (translation only,
+    ``pivot=None``, no rotation) when fewer than 2 GT pairs have both
+    endpoints present — Kabsch needs at least 2 points to fix a rotation,
+    and this keeps the button useful on environments with no/thin GT.
+    """
+    a_pts, s_pts = _gt_matched_points(a, s, gt_pairs)
+
+    if len(a_pts) < 2:
+        a_cx, _ = _x_center_and_radius(a)
+        s_cx, _ = _x_center_and_radius(s)
+        a_cy, _ = _y_center_and_radius(a)
+        s_cy, _ = _y_center_and_radius(s)
+        return a_cx - s_cx, a_cy - s_cy, 0.0, None
+
+    a_centroid = a_pts.mean(axis=0)
+    s_centroid = s_pts.mean(axis=0)
+    h = (s_pts - s_centroid).T @ (a_pts - a_centroid)
+    u, _, vt = np.linalg.svd(h)
+    d = np.sign(np.linalg.det(vt.T @ u.T)) or 1.0
+    r = vt.T @ np.diag([1.0, d]) @ u.T
+    theta_deg = float(np.degrees(np.arctan2(r[1, 0], r[0, 0])))
+    dx, dy = (a_centroid - s_centroid).tolist()
+    return dx, dy, theta_deg, s_centroid
+
+
+def _relative_transform(a, s, gt_pairs):
+    """S's current (disp_x, disp_y, disp_theta_deg) displacement from A.
+
+    Measured the same way "Align centers + rot" corrects it — a Kabsch fit
+    on the GT-matched pairs' actual positions, see ``_gt_rigid_alignment``
+    — so this reads ~(0, 0, 0) right after Align (not exactly, since Align
+    only pivots the GT-matched centroid, while the combined-panel spinboxes
+    it compensates still pivot on S's bounding box — see the note in
+    ``_on_align_graphs``) and tracks Drift X / Drift Y / Drift 15° exactly
+    (each click adds its step directly to the corresponding value here).
+    ``_gt_rigid_alignment`` returns the *correction* needed to align S onto
+    A; the actual displacement is its inverse.
+    """
+    dx, dy, theta_deg, _pivot = _gt_rigid_alignment(a, s, gt_pairs)
+    return -dx, -dy, -theta_deg
 
 
 def _combine_graphs(a, s, dx, dy, theta_deg, edge_style_fn):
@@ -501,16 +579,26 @@ _METRIC_ROW_SPEC = (
     ("match_time",  "Match time (s)"),
 )
 
+# Rows for the "Relative graph informations" box: S's current displacement
+# from A, in the same sign convention as the Drift X / Drift Y / Drift 15°
+# buttons (drift step +N ⇒ this reads +N; Align centers + rot ⇒ this reads
+# ~0 on all three).
+_RELATIVE_INFO_ROW_SPEC = (
+    ("disp_x",     "Displacement X"),
+    ("disp_y",     "Displacement Y"),
+    ("disp_theta", "Angular displacement"),
+)
 
-def _build_metric_rows(parent_layout):
-    """Append metric label/value rows to ``parent_layout``.
+
+def _build_metric_rows(parent_layout, spec=_METRIC_ROW_SPEC):
+    """Append label/value rows to ``parent_layout``, one per ``spec`` entry.
 
     Returns ``{key: QLabel}`` so callers can mutate values in place. Each row
     is its own widget so the labels can sit on the left and the values
     right-aligned via a stretch.
     """
     labels = {}
-    for key, text in _METRIC_ROW_SPEC:
+    for key, text in spec:
         row = QWidget()
         rl = QHBoxLayout(row)
         rl.setContentsMargins(0, 0, 0, 0)
@@ -1511,6 +1599,18 @@ class Dashboard(QMainWindow):
         self._metric_labels = _build_metric_rows(_combined_layout)
         _mc_layout.addWidget(self._metrics_box)
 
+        # S's current displacement from A — dx/dy/rotation, live-tracking
+        # whatever "Align centers + rot" / "Drift X/Y/15°" have applied so
+        # far. Same row-builder as Metrics, different spec.
+        self._relative_box = QGroupBox("Relative graph informations")
+        _relative_layout = QVBoxLayout(self._relative_box)
+        _relative_layout.setContentsMargins(8, 6, 8, 6)
+        _relative_layout.setSpacing(2)
+        self._relative_labels = _build_metric_rows(
+            _relative_layout, _RELATIVE_INFO_ROW_SPEC
+        )
+        _mc_layout.addWidget(self._relative_box)
+
         # Per-edge-type sections. Each one is a collapsible header + metric
         # rows; refs to value labels live in `_metric_labels_by_type[key]`
         # so `_update_metrics` can fill them. Collapsed by default so the
@@ -1591,15 +1691,59 @@ class Dashboard(QMainWindow):
         general_row.addWidget(self._theta_spin)
 
         general_row.addSpacing(6)
-        self._align_btn = QPushButton("Align centers")
+        self._align_btn = QPushButton("Align centers + rot")
         self._align_btn.setToolTip(
-            "Stores the centroid-to-centroid offset for S internally. "
-            "Nothing changes visually — the display layout is untouched. "
-            "Press Recompute afterwards to re-run the matcher with S's "
-            "features shifted onto A's origin."
+            "Fits a rigid transform (translation + rotation) on the "
+            "GT-matched pairs' actual positions and applies it to S "
+            "internally — robust to S only partially overlapping A, unlike "
+            "a plain bounding-box centroid. The combined-panel display is "
+            "only approximately compensated when rotating (small visual "
+            "jump possible) — press Recompute afterwards to re-run the "
+            "matcher on the aligned S. Falls back to bounding-box "
+            "translation only if fewer than 2 GT pairs are loaded."
         )
         self._align_btn.clicked.connect(self._on_align_graphs)
         general_row.addWidget(self._align_btn)
+
+        general_row.addSpacing(12)
+        general_row.addWidget(QLabel("Drift step:"))
+        self._drift_step_spin = QDoubleSpinBox()
+        self._drift_step_spin.setRange(0.01, 100.0)
+        self._drift_step_spin.setDecimals(2)
+        self._drift_step_spin.setSingleStep(0.1)
+        self._drift_step_spin.setValue(0.5)
+        self._drift_step_spin.setToolTip(
+            "Step size in meters (same coordinate units as the X/Y spinboxes "
+            "above) used by the Drift X / Drift Y buttons."
+        )
+        general_row.addWidget(self._drift_step_spin)
+
+        self._drift_x_btn = QPushButton("Drift X")
+        self._drift_x_btn.setToolTip(
+            "Permanently shift S along X by the drift step (accumulates on "
+            "every click). Unlike the X spinbox above, this actually moves "
+            "S's data — the spinboxes are compensated so the display doesn't "
+            "jump — so Recompute lets you probe how far the matcher "
+            "tolerates translation drift."
+        )
+        self._drift_x_btn.clicked.connect(self._on_drift_x)
+        general_row.addWidget(self._drift_x_btn)
+
+        self._drift_y_btn = QPushButton("Drift Y")
+        self._drift_y_btn.setToolTip(
+            "Permanently shift S along Y by the drift step (accumulates on "
+            "every click). Same mechanism as Drift X, along the Y axis."
+        )
+        self._drift_y_btn.clicked.connect(self._on_drift_y)
+        general_row.addWidget(self._drift_y_btn)
+
+        self._drift_rot_btn = QPushButton("Drift 15°")
+        self._drift_rot_btn.setToolTip(
+            "Permanently rotate S by 15° about its own centroid (accumulates "
+            "on every click). Same mechanism as Drift X/Y, for rotation."
+        )
+        self._drift_rot_btn.clicked.connect(self._on_drift_rotate)
+        general_row.addWidget(self._drift_rot_btn)
 
         general_row.addSpacing(12)
         self._node_ids_cb = QCheckBox("Show node IDs")
@@ -1885,32 +2029,57 @@ class Dashboard(QMainWindow):
             )
 
     def _on_align_graphs(self):
-        """Shift S's features so its centroid overlaps A's centroid.
+        """Shift + rotate S so it overlaps A, fit on GT-matched pairs'
+        actual positions (Kabsch/Procrustes — see ``_gt_rigid_alignment``).
+
+        This is deliberately *not* a bounding-box centroid: S is often a
+        partial observation of A, and bbox-alignment would drag an already-
+        correct overlap out of alignment whenever S doesn't cover all of
+        A's extent (falls back to bbox translation-only if fewer than 2 GT
+        pairs are usable — see ``_gt_rigid_alignment``'s docstring).
 
         ``_current_s`` is mutated in-place, then the visualization spinboxes
         are compensated by the same delta so the combined panels (GT, dry-run,
-        etc.) continue to show A and S side-by-side — only the S standalone
-        panel (and its editor) will reflect the translated graph. Press
-        Recompute afterwards to re-run the matcher on the aligned S.
+        etc.) continue to show A and S roughly in place — only the S
+        standalone panel (and its editor) will reflect the aligned graph.
+        Note the compensation is only approximate when a rotation is
+        involved: the combined-panel transform pivots on S's *bounding-box*
+        center, not the GT-matched centroid used here, so a small visual
+        jump in the combined panels is expected — the underlying data fed
+        to the matcher is exactly aligned regardless. Press Recompute
+        afterwards to re-run the matcher on the aligned S.
         """
         if self._current_a is None or self._current_s is None:
             return
-        align_dx, align_dy = _align_transform(self._current_a, self._current_s)
-        if abs(align_dx) < 1e-9 and abs(align_dy) < 1e-9:
+        align_dx, align_dy, align_theta, align_pivot = _gt_rigid_alignment(
+            self._current_a, self._current_s, self._current_gt
+        )
+        if (abs(align_dx) < 1e-9 and abs(align_dy) < 1e-9
+                and abs(align_theta) < 1e-6):
             return  # already aligned, nothing to do
 
         self._push_undo()
-        # Shift _current_s features permanently.
-        _transform_b_inplace(self._current_s, align_dx, align_dy, 0.0)
+        # Shift + rotate _current_s features permanently.
+        _transform_b_inplace(
+            self._current_s, align_dx, align_dy, np.deg2rad(align_theta),
+            pivot=align_pivot,
+        )
 
         # Subtract the same delta from the visualization spinboxes so that
         # combined-panel displays (which add spinbox offset on top of features)
-        # continue to render S at the same screen position.
+        # continue to render S at roughly the same screen position (see the
+        # pivot-mismatch note in the docstring above).
         new_dx = self._dx_spin.value() - align_dx
         new_dy = self._dy_spin.value() - align_dy
-        blockers = [QSignalBlocker(self._dx_spin), QSignalBlocker(self._dy_spin)]
+        new_theta = (self._theta_spin.value() - align_theta + 180.0) % 360.0 - 180.0
+        blockers = [
+            QSignalBlocker(self._dx_spin),
+            QSignalBlocker(self._dy_spin),
+            QSignalBlocker(self._theta_spin),
+        ]
         self._dx_spin.setValue(new_dx)
         self._dy_spin.setValue(new_dy)
+        self._theta_spin.setValue(new_theta)
         del blockers
 
         # id(_current_s) is unchanged but its content changed — force GT editor
@@ -1925,6 +2094,64 @@ class Dashboard(QMainWindow):
         # _apply_shared_view is called at the tail of _refresh_combined.
         self._render_side_panel(self._s_panel, self._current_s, "S")
         self._refresh_combined()
+
+    def _apply_drift(self, dx, dy, theta_deg):
+        """Permanently perturb ``_current_s`` by (dx, dy, theta_deg).
+
+        Same mechanism as ``_on_align_graphs``: the matcher reads
+        ``_current_s`` directly and ignores the display-only B-transform
+        spinboxes, so injecting real drift means mutating the graph data in
+        place. The spinboxes are compensated by the inverse so the combined
+        panels keep showing S at the same screen position — Recompute then
+        reveals how the matcher copes with the drift actually fed to it.
+
+        Rotation pivots on S's GT-matched centroid — the same point
+        "Relative graph informations" measures displacement from (see
+        ``_relative_transform``) — so a rotation-only drift (Drift 15°)
+        shows up as a pure rotation there, with no spurious translation.
+        Pivoting on S's bounding-box center instead (the old behavior)
+        would rotate S about a different point than the one the readout
+        measures from, making "rotation only" visibly move disp_x/disp_y
+        too. Falls back to the bounding-box center if no GT pairs are
+        loaded (matches ``_gt_rigid_alignment``'s fallback).
+        """
+        if self._current_a is None or self._current_s is None:
+            return
+
+        self._push_undo()
+        _, s_pts = _gt_matched_points(self._current_a, self._current_s, self._current_gt)
+        pivot = s_pts.mean(axis=0) if len(s_pts) else None
+        _transform_b_inplace(
+            self._current_s, dx, dy, np.deg2rad(theta_deg), pivot=pivot
+        )
+
+        new_dx = self._dx_spin.value() - dx
+        new_dy = self._dy_spin.value() - dy
+        new_theta = (self._theta_spin.value() - theta_deg + 180.0) % 360.0 - 180.0
+        blockers = [
+            QSignalBlocker(self._dx_spin),
+            QSignalBlocker(self._dy_spin),
+            QSignalBlocker(self._theta_spin),
+        ]
+        self._dx_spin.setValue(new_dx)
+        self._dy_spin.setValue(new_dy)
+        self._theta_spin.setValue(new_theta)
+        del blockers
+
+        # id(_current_s) is unchanged but its content changed — force GT
+        # editor key to invalidate so the editor rebuilds with the new coords.
+        self._gt_editor_key = None
+        self._render_side_panel(self._s_panel, self._current_s, "S")
+        self._refresh_combined()
+
+    def _on_drift_x(self):
+        self._apply_drift(self._drift_step_spin.value(), 0.0, 0.0)
+
+    def _on_drift_y(self):
+        self._apply_drift(0.0, self._drift_step_spin.value(), 0.0)
+
+    def _on_drift_rotate(self):
+        self._apply_drift(0.0, 0.0, 15.0)
 
     def _kick_refresh(self, *_args):
         """Restart the debounce timer ignoring whatever payload the signal
@@ -2195,6 +2422,7 @@ class Dashboard(QMainWindow):
         a_nodes = self._current_a_nodes
         s_nodes = self._current_s_nodes
         self._update_metrics(a_nodes, s_nodes)
+        self._update_relative_info()
         dx, dy, theta = (
             self._dx_spin.value(),
             self._dy_spin.value(),
@@ -2454,6 +2682,18 @@ class Dashboard(QMainWindow):
                 label.setText(f"{v:.3f}")
             else:
                 label.setText(str(v))
+
+    def _update_relative_info(self):
+        """Refresh the "Relative graph informations" box — S's current
+        (x, y, rotation) displacement from A. See `_relative_transform`."""
+        disp_x, disp_y, disp_theta = _relative_transform(
+            self._current_a, self._current_s, self._current_gt
+        )
+        self._fill_metric_labels(self._relative_labels, {
+            "disp_x": disp_x,
+            "disp_y": disp_y,
+            "disp_theta": disp_theta,
+        })
 
     def _on_panel_view_changed(self, elev, azim):
         self._shared_view = (elev, azim)
