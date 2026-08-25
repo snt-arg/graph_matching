@@ -39,12 +39,17 @@ from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QDoubleSpinBox,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QListWidget,
+    QListWidgetItem,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QShortcut,
     QSizePolicy,
@@ -62,12 +67,16 @@ from situational_graphs_datasets.InteractiveGraphVisualizer import InteractiveGr
 GRAPH_DICTS_DIR = Path(__file__).parent / "graph_dicts"
 
 # ── Model selection ────────────────────────────────────────────────────────────
-# Edit this line to switch the GNN model used by the dashboard.
+# Startup default; can also be switched at runtime from the dashboard's
+# "Model" button (top bar) — see _MODEL_CONFIGS below for the full list.
 # Pick one:
 #   "ws_room_dropout_noise"               → MatchingModel_GATv2SinkhornTopK   (original, TopK)
 #   "ws_room_dropout_noise_inc_BCE"       → MatchingModel_MLPGATv2SinkhornBCE  (MLP + BCE)
 #   "ws_room_dropout_noise_inc_BCE_noMLP" → MatchingModel_GATv2Sinkhorn        (no MLP, BCE)
 #   "ws_room_dropout_noise_inc_WBCE"      → MatchingModel_MLPGATv2SinkhornWBCE (MLP + weighted BCE)
+#   "adj_glob_65"                         → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, adjacency + global-node ablation)
+#   "adj_no_glob_65"                      → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, adjacency, no global node)
+#   "fully_no_glob_65"                    → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, fully-connected, no global node)
 MODEL = "ws_room_dropout_noise_inc_WBCE"
 
 # Make the dry-run matcher importable: it lives in the sibling graph_matching_gnn repo.
@@ -313,7 +322,7 @@ def _relative_transform(a, s, gt_pairs):
     — so this reads ~(0, 0, 0) right after Align (not exactly, since Align
     only pivots the GT-matched centroid, while the combined-panel spinboxes
     it compensates still pivot on S's bounding box — see the note in
-    ``_on_align_graphs``) and tracks Drift X / Drift Y / Drift 15° exactly
+    ``_on_align_graphs``) and tracks Drift X / Drift Y / Drift 5° exactly
     (each click adds its step directly to the corresponding value here).
     ``_gt_rigid_alignment`` returns the *correction* needed to align S onto
     A; the actual displacement is its inverse.
@@ -580,7 +589,7 @@ _METRIC_ROW_SPEC = (
 )
 
 # Rows for the "Relative graph informations" box: S's current displacement
-# from A, in the same sign convention as the Drift X / Drift Y / Drift 15°
+# from A, in the same sign convention as the Drift X / Drift Y / Drift 5°
 # buttons (drift step +N ⇒ this reads +N; Align centers + rot ⇒ this reads
 # ~0 on all three).
 _RELATIVE_INFO_ROW_SPEC = (
@@ -1536,9 +1545,10 @@ class SwitchablePanel(QWidget):
 
 
 class Dashboard(QMainWindow):
-    def __init__(self, matcher):
+    def __init__(self, matcher, model_name=None):
         super().__init__()
         self._matcher = matcher
+        self._current_model_name = model_name
         self.setWindowTitle(f"Graph Matching Dashboard — {matcher.display}")
         self.resize(1500, 850)
 
@@ -1552,6 +1562,16 @@ class Dashboard(QMainWindow):
         envs = list_environments()
         self._combo.addItems(envs)
         top.addWidget(self._combo)
+
+        top.addSpacing(16)
+        top.addWidget(QLabel("Model:"))
+        self._model_btn = QPushButton(self._current_model_name or "dry-run")
+        self._model_btn.setToolTip(
+            "Choose which GNN checkpoint the matcher uses for matching."
+        )
+        self._model_btn.clicked.connect(self._on_select_model)
+        top.addWidget(self._model_btn)
+
         top.addStretch(1)
         root.addLayout(top)
 
@@ -1600,7 +1620,7 @@ class Dashboard(QMainWindow):
         _mc_layout.addWidget(self._metrics_box)
 
         # S's current displacement from A — dx/dy/rotation, live-tracking
-        # whatever "Align centers + rot" / "Drift X/Y/15°" have applied so
+        # whatever "Align centers + rot" / "Drift X/Y/1°" have applied so
         # far. Same row-builder as Metrics, different spec.
         self._relative_box = QGroupBox("Relative graph informations")
         _relative_layout = QVBoxLayout(self._relative_box)
@@ -1737,9 +1757,9 @@ class Dashboard(QMainWindow):
         self._drift_y_btn.clicked.connect(self._on_drift_y)
         general_row.addWidget(self._drift_y_btn)
 
-        self._drift_rot_btn = QPushButton("Drift 15°")
+        self._drift_rot_btn = QPushButton("Drift 5°")
         self._drift_rot_btn.setToolTip(
-            "Permanently rotate S by 15° about its own centroid (accumulates "
+            "Permanently rotate S by 5° about its own centroid (accumulates "
             "on every click). Same mechanism as Drift X/Y, for rotation."
         )
         self._drift_rot_btn.clicked.connect(self._on_drift_rotate)
@@ -2107,7 +2127,7 @@ class Dashboard(QMainWindow):
 
         Rotation pivots on S's GT-matched centroid — the same point
         "Relative graph informations" measures displacement from (see
-        ``_relative_transform``) — so a rotation-only drift (Drift 15°)
+        ``_relative_transform``) — so a rotation-only drift (Drift 5°)
         shows up as a pure rotation there, with no spurious translation.
         Pivoting on S's bounding-box center instead (the old behavior)
         would rotate S about a different point than the one the readout
@@ -2151,7 +2171,7 @@ class Dashboard(QMainWindow):
         self._apply_drift(0.0, self._drift_step_spin.value(), 0.0)
 
     def _on_drift_rotate(self):
-        self._apply_drift(0.0, 0.0, 15.0)
+        self._apply_drift(0.0, 0.0, 5.0)
 
     def _kick_refresh(self, *_args):
         """Restart the debounce timer ignoring whatever payload the signal
@@ -2355,6 +2375,55 @@ class Dashboard(QMainWindow):
             import traceback
             print(f"[UNDO DBG] restore FAILED: {exc}")
             traceback.print_exc()
+
+    def _on_select_model(self):
+        """Open a picker over ``_MODEL_CONFIGS`` and, on a different choice,
+        load that checkpoint and re-run matching so the panels reflect it."""
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Select model")
+        layout = QVBoxLayout(dlg)
+        layout.addWidget(QLabel("Choose the GNN checkpoint used for matching:"))
+
+        list_widget = QListWidget()
+        for name, (class_name, _) in _MODEL_CONFIGS.items():
+            item = QListWidgetItem(f"{name}  ({class_name})")
+            item.setData(Qt.UserRole, name)
+            list_widget.addItem(item)
+            if name == self._current_model_name:
+                list_widget.setCurrentItem(item)
+        list_widget.itemDoubleClicked.connect(dlg.accept)
+        layout.addWidget(list_widget)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        item = list_widget.currentItem()
+        if item is None:
+            return
+        selected = item.data(Qt.UserRole)
+        if selected == self._current_model_name:
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            new_matcher = _load_gnn_matcher(selected)
+        except RuntimeError as exc:
+            QApplication.restoreOverrideCursor()
+            QMessageBox.critical(self, "Failed to load model", str(exc))
+            return
+        QApplication.restoreOverrideCursor()
+
+        self._matcher = new_matcher
+        self._current_model_name = selected
+        self._model_btn.setText(selected)
+        self.setWindowTitle(f"Graph Matching Dashboard — {self._matcher.display}")
+
+        if self._current_a is not None and self._current_s is not None:
+            self._on_recompute()
 
     def _on_recompute(self):
         """Pull the edited graphs out of the editor panels and re-run the
@@ -2743,30 +2812,43 @@ _MODEL_CONFIGS = {
     "ws_room_dropout_noise_inc_BCE":       ("MatchingModel_MLPGATv2SinkhornBCE",  "ws_room_dropout_noise_inc"),
     "ws_room_dropout_noise_inc_BCE_noMLP": ("MatchingModel_GATv2Sinkhorn",        "ws_room_dropout_noise_inc"),
     "ws_room_dropout_noise_inc_WBCE":      ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    # WBCE trained on connectivity-ablation datasets (adjacency-restricted vs
+    # fully-connected, with/without a global node). None of these three ships
+    # a cached norm_stats.pt, so the "ws_room_dropout_noise_inc" data folder
+    # below is used to compute it on first load — same dataset as the WBCE
+    # model above; if that turns out to be the wrong dataset for these three,
+    # only the normalization stats are affected (fix by pointing the second
+    # tuple element at the correct preprocessed subfolder and deleting any
+    # stale norm_stats.pt these runs cache into their model folder).
+    "adj_glob_65":                         ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    "adj_no_glob_65":                      ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    "fully_no_glob_65":                    ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
 }
 _DEFAULT_DATA_EQUAL = _DEFAULT_GNN_PATH / "preprocessed" / "graph_matching" / "equal"
 
 
-def _build_matcher(args):
-    if args.dry_run:
-        return DryRunMatcher()
+def _load_gnn_matcher(model_name):
+    """Build a ``GnnMatcher`` for ``model_name``.
 
-    if MODEL not in _MODEL_CONFIGS:
-        raise SystemExit(
-            f"Unknown MODEL '{MODEL}'. Choose from: {list(_MODEL_CONFIGS.keys())}"
+    Shared by startup (``_build_matcher``) and the dashboard's runtime
+    "Select model" dialog. Raises ``RuntimeError`` (not ``SystemExit``) on
+    failure so the caller can decide how to surface it — a fatal exit at
+    startup, a message box once the window is already open.
+    """
+    if model_name not in _MODEL_CONFIGS:
+        raise RuntimeError(
+            f"Unknown MODEL '{model_name}'. Choose from: {list(_MODEL_CONFIGS.keys())}"
         )
-    model_class_name, data_subfolder = _MODEL_CONFIGS[MODEL]
-    model_save_path = _DEFAULT_GNN_PATH / "models" / "partial_graph_matching" / MODEL
+    model_class_name, data_subfolder = _MODEL_CONFIGS[model_name]
+    model_save_path = _DEFAULT_GNN_PATH / "models" / "partial_graph_matching" / model_name
     data_equal = _DEFAULT_DATA_EQUAL
     data_partial = _DEFAULT_GNN_PATH / "preprocessed" / "partial_graph_matching" / data_subfolder
 
     missing = [p for p in (model_save_path, data_equal, data_partial) if not p.exists()]
     if missing:
-        raise SystemExit(
+        raise RuntimeError(
             "Real-GNN mode selected but the following path(s) don't exist:\n"
             + "\n".join(f"  - {p}" for p in missing)
-            + "\n\nEither set MODEL to a valid entry in _MODEL_CONFIGS, or pass "
-            + "--dry-run to use the random dry-run matcher."
         )
     try:
         return GnnMatcher(
@@ -2775,10 +2857,25 @@ def _build_matcher(args):
             model_class_name=model_class_name,
         )
     except ImportError as exc:
-        raise SystemExit(
+        raise RuntimeError(
             f"GNN dependencies missing ({exc}).\n"
             "Install torch / torch_geometric, or pass --dry-run to use the "
             "random dry-run matcher."
+        ) from exc
+
+
+def _build_matcher(args):
+    """Returns ``(matcher, model_name)``; ``model_name`` is ``None`` in
+    dry-run mode (there's no checkpoint to name)."""
+    if args.dry_run:
+        return DryRunMatcher(), None
+    try:
+        return _load_gnn_matcher(MODEL), MODEL
+    except RuntimeError as exc:
+        raise SystemExit(
+            str(exc)
+            + "\n\nEither set MODEL to a valid entry in _MODEL_CONFIGS, or pass "
+            + "--dry-run to use the random dry-run matcher."
         ) from exc
 
 
@@ -2797,9 +2894,9 @@ def _parse_args(argv):
 
 def main():
     args = _parse_args(sys.argv[1:])
-    matcher = _build_matcher(args)
+    matcher, model_name = _build_matcher(args)
     app = QApplication(sys.argv[:1])  # Qt parses its own; pass only argv[0].
-    win = Dashboard(matcher=matcher)
+    win = Dashboard(matcher=matcher, model_name=model_name)
     win.show()
     sys.exit(app.exec_())
 
