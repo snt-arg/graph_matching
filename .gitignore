@@ -128,3 +128,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 core
+
+# Generated and exported matching environments (Prior.pkl + Online.pkl +
+# ground_truth.json triples). Reproducible from gen_rect_envs.py and
+# export_msd_samples.py, and large, so they stay out of the history.
+# The real scans under graph_dicts/ (47_*, CF12) remain tracked.
+graph_matching/Gen_Samples/
+graph_matching/Gen_Samples_clean/
+graph_matching/MSD_Samples/
+graph_matching/graph_dicts/GEN_*/
+graph_matching/graph_dicts/MSD_*/
