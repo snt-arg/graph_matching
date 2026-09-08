@@ -32,6 +32,7 @@ from matplotlib.colors import ListedColormap, to_rgba
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from mpl_toolkits.mplot3d import proj3d
 from PyQt5.QtCore import Qt, QEvent, QSignalBlocker, QTimer, pyqtSignal
 import matplotlib.backend_bases as _mpl_bb
 from PyQt5.QtGui import QKeySequence
@@ -45,6 +46,7 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -85,6 +87,8 @@ _PGM_PATH = str(_WORKSPACE_SRC / "graph_matching_gnn" / "graph_matching")
 if _PGM_PATH not in sys.path:
     sys.path.insert(0, _PGM_PATH)
 import dry_run_pgm as _dry_run_pgm  # noqa: E402
+
+import topology_rules as _rules
 
 
 def list_environments():
@@ -127,6 +131,58 @@ def _load_ground_truth(env_name):
         if len(entry) == 2 and entry[1] != "??":
             pairs.add((strip(entry[1], "a_"), strip(entry[0], "s_")))
     return pairs
+
+
+# Keys the editor and the viz layer add on top of a stored graph. `_prepare_for_editor`
+# deepcopies its input, lifts it to 3D and mirrors geometry into `viz` / `viz_data`, so writing an
+# editor graph straight back out would store stale duplicates of the geometry alongside 3D
+# coordinates. The stored MSD environments carry exactly `type` / `center` / `normal` / `length` /
+# `limits` and load fine, so that minimal schema is what `_export_graph` emits.
+_EDITOR_ONLY_KEYS = ("viz", "viz_type", "viz_data", "viz_feat", "linewidth", "alpha",
+                     "draw_pos", "Geometric_info", "original_attrs", "original_type")
+
+
+def _export_graph(graph, name):
+    """A bare `nx.DiGraph` in the schema `graph_dicts/<env>/` holds.
+
+    Reciprocity is restored before writing (`create_room_from_planes` emits one-directional
+    ``ws -> room`` edges, and a one-directional edge silently halves the message passing the GNN
+    does along it), but the geometric edges are deliberately NOT re-derived: the ws-ws ring is only
+    exact for rectangular rooms, so rebuilding on save would quietly rewrite the topology of an
+    environment the user never edited. Press "Rebuild edges" to ask for that.
+    """
+    g = graph.graph if hasattr(graph, "graph") else graph
+    _rules.symmetrize(g)
+    out = nx.DiGraph()
+    out.graph["name"] = name
+    for node_id, attrs in g.nodes(data=True):
+        clean = {k: v for k, v in attrs.items() if k not in _EDITOR_ONLY_KEYS}
+        for key in ("center", "normal"):
+            if key in clean:
+                v = clean[key]
+                v = v.tolist() if hasattr(v, "tolist") else list(v)
+                clean[key] = [float(x) for x in v[:2]]
+        if clean.get("limits") is not None:
+            lim = np.asarray(clean["limits"], dtype=float)
+            clean["limits"] = [[float(p[0]), float(p[1])] for p in lim]
+        if "length" in clean:
+            clean["length"] = float(clean["length"])
+        out.add_node(node_id, **clean)
+    out.add_edges_from((u, v) for u, v in g.edges())
+    return out
+
+
+def _export_ground_truth(pairs, a_graph):
+    """`{"rooms": {...}, "ws": [...]}` with the ``a_``/``s_`` prefixes `_load_ground_truth` strips."""
+    g = a_graph.graph if hasattr(a_graph, "graph") else a_graph
+    rooms, ws = {}, []
+    for a_id, s_id in pairs:
+        is_room = g.nodes.get(a_id, {}).get("type") == "room"
+        if is_room:
+            rooms["s_" + str(s_id)] = "a_" + str(a_id)
+        else:
+            ws.append(["s_" + str(s_id), "a_" + str(a_id)])
+    return {"rooms": rooms, "ws": sorted(ws)}
 
 
 def load_env_graphs(env_name):
@@ -244,6 +300,133 @@ def _transform_b_inplace(b_graph, dx, dy, theta_rad, pivot=None):
                 attrs["normal"] = np.concatenate([new_n_xy, n[2:]]).tolist()
             else:
                 attrs["normal"] = new_n_xy.tolist()
+
+
+# ── Editing geometry: screen ⇄ the z=0 plane ──────────────────────────────────
+# Every `ws` renders at z=0 (rooms sit at z=2, per GraphWrapper's viz offsets),
+# so a click in the 3D view maps to an unambiguous world point once it is
+# intersected with that one plane. A projective camera maps a world *plane* to
+# the screen by an exact homography, so fitting one from four reference points
+# and inverting it is exact — round-trips to ~1e-11 for both `persp` and `ortho`
+# at every camera angle. `proj3d.inv_transform` is *not* usable for this: it
+# divides by a zero homogeneous coordinate here and returns NaN.
+
+# Above this condition number the view is close to edge-on, the plane collapses
+# towards a line, and one pixel of mouse movement maps to an enormous world
+# displacement. Refuse to drag rather than fling the node into the distance.
+_PLANE_COND_LIMIT = 1e6
+
+
+def _plane_homography(ax):
+    """3x3 homography world ``(x, y, z=0)`` → screen pixels, or None if degenerate."""
+    (x0, x1), (y0, y1) = ax.get_xlim(), ax.get_ylim()
+    world = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], dtype=float)
+    xs, ys, _ = proj3d.proj_transform(
+        world[:, 0], world[:, 1], np.zeros(4), ax.get_proj()
+    )
+    screen = ax.transData.transform(np.column_stack([xs, ys]))
+    rows = []
+    for (wx, wy), (u, v) in zip(world, screen):
+        rows.append([wx, wy, 1, 0, 0, 0, -u * wx, -u * wy, -u])
+        rows.append([0, 0, 0, wx, wy, 1, -v * wx, -v * wy, -v])
+    try:
+        _u, _s, vt = np.linalg.svd(np.asarray(rows, dtype=float))
+    except np.linalg.LinAlgError:
+        return None
+    h = vt[-1]
+    if abs(h[-1]) < 1e-12:
+        return None
+    H = (h / h[-1]).reshape(3, 3)
+    if not np.isfinite(H).all() or np.linalg.cond(H) > _PLANE_COND_LIMIT:
+        return None
+    return H
+
+
+def _screen_to_plane(H, px, py):
+    """Screen pixel → world ``(x, y)`` on z=0. None if the point is at infinity."""
+    try:
+        w = np.linalg.solve(H, np.array([float(px), float(py), 1.0]))
+    except np.linalg.LinAlgError:
+        return None
+    if abs(w[2]) < 1e-12:
+        return None
+    return w[:2] / w[2]
+
+
+def _as3(point):
+    """A point as a plain 3-element list, padding z with 0."""
+    arr = np.asarray(point, dtype=float).ravel()
+    if arr.size < 3:
+        arr = np.pad(arr, (0, 3 - arr.size))
+    return arr[:3].tolist()
+
+
+def _mirror_ws_viz(attrs):
+    """Copy a ws node's geometry into the viz keys the visualizers read.
+
+    ``ws`` carries a zero viz offset, so the mirror is a straight copy — see
+    ``GraphWrapper._add_complete_viz_attributes_to_graph``. Both the nested
+    ``viz`` dict and the flat ``viz_*`` keys are kept in step, because
+    ``_prepare_for_editor`` and ``visualize_nxgraph_3d`` read different ones.
+    """
+    attrs["viz_type"] = "Line"
+    attrs["viz_data"] = attrs["limits"]
+    nested = attrs.get("viz")
+    nested = dict(nested) if isinstance(nested, dict) else {}
+    nested["type"] = "Line"
+    nested["limits"] = attrs["limits"]
+    nested["center"] = attrs["center"]
+    nested.setdefault("feat", attrs.get("viz_feat", "black"))
+    nested.setdefault("linewidth", 2.0)
+    nested.setdefault("alpha", 1.0)
+    attrs["viz"] = nested
+    attrs.setdefault("viz_feat", nested["feat"])
+
+
+def _translate_ws(attrs, delta_xy):
+    """Rigidly shift a wall surface in XY. ``normal`` and ``length`` are invariant."""
+    d = np.asarray([delta_xy[0], delta_xy[1], 0.0], dtype=float)
+    attrs["center"] = (np.asarray(_as3(attrs["center"]), dtype=float) + d).tolist()
+    attrs["limits"] = [
+        (np.asarray(_as3(ep), dtype=float) + d).tolist() for ep in attrs["limits"]
+    ]
+    _mirror_ws_viz(attrs)
+
+
+def _ws_attrs_from_endpoints(p_start, p_end, flip_normal=False):
+    """Build a complete ``ws`` node from two endpoints on the z=0 plane.
+
+    ``center`` is the midpoint and ``length`` the endpoint distance — both hold
+    exactly in every real scan and synthetic sample checked, so they are
+    invariants rather than conventions.
+
+    The normal's *sign* is not derivable here. Real scans point it at the room
+    the wall belongs to (90/90 cases), but synthetic graphs do not follow that,
+    and a wall drawn from scratch has no room yet. So the draw direction picks
+    it — the left-hand perpendicular of start→end — and it can be flipped
+    afterwards.
+    """
+    lim = np.array([_as3(p_start), _as3(p_end)], dtype=float)
+    direction = lim[1] - lim[0]
+    length = float(np.linalg.norm(direction))
+    if length < 1e-9:
+        return None
+    tangent = direction[:2] / length
+    normal = np.array([-tangent[1], tangent[0]])
+    if flip_normal:
+        normal = -normal
+    attrs = {
+        "type": "ws",
+        "center": lim.mean(axis=0).tolist(),
+        "limits": lim.tolist(),
+        "normal": normal.tolist(),
+        "length": length,
+        "viz_feat": "black",
+        "linewidth": 2.0,
+        "alpha": 1.0,
+    }
+    _mirror_ws_viz(attrs)
+    return attrs
 
 
 def _initial_dx(a, s):
@@ -597,6 +780,45 @@ _RELATIVE_INFO_ROW_SPEC = (
     ("disp_y",     "Displacement Y"),
     ("disp_theta", "Angular displacement"),
 )
+
+# Rows for the "Wall length dispersion" box. Computed over `ws` nodes only, per
+# graph — see `_ws_length_stats` for why rooms must not be pooled in.
+_WS_LENGTH_ROW_SPEC = (
+    ("a_mean", "A  ws length mean"),
+    ("a_std",  "A  ws length STD"),
+    ("a_cv",   "A  ws length CV"),
+    ("s_mean", "S  ws length mean"),
+    ("s_std",  "S  ws length STD"),
+    ("s_cv",   "S  ws length CV"),
+)
+
+
+def _ws_length_stats(graph):
+    """``(mean, std, cv)`` of wall-surface lengths, or ``(None, None, None)``.
+
+    Restricted to ``ws`` nodes on purpose. Rooms carry a ``length`` sentinel of
+    -1 (or omit the key), so pooling them makes the distribution bimodal and the
+    resulting statistic measures the room/wall ratio instead of how varied the
+    walls actually are — the naive all-node version anti-correlates with match
+    quality, while this one is rank-consistent with it across every environment
+    measured so far.
+
+    Returns ``None``s rather than NaN when a graph has no walls at all (which
+    happens — ``47_basement_Unsplitted`` has zero), so the metric rows render as
+    an em dash instead of "nan".
+    """
+    lengths = [
+        float(attrs.get("length", -1))
+        for _, attrs in graph.graph.nodes(data=True)
+        if attrs.get("type") == "ws"
+    ]
+    if not lengths:
+        return None, None, None
+    arr = np.asarray(lengths, dtype=float)
+    mean = float(arr.mean())
+    std = float(arr.std())
+    cv = std / mean if mean > 0 else None
+    return mean, std, cv
 
 
 def _build_metric_rows(parent_layout, spec=_METRIC_ROW_SPEC):
@@ -1275,10 +1497,22 @@ class EditorPanel(QWidget):
 
     expand_toggled = pyqtSignal(object)
     view_changed = pyqtSignal(float, float)
+    # Emitted around direct-manipulation edits (drag a wall, draw a wall) so the
+    # Dashboard can snapshot for undo before, and re-derive edges after.
+    edit_starting = pyqtSignal(object)   # self
+    graph_edited = pyqtSignal(object)    # self
 
     def __init__(self, title, parent=None, show_header=True, enter_handler=None):
         super().__init__(parent)
         self._fig = None
+        # Ctrl+drag state: None, or the node being moved plus the homography
+        # and cursor position the drag started from.
+        self._drag = None
+        # "Draw a wall" state: None when disarmed, else the first endpoint
+        # placed so far (None until the first click lands).
+        self._add_wall = None
+        self._rubber_band = None
+        self._last_drag_draw = 0.0
         self._canvas = None
         self._toolbar = None
         self._editor = None
@@ -1339,6 +1573,7 @@ class EditorPanel(QWidget):
         # drag end, not once per cursor pixel).
         self._canvas.mpl_connect("button_press_event", self._on_canvas_press)
         self._canvas.mpl_connect("button_release_event", self._on_canvas_release)
+        self._canvas.mpl_connect("motion_notify_event", self._on_canvas_motion)
         # Belt-and-suspenders for key delivery: install a Qt event filter on
         # the canvas that translates Qt KeyPress → mpl key_press_event and
         # fires the IGV's on_key handler directly. mpl's own keyPressEvent
@@ -1384,14 +1619,222 @@ class EditorPanel(QWidget):
                 return True
         return super().eventFilter(obj, event)
 
+    # ── Direct manipulation: Ctrl+drag a wall, click-click to draw one ────────
+
+    _PICK_RADIUS_PX = 30.0   # same as InteractiveGraphVisualizer.on_click
+    _DRAG_REDRAW_S = 0.03    # cap redraws while dragging (~30 fps)
+
+    @property
+    def _nx_graph(self):
+        if self._editor is None or self._editor.full_graph is None:
+            return None
+        g = self._editor.full_graph
+        return g.graph if hasattr(g, "graph") else g
+
+    def _pick_ws(self, event):
+        """Node id of the `ws` nearest the cursor, or None if none is close.
+
+        Reuses the IGV's own projection cache and pixel threshold so picking
+        behaves identically to a normal selection click.
+        """
+        igv = self._editor
+        nx_g = self._nx_graph
+        if igv is None or nx_g is None:
+            return None
+        screen = igv._project_coords()
+        if len(screen) == 0:
+            return None
+        d2 = np.sum((screen - np.array([event.x, event.y])) ** 2, axis=1)
+        for idx in np.argsort(d2):
+            if np.sqrt(d2[idx]) > self._PICK_RADIUS_PX:
+                return None
+            node_id = igv.node_ids_list[idx]
+            if node_id is not None and nx_g.nodes.get(node_id, {}).get("type") == "ws":
+                return node_id
+        return None
+
+    _TOP_DOWN_ELEV = 90.0
+
+    def arm_add_wall(self):
+        """Start the two-click wall placement. Returns False if unavailable.
+
+        Snaps the camera to look straight down first. Clicks are placed by
+        intersecting the view ray with z=0, so an oblique camera makes it hard
+        to tell where a wall will actually land — and near edge-on the
+        intersection is ill-conditioned enough to be refused outright. Looking
+        down the z axis makes the mapping a plain 2D one, and is the
+        best-conditioned view for it.
+        """
+        if self._editor is None:
+            return False
+        self._look_top_down()
+        self._add_wall = {"start": None}
+        print("[ADD WS] click two endpoints on the floor plane "
+              "(Shift+A again to cancel)")
+        return True
+
+    def _look_top_down(self):
+        """Point the camera straight down, keeping the current heading."""
+        igv = self._editor
+        if igv is None:
+            return
+        azim = float(igv.ax.azim)
+        igv.ax.view_init(elev=self._TOP_DOWN_ELEV, azim=azim)
+        # Record it so the release handler does not read this as a user drag
+        # and re-broadcast it, then broadcast once here instead so the other
+        # panels follow — same contract as rotating a panel by hand.
+        self._last_view = (self._TOP_DOWN_ELEV, azim)
+        self._canvas.draw_idle()
+        self.view_changed.emit(self._TOP_DOWN_ELEV, azim)
+
+    def cancel_add_wall(self):
+        self._add_wall = None
+        self._clear_rubber_band()
+
+    def _clear_rubber_band(self):
+        if self._rubber_band is not None:
+            try:
+                self._rubber_band.remove()
+            except Exception:
+                pass
+            self._rubber_band = None
+            self._canvas.draw_idle()
+
+    def flip_selected_normals(self):
+        """Negate the normal of every selected ws. Returns how many flipped."""
+        igv, nx_g = self._editor, self._nx_graph
+        if igv is None or nx_g is None:
+            return 0
+        selected = set()
+        for grp in igv.active_groups.values():
+            selected.update(grp)
+        targets = [n for n in selected
+                   if nx_g.nodes.get(n, {}).get("type") == "ws"]
+        if not targets:
+            return 0
+        self.edit_starting.emit(self)
+        for node_id in targets:
+            attrs = nx_g.nodes[node_id]
+            attrs["normal"] = (-np.asarray(attrs.get("normal", [0.0, 0.0]),
+                                           dtype=float)).tolist()
+        igv.draw_graph(preserve_view=True)
+        self.graph_edited.emit(self)
+        return len(targets)
+
+    def _plane_point(self, event, ax):
+        H = _plane_homography(ax)
+        if H is None:
+            print("[EDIT] view is too close to edge-on — tilt the camera first")
+            return None
+        return _screen_to_plane(H, event.x, event.y)
+
     def _on_canvas_press(self, event):
         # Grab keyboard focus so subsequent key presses are delivered to this
         # canvas (and translated by mpl to key_press_event for the IGV).
         self._canvas.setFocus()
         if event.dblclick:
             self.expand_toggled.emit(self)
+            return
+        igv = self._editor
+        if igv is None or event.inaxes is not igv.ax or event.button != 1:
+            return
+
+        # Placing a new wall takes precedence over everything else.
+        if self._add_wall is not None:
+            point = self._plane_point(event, igv.ax)
+            if point is None:
+                return
+            if self._add_wall["start"] is None:
+                self._add_wall["start"] = point
+                print(f"[ADD WS] start ({point[0]:.2f}, {point[1]:.2f})")
+            else:
+                self._finish_add_wall(self._add_wall["start"], point)
+            return
+
+        # Ctrl+drag moves a wall; a plain drag keeps orbiting the 3D view.
+        if "control" not in (event.key or ""):
+            return
+        node_id = self._pick_ws(event)
+        if node_id is None:
+            return
+        H = _plane_homography(igv.ax)
+        if H is None:
+            print("[MOVE WS] view is too close to edge-on — tilt the camera first")
+            return
+        origin = _screen_to_plane(H, event.x, event.y)
+        if origin is None:
+            return
+        # Suppress mpl's own drag-to-orbit for the duration, or the view would
+        # spin while the node moves.
+        igv.ax.disable_mouse_rotation()
+        self._drag = {"node": node_id, "H": H, "origin": origin, "moved": False}
+
+    def _on_canvas_motion(self, event):
+        igv = self._editor
+        if igv is None:
+            return
+
+        if self._add_wall is not None and self._add_wall["start"] is not None:
+            if event.inaxes is not igv.ax:
+                return
+            point = self._plane_point(event, igv.ax)
+            if point is None:
+                return
+            start = self._add_wall["start"]
+            self._clear_rubber_band()
+            self._rubber_band = igv.ax.plot(
+                [start[0], point[0]], [start[1], point[1]], [0.0, 0.0],
+                color="tab:orange", linewidth=2.0, linestyle="--", zorder=250,
+            )[0]
+            self._canvas.draw_idle()
+            return
+
+        if self._drag is None or event.inaxes is not igv.ax:
+            return
+        point = _screen_to_plane(self._drag["H"], event.x, event.y)
+        if point is None:
+            return
+        delta = point - self._drag["origin"]
+        if not self._drag["moved"]:
+            self.edit_starting.emit(self)   # snapshot once, on first real motion
+            self._drag["moved"] = True
+        attrs = self._nx_graph.nodes[self._drag["node"]]
+        _translate_ws(attrs, delta)
+        self._drag["origin"] = point
+        now = time.perf_counter()
+        if now - self._last_drag_draw >= self._DRAG_REDRAW_S:
+            self._last_drag_draw = now
+            igv.draw_graph(preserve_view=True)
+
+    def _finish_add_wall(self, start, end):
+        igv, nx_g = self._editor, self._nx_graph
+        attrs = _ws_attrs_from_endpoints(start, end)
+        self._add_wall = None
+        self._clear_rubber_band()
+        if attrs is None:
+            print("[ADD WS] endpoints coincide — nothing created")
+            return
+        self.edit_starting.emit(self)
+        node_id = igv.generate_new_node_id(igv.full_graph)
+        nx_g.add_node(node_id, **attrs)
+        igv.draw_graph(preserve_view=True)
+        print(f"[ADD WS] created {node_id!r}, length {attrs['length']:.3f} "
+              f"— not attached to a room yet")
+        self.graph_edited.emit(self)
 
     def _on_canvas_release(self, event):
+        if self._drag is not None:
+            igv = self._editor
+            moved = self._drag["moved"]
+            node_id = self._drag["node"]
+            self._drag = None
+            if igv is not None:
+                igv.ax.mouse_init()   # hand drag-to-orbit back to matplotlib
+                if moved:
+                    igv.draw_graph(preserve_view=True)
+                    print(f"[MOVE WS] moved {node_id!r}")
+                    self.graph_edited.emit(self)
+            return
         if self._fig is None:
             return
         for ax in self._fig.axes:
@@ -1458,6 +1901,8 @@ class SwitchablePanel(QWidget):
     expand_toggled = pyqtSignal(object)
     view_changed = pyqtSignal(float, float)
     mode_changed = pyqtSignal(object, bool)  # self, is_editor
+    edit_starting = pyqtSignal(object)       # self — forwarded from the editor
+    graph_edited = pyqtSignal(object)        # self — forwarded from the editor
 
     def __init__(self, title, parent=None, enter_handler=None,
                  start_in_editor=False):
@@ -1498,6 +1943,12 @@ class SwitchablePanel(QWidget):
             # grid/expand pages without caring which mode is active.
             inner.expand_toggled.connect(lambda _src: self.expand_toggled.emit(self))
             inner.view_changed.connect(self.view_changed.emit)
+        # Only the editor emits these; re-emit with *this* panel as the sender so
+        # the Dashboard can tell the A panel from the S panel.
+        self._editor_panel.edit_starting.connect(
+            lambda _src: self.edit_starting.emit(self))
+        self._editor_panel.graph_edited.connect(
+            lambda _src: self.graph_edited.emit(self))
 
         self._stack = QStackedWidget()
         self._stack.addWidget(self._viz_panel)     # index 0
@@ -1631,6 +2082,17 @@ class Dashboard(QMainWindow):
         )
         _mc_layout.addWidget(self._relative_box)
 
+        # Spread of wall-surface lengths in each graph — the model-free signal
+        # that tracks how matchable an environment is. Same row-builder again.
+        self._ws_length_box = QGroupBox("Wall length dispersion")
+        _wsl_layout = QVBoxLayout(self._ws_length_box)
+        _wsl_layout.setContentsMargins(8, 6, 8, 6)
+        _wsl_layout.setSpacing(2)
+        self._ws_length_labels = _build_metric_rows(
+            _wsl_layout, _WS_LENGTH_ROW_SPEC
+        )
+        _mc_layout.addWidget(self._ws_length_box)
+
         # Per-edge-type sections. Each one is a collapsible header + metric
         # rows; refs to value labels live in `_metric_labels_by_type[key]`
         # so `_update_metrics` can fill them. Collapsed by default so the
@@ -1671,6 +2133,12 @@ class Dashboard(QMainWindow):
         self._grid.setColumnStretch(3, 0)
         for sp in self._switchable_panels:
             sp.mode_changed.connect(self._on_panel_mode_changed)
+        # Direct-manipulation edits in the A/S editors: snapshot before, and
+        # re-derive the geometric edges after. The GT panel is excluded — its
+        # editor holds a composite graph, not an environment.
+        for sp in (self._a_panel, self._s_panel):
+            sp.edit_starting.connect(self._on_editor_edit_starting)
+            sp.graph_edited.connect(self._on_editor_graph_edited)
 
         self._expanded_panel = None
 
@@ -1757,13 +2225,76 @@ class Dashboard(QMainWindow):
         self._drift_y_btn.clicked.connect(self._on_drift_y)
         general_row.addWidget(self._drift_y_btn)
 
-        self._drift_rot_btn = QPushButton("Drift 5°")
+        general_row.addWidget(QLabel("rot step:"))
+        self._drift_rot_step_spin = QDoubleSpinBox()
+        self._drift_rot_step_spin.setRange(0.1, 180.0)
+        self._drift_rot_step_spin.setDecimals(1)
+        self._drift_rot_step_spin.setSingleStep(1.0)
+        self._drift_rot_step_spin.setValue(5.0)
+        self._drift_rot_step_spin.setSuffix(" °")
+        self._drift_rot_step_spin.setToolTip(
+            "Degrees per click of the rotate-drift button. Changing it "
+            "relabels the button, and takes effect on the next click."
+        )
+        self._drift_rot_step_spin.valueChanged.connect(
+            self._on_drift_rot_step_changed)
+        general_row.addWidget(self._drift_rot_step_spin)
+
+        self._drift_rot_btn = QPushButton("Drift 5.0°")
         self._drift_rot_btn.setToolTip(
-            "Permanently rotate S by 5° about its own centroid (accumulates "
-            "on every click). Same mechanism as Drift X/Y, for rotation."
+            "Permanently rotate S about its own centroid by the rot step "
+            "(accumulates on every click). Same mechanism as Drift X/Y, for "
+            "rotation.\n\nNote this pivots on S's GT-matched centroid, not "
+            "the world origin, so each click adds a translation of "
+            "2·|centroid|·sin(θ/2) alongside the rotation — measurably the "
+            "larger effect on the matcher. Pivot on the origin to separate "
+            "the two."
         )
         self._drift_rot_btn.clicked.connect(self._on_drift_rotate)
         general_row.addWidget(self._drift_rot_btn)
+
+        # Re-derive the geometric edges of both graphs. This runs automatically
+        # after a wall is dragged, but a wall that was drawn and then linked to
+        # a room by hand needs it triggered explicitly — nothing moved.
+        self._rebuild_btn = QPushButton("Rebuild edges")
+        self._rebuild_btn.setToolTip(
+            "Drop every ws-ws and room-room edge in A and S, re-derive them "
+            "from the wall geometry, and restore reciprocity. room-ws edges "
+            "are ownership, not geometry, so they are always kept. The editor "
+            "panels redraw at once; press Recompute to feed the new structure "
+            "to the matcher."
+        )
+        self._rebuild_btn.clicked.connect(self._on_rebuild_edges)
+        general_row.addWidget(self._rebuild_btn)
+
+        # The dashboard could read environments but never write one, so a graph
+        # built with Shift+A / Shift+R / Shift+E was lost when the window closed
+        # and could not be measured by anything outside the GUI. Saving turns it
+        # into the same Prior/Online/ground_truth triple every stored env is.
+        self._save_env_btn = QPushButton("Save env")
+        self._save_env_btn.setToolTip(
+            "Write the current A and S graphs, plus the ground-truth pairs, to "
+            "graph_dicts/<name>/ as Prior.pkl + Online.pkl + ground_truth.json. "
+            "Saves what the editors hold, so hand-drawn walls and rooms are "
+            "included. Edges are made reciprocal on the way out but are NOT "
+            "re-derived — use Rebuild edges first if that is what you want."
+        )
+        self._save_env_btn.clicked.connect(self._on_save_env)
+        general_row.addWidget(self._save_env_btn)
+
+        general_row.addWidget(QLabel("wall thr:"))
+        self._wall_thr_spin = QDoubleSpinBox()
+        self._wall_thr_spin.setRange(0.01, 5.0)
+        self._wall_thr_spin.setSingleStep(0.05)
+        self._wall_thr_spin.setDecimals(2)
+        self._wall_thr_spin.setValue(_rules.WALL_NORMAL_DIST_THRESHOLD)
+        self._wall_thr_spin.setToolTip(
+            "Max separation along the wall normal for two surfaces to count as "
+            "opposing faces of one wall, which is what creates a room-room "
+            "edge. In metres, so it is scale-dependent: the real scans are "
+            "metric, the synthetic MSD samples are not."
+        )
+        general_row.addWidget(self._wall_thr_spin)
 
         general_row.addSpacing(12)
         self._node_ids_cb = QCheckBox("Show node IDs")
@@ -1854,6 +2385,8 @@ class Dashboard(QMainWindow):
         self._shared_view = None  # (elev, azim) propagated across all panels
         self._gt_editor_key = None  # guards GT editor rebuilds in _refresh_combined
         self._undo_stack = []
+        # Per-panel 'unedited' fingerprints; see `_rebuild_both_edges`.
+        self._editor_signatures = {}
 
         # Debounce timer: a spinbox drag or a burst of toggles coalesces into
         # one refresh ~120 ms after the user pauses. Connections go through
@@ -1903,6 +2436,7 @@ class Dashboard(QMainWindow):
         # the keys IGV reads) so the matcher inputs stay pristine.
         self._render_side_panel(self._a_panel, a, "A")
         self._render_side_panel(self._s_panel, s, "S")
+        self._capture_signatures()
 
         init_dx = _initial_dx(a, s)
         # Reset controls to the auto-computed starting transform without firing
@@ -2171,7 +2705,168 @@ class Dashboard(QMainWindow):
         self._apply_drift(0.0, self._drift_step_spin.value(), 0.0)
 
     def _on_drift_rotate(self):
-        self._apply_drift(0.0, 0.0, 5.0)
+        self._apply_drift(0.0, 0.0, self._drift_rot_step_spin.value())
+
+    def _on_drift_rot_step_changed(self, value):
+        """Keep the button label showing the step it will actually apply."""
+        self._drift_rot_btn.setText(f"Drift {value:.1f}°")
+
+    # ── Geometric edge re-derivation ─────────────────────────────────────────
+
+    def _editable_graph(self, panel):
+        """The graph a panel's edits land on.
+
+        The editor is handed a deepcopy (see `_render_side_panel`), so once it
+        exists it — not `_current_a` / `_current_s` — is the live object. Before
+        it has ever been opened, the tracked graph is the only one there is.
+        """
+        if panel.editor is not None:
+            return panel.editor.full_graph
+        return self._current_a if panel is self._a_panel else self._current_s
+
+    def _rebuild_panel_edges(self, panel):
+        graph = self._editable_graph(panel)
+        if graph is None:
+            return None
+        info = _rules.rebuild_all(
+            graph.graph if hasattr(graph, "graph") else graph,
+            threshold=self._wall_thr_spin.value(),
+        )
+        if panel.editor is not None:
+            panel.editor.draw_graph(preserve_view=True)
+        return info
+
+    def _on_save_env(self):
+        """Write the current pair to `graph_dicts/<name>/` as a loadable environment."""
+        if self._current_a is None or self._current_s is None:
+            QMessageBox.information(self, "Save env", "Load an environment first.")
+            return
+        default = f"{self._current_env}_edited" if self._current_env else "new_env"
+        name, ok = QInputDialog.getText(
+            self, "Save environment", "Folder name under graph_dicts/:", text=default)
+        name = (name or "").strip()
+        if not ok or not name:
+            return
+        if name in ("", ".", "..") or "/" in name or "\\" in name:
+            QMessageBox.warning(self, "Save env", f"'{name}' is not a usable folder name.")
+            return
+        dest = GRAPH_DICTS_DIR / name
+        if dest.exists() and QMessageBox.question(
+                self, "Save env", f"'{name}' already exists. Overwrite it?",
+                QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
+            return
+
+        a_graph = self._editable_graph(self._a_panel)
+        s_graph = self._editable_graph(self._s_panel)
+        prior = _export_graph(a_graph, f"{name}_prior")
+        online = _export_graph(s_graph, f"{name}_online")
+        gt = _export_ground_truth(self._current_gt, a_graph)
+
+        dest.mkdir(parents=True, exist_ok=True)
+        with open(dest / "Prior.pkl", "wb") as fh:
+            pickle.dump(prior, fh)
+        with open(dest / "Online.pkl", "wb") as fh:
+            pickle.dump(online, fh)
+        with open(dest / "ground_truth.json", "w") as fh:
+            json.dump(gt, fh, indent=2)
+
+        # The selector is filled once at construction, so a new folder is invisible until it is
+        # re-read. Keep the current selection: re-adding the items resets the index.
+        current = self._combo.currentText()
+        with QSignalBlocker(self._combo):
+            self._combo.clear()
+            self._combo.addItems(list_environments())
+            idx = self._combo.findText(current)
+            if idx >= 0:
+                self._combo.setCurrentIndex(idx)
+        print(f"[SAVE] {dest}  A {prior.number_of_nodes()}n/{prior.number_of_edges()}e  "
+              f"S {online.number_of_nodes()}n/{online.number_of_edges()}e  "
+              f"gt {len(self._current_gt)}")
+        QMessageBox.information(
+            self, "Save env",
+            f"Wrote {dest}\n\nA: {prior.number_of_nodes()} nodes / "
+            f"{prior.number_of_edges()} edges\nS: {online.number_of_nodes()} nodes / "
+            f"{online.number_of_edges()} edges\nGT pairs: {len(self._current_gt)}")
+
+    def _on_editor_edit_starting(self, _panel):
+        """A drag or a draw is about to mutate an editor graph — snapshot first."""
+        self._push_undo()
+
+    def _on_editor_graph_edited(self, panel):
+        """Re-derive that graph's geometric edges after a direct edit.
+
+        Moving a wall invalidates every edge derived from where it is: the
+        angular ring of its room, and any room-room edge that rested on it
+        facing another room's wall. So both families are dropped graph-wide and
+        rebuilt from the constraints. room-ws survives — it says which room the
+        wall belongs to, which moving it does not change.
+        """
+        role = "A" if panel is self._a_panel else "S"
+        info = self._rebuild_panel_edges(panel)
+        if info is not None:
+            print(f"[REBUILD {role}] dropped {info['dropped']}, "
+                  f"ws-ws {info['ws_ws']}, room-room {info['room_room']}, "
+                  f"mirrored {info['mirrored']} → {info['edges']} edges")
+
+    @staticmethod
+    def _graph_signature(graph):
+        """Cheap fingerprint of a graph's structure and node positions.
+
+        Used to tell an edited graph from an untouched one. Covers edits made
+        through the IGV's own keys (create edge / create room / delete) as well
+        as the ones the Dashboard handles, since it looks at the result rather
+        than at who did it.
+        """
+        if graph is None:
+            return None
+        g = graph.graph if hasattr(graph, "graph") else graph
+        edges = frozenset((str(u), str(v)) for u, v in g.edges())
+        nodes = tuple(sorted(
+            (str(n), round(float(np.asarray(a["center"], dtype=float).ravel()[0]), 6),
+             round(float(np.asarray(a["center"], dtype=float).ravel()[1]), 6))
+            for n, a in g.nodes(data=True) if "center" in a
+        ))
+        return hash((edges, nodes))
+
+    def _capture_signatures(self):
+        """Record what A and S look like now, as the 'unedited' baseline."""
+        for panel in (self._a_panel, self._s_panel):
+            self._editor_signatures[panel] = self._graph_signature(
+                self._editable_graph(panel))
+
+    def _rebuild_both_edges(self, only_if_changed=False):
+        """Re-derive the geometric edges of A and S. Does not snapshot.
+
+        With ``only_if_changed`` set, a graph that has not been touched since it
+        was loaded is left exactly as it is. That matters because the rules do
+        not round-trip every saved graph: an MSD corridor with 24 walls carries
+        72 intra-room ws-ws edges where the angular-sorted ring derives 48, so
+        rebuilding an untouched sample would quietly restructure it.
+        """
+        for panel, role in ((self._a_panel, "A"), (self._s_panel, "S")):
+            if only_if_changed:
+                current = self._graph_signature(self._editable_graph(panel))
+                if current == self._editor_signatures.get(panel):
+                    continue
+            info = self._rebuild_panel_edges(panel)
+            if info is not None:
+                print(f"[REBUILD {role}] dropped {info['dropped']}, "
+                      f"ws-ws {info['ws_ws']}, room-room {info['room_room']}, "
+                      f"mirrored {info['mirrored']} → {info['edges']} edges")
+        self._capture_signatures()
+
+    def _on_rebuild_edges(self):
+        """Toolbar action: re-derive the geometric edges of both graphs."""
+        self._push_undo()
+        self._rebuild_both_edges()
+
+    def _active_editor_panel(self, canvas):
+        """The A/S EditorPanel owning ``canvas``, if it is in edit mode."""
+        for sp in (self._a_panel, self._s_panel):
+            ep = sp.editor_panel
+            if sp.is_editor and sp.editor is not None and ep._canvas is canvas:
+                return ep
+        return None
 
     def _kick_refresh(self, *_args):
         """Restart the debounce timer ignoring whatever payload the signal
@@ -2194,6 +2889,25 @@ class Dashboard(QMainWindow):
                     if sp.is_editor and ep._canvas is not None and ep._canvas is obj and sp.editor is not None:
                         self._split_selected_plane(sp.editor)
                         return True
+            # Shift+A arms (or cancels) two-click wall placement; Shift+N flips
+            # the normal of the selected walls. Both are free in the IGV's own
+            # key table, which claims a/e/n/c/w/i/h/z and E/W/F/B/C/R/S/U.
+            if event.key() == Qt.Key_A and event.modifiers() & Qt.ShiftModifier:
+                ep = self._active_editor_panel(obj)
+                if ep is not None:
+                    if ep._add_wall is not None:
+                        ep.cancel_add_wall()
+                        print("[ADD WS] cancelled")
+                    else:
+                        ep.arm_add_wall()
+                    return True
+            if event.key() == Qt.Key_N and event.modifiers() & Qt.ShiftModifier:
+                ep = self._active_editor_panel(obj)
+                if ep is not None:
+                    flipped = ep.flip_selected_normals()
+                    print(f"[FLIP WS] flipped {flipped} normal(s)"
+                          if flipped else "[FLIP WS] no ws selected")
+                    return True
         return False
 
     # ── Plane split (Shift+C) ─────────────────────────────────────────────────
@@ -2276,6 +2990,9 @@ class Dashboard(QMainWindow):
             sub = copy.deepcopy(attrs)
             sub["limits"]   = lim_arr.tolist()
             sub["center"]   = c_arr.tolist()
+            # `length` is a model input, so a half that kept the parent's length
+            # would feed the matcher a wall twice its real size.
+            sub["length"]   = float(np.linalg.norm(lim_arr[1] - lim_arr[0]))
             sub["viz_data"] = lim_arr.tolist()
             nested = sub.get("viz")
             if isinstance(nested, dict):
@@ -2317,10 +3034,16 @@ class Dashboard(QMainWindow):
         print(f"[SPLIT] {node_id!r} → {new_id1} (start→mid) + {new_id2} (mid+gap→end)")
 
     def _snapshot(self):
+        # The A/S editors work on deepcopies (see `_render_side_panel`), so
+        # capturing only `_current_a` / `_current_s` would leave every in-editor
+        # edit — dragging a wall, drawing one — outside undo's reach.
+        ed_a, ed_s = self._a_panel.editor, self._s_panel.editor
         return {
             "gt": set(self._current_gt),
             "a": copy.deepcopy(self._current_a),
             "s": copy.deepcopy(self._current_s),
+            "editor_a": copy.deepcopy(ed_a.full_graph) if ed_a is not None else None,
+            "editor_s": copy.deepcopy(ed_s.full_graph) if ed_s is not None else None,
             "pred": set(self._current_pred),
             "ints": (
                 {k: np.copy(v) for k, v in self._current_ints.items()}
@@ -2368,6 +3091,8 @@ class Dashboard(QMainWindow):
             self._gt_editor_key = None  # force GT editor rebuild
             self._render_side_panel(self._a_panel, self._current_a, "A")
             self._render_side_panel(self._s_panel, self._current_s, "S")
+            self._restore_editor_graph(self._a_panel, snap.get("editor_a"))
+            self._restore_editor_graph(self._s_panel, snap.get("editor_s"))
             self._refresh_combined()
             self._apply_shared_view()
             print("[UNDO DBG] restore complete")
@@ -2375,6 +3100,23 @@ class Dashboard(QMainWindow):
             import traceback
             print(f"[UNDO DBG] restore FAILED: {exc}")
             traceback.print_exc()
+
+    def _restore_editor_graph(self, panel, graph):
+        """Put a snapshotted graph back into a panel's live editor.
+
+        `_render_side_panel` has just rebuilt the IGV from the restored
+        `_current_*`, which drops any edit that had not been committed yet; this
+        puts the snapshot's editor state back on top of it. `graph` and
+        `full_graph` are the same object in this setup (the IGV defaults one to
+        the other), so both are repointed.
+        """
+        igv = panel.editor
+        if igv is None or graph is None:
+            return
+        igv.full_graph = graph
+        igv.graph = graph
+        igv.active_groups = {}
+        igv.draw_graph()
 
     def _on_select_model(self):
         """Open a picker over ``_MODEL_CONFIGS`` and, on a different choice,
@@ -2445,6 +3187,13 @@ class Dashboard(QMainWindow):
         if new_a is None or new_s is None:
             return
         self._push_undo()
+        # Re-derive the geometric edges first, so the matcher always sees a
+        # structure consistent with the wall geometry as currently edited —
+        # no need to remember to press "Rebuild edges" after every change.
+        # Only for graphs that were actually edited; see `_rebuild_both_edges`
+        # for why an untouched one must be left alone. The toolbar button
+        # forces it regardless.
+        self._rebuild_both_edges(only_if_changed=True)
         # Always force a fresh GNN forward pass. The cache key only covers
         # (name, |V|, |E|), so feature-only changes (e.g. "Align centers",
         # node position edits) would otherwise return stale cached results.
@@ -2492,6 +3241,7 @@ class Dashboard(QMainWindow):
         s_nodes = self._current_s_nodes
         self._update_metrics(a_nodes, s_nodes)
         self._update_relative_info()
+        self._update_ws_length_info()
         dx, dy, theta = (
             self._dx_spin.value(),
             self._dy_spin.value(),
@@ -2762,6 +3512,20 @@ class Dashboard(QMainWindow):
             "disp_x": disp_x,
             "disp_y": disp_y,
             "disp_theta": disp_theta,
+        })
+
+    def _update_ws_length_info(self):
+        """Refresh the "Wall length dispersion" box from the tracked graphs.
+
+        Reads `_current_a` / `_current_s`, so editor changes show up once they
+        have been committed (Recompute / leaving edit mode), matching how the
+        rest of the metrics column behaves.
+        """
+        a_mean, a_std, a_cv = _ws_length_stats(self._current_a)
+        s_mean, s_std, s_cv = _ws_length_stats(self._current_s)
+        self._fill_metric_labels(self._ws_length_labels, {
+            "a_mean": a_mean, "a_std": a_std, "a_cv": a_cv,
+            "s_mean": s_mean, "s_std": s_std, "s_cv": s_cv,
         })
 
     def _on_panel_view_changed(self, elev, azim):
