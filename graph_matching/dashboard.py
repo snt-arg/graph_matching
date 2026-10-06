@@ -79,6 +79,10 @@ GRAPH_DICTS_DIR = Path(__file__).parent / "graph_dicts"
 #   "adj_glob_65"                         → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, adjacency + global-node ablation)
 #   "adj_no_glob_65"                      → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, adjacency, no global node)
 #   "fully_no_glob_65"                    → MatchingModel_MLPGATv2SinkhornWBCE (WBCE, fully-connected, no global node)
+#   "adj_no_glob_65_edge"                 → MatchingModel_EdgeAwareGATv2SinkhornWBCE (edge-feature rework:
+#                                             3-dim node x + 9-dim edge_attr; loaded by edge_model.EdgeMatcher)
+#   "adj_glob_65_edgefeat_rooms"          → MatchingModel_EdgeAwareGATv2SinkhornWBCE (edge-feature rework,
+#                                             larger: hidden 256 / out 64 / heads 7 / edge_hidden 8)
 MODEL = "ws_room_dropout_noise_inc_WBCE"
 
 # Make the dry-run matcher importable: it lives in the sibling graph_matching_gnn repo.
@@ -572,10 +576,25 @@ def _build_gt_editor_graph(a, s, dx, dy, theta_deg, gt_pairs):
     return GraphWrapper(graph_obj=merged)
 
 
-def _gt_edge_style_fn(gt_pairs):
+# The combined A+S panels draw ONE matplotlib 3D line artist per (A node, S node)
+# pair, measured at ~2 ms each, so a refresh costs O(n_a x n_s): 1.6 s for
+# 47_basement (31x20 = 620 pairs) but 23 s for a 105x105 environment — on the GUI
+# thread, which is long enough for the window manager to offer "force quit". Above
+# this many pairs the filler cross-edges (drawn at alpha 0.1, and illegible at that
+# density anyway) are skipped and only the meaningful ones are kept: GT pairs, plus
+# each row's and column's strongest matrix cell. This is a drawing decision only —
+# matching, metrics and the matrix insets are untouched. At 2000, all three real
+# scans (47_basement 620 pairs, 47_topfloor 375, CF12 1040) and every GEN_* env keep
+# the full mesh; 11 of the larger MSD samples and the generated buildings are capped.
+MESH_PAIR_CAP = 2000
+
+
+def _gt_edge_style_fn(gt_pairs, sparse=False):
     def fn(ai, si):
         in_gt = (ai, si) in gt_pairs
-        return ("g", 2.0, 1.0) if in_gt else ("r", 0.5, 0.1)
+        if in_gt:
+            return ("g", 2.0, 1.0)
+        return None if sparse else ("r", 0.5, 0.1)
     return fn
 
 
@@ -588,7 +607,7 @@ _VALUE_ONLY_COLOR = "b"
 
 
 def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
-                            mode="correct", min_weight=0.05):
+                            mode="correct", min_weight=0.05, sparse=False):
     """Color bipartite edges by GT membership; alpha by matrix value.
 
     Matrix is min-max normalized to [0, 1]; the normalized value drives a
@@ -603,6 +622,12 @@ def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
         distinction (single neutral color). Pure "what does the matrix
         say" view.
     Edges with weight below `min_weight` are skipped to reduce clutter.
+
+    `sparse`: keep only the cells worth looking at — every GT pair, plus each row's
+    and each column's strongest cell (what the matrix actually picked). See
+    `MESH_PAIR_CAP` for why. Note `min_weight` alone cannot do this job: in
+    "correct" mode a GT-false cell's weight is `1 - norm`, which is near 1 for
+    almost the whole matrix, so nearly every pair survives the threshold.
     """
     a_index = {str(n): i for i, n in enumerate(a_nodes)}
     s_index = {str(n): i for i, n in enumerate(s_nodes)}
@@ -611,10 +636,23 @@ def _gt_value_edge_style_fn(matrix, a_nodes, s_nodes, gt_pairs,
     m_max = float(m.max())
     span = (m_max - m_min) if m_max > m_min else 1.0
 
+    keep = None
+    if sparse:
+        a_labels = [str(n) for n in a_nodes]
+        s_labels = [str(n) for n in s_nodes]
+        keep = set(gt_pairs)
+        if m.size:
+            for i, best in enumerate(m.argmax(axis=1)):
+                keep.add((a_labels[i], s_labels[best]))
+            for j, best in enumerate(m.argmax(axis=0)):
+                keep.add((a_labels[best], s_labels[j]))
+
     def fn(ai, si):
         i = a_index.get(ai)
         j = s_index.get(si)
         if i is None or j is None:
+            return None
+        if keep is not None and (ai, si) not in keep:
             return None
         norm = (m[i, j] - m_min) / span
         in_gt = (ai, si) in gt_pairs
@@ -3231,9 +3269,25 @@ class Dashboard(QMainWindow):
         self._refresh_combined()
         self._apply_shared_view()
 
+    def _sparse_mesh(self):
+        """True when the bipartite mesh is too big to draw edge-by-edge.
+
+        See `MESH_PAIR_CAP`. Measured on this machine at ~2 ms per pair, so the cap
+        keeps a combined refresh near 4 s worst case instead of 23 s.
+        """
+        if self._current_a is None or self._current_s is None:
+            return False
+        pairs = (self._current_a.graph.number_of_nodes()
+                 * self._current_s.graph.number_of_nodes())
+        return pairs > MESH_PAIR_CAP
+
     def _refresh_combined(self):
         if self._current_a is None or self._current_s is None:
             return
+        sparse = self._sparse_mesh()
+        # Say so on the panel: a capped mesh is missing edges by design, and a
+        # silently thinner picture is easy to misread as a matching change.
+        mesh_note = " · mesh capped" if sparse else ""
         show_ids = self._node_ids_cb.isChecked()
         show_matrix = self._matrix_cb.isChecked()
         enable_hover = self._hover_cb.isChecked()
@@ -3251,7 +3305,7 @@ class Dashboard(QMainWindow):
             self._current_a,
             self._current_s,
             dx, dy, theta,
-            _gt_edge_style_fn(self._current_gt),
+            _gt_edge_style_fn(self._current_gt, sparse=sparse),
         )
         gt_inset = None
         if show_matrix:
@@ -3266,7 +3320,7 @@ class Dashboard(QMainWindow):
             }
         self._gt_panel.viz_panel.set_graph(
             gt_combined,
-            f"{self._current_env} - A + S (GT)",
+            f"{self._current_env} - A + S (GT){mesh_note}",
             extra_legend=[_make_match_legend_proxy("green", "GT pair")],
             include_node_ids=show_ids,
             matrix_inset=gt_inset,
@@ -3355,6 +3409,7 @@ class Dashboard(QMainWindow):
                     self._current_s_nodes,
                     self._current_gt,
                     mode=highlight_mode,
+                    sparse=sparse,
                 ),
             )
             dryrun_inset = None
@@ -3377,7 +3432,7 @@ class Dashboard(QMainWindow):
                 }
             self._dryrun_panel.set_graph(
                 perm_combined,
-                f"{self._current_env} - A + S (Hungarian perm, {title_suffix})",
+                f"{self._current_env} - A + S (Hungarian perm, {title_suffix}){mesh_note}",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -3396,6 +3451,7 @@ class Dashboard(QMainWindow):
                     self._current_s_nodes,
                     self._current_gt,
                     mode=highlight_mode,
+                    sparse=sparse,
                 ),
             )
             affinity_inset = None
@@ -3409,7 +3465,7 @@ class Dashboard(QMainWindow):
                 }
             self._affinity_panel.set_graph(
                 affinity_combined,
-                f"{self._current_env} - A + S (affinity, {title_suffix})",
+                f"{self._current_env} - A + S (affinity, {title_suffix}){mesh_note}",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -3428,6 +3484,7 @@ class Dashboard(QMainWindow):
                     self._current_s_nodes,
                     self._current_gt,
                     mode=highlight_mode,
+                    sparse=sparse,
                 ),
             )
             simnormed_inset = None
@@ -3441,7 +3498,7 @@ class Dashboard(QMainWindow):
                 }
             self._simnormed_panel.set_graph(
                 simnormed_combined,
-                f"{self._current_env} - A + S (sim_normed, {title_suffix})",
+                f"{self._current_env} - A + S (sim_normed, {title_suffix}){mesh_note}",
                 extra_legend=[*gt_value_legend, *gt_legend, *aura_legend],
                 gt_overlay_pairs=gt_overlay,
                 include_node_ids=show_ids,
@@ -3587,6 +3644,38 @@ _MODEL_CONFIGS = {
     "adj_glob_65":                         ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
     "adj_no_glob_65":                      ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
     "fully_no_glob_65":                    ("MatchingModel_MLPGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    # Edge-feature rework (arXiv:2409.11972) -- a DIFFERENT ARCHITECTURE, not another checkpoint
+    # of the four classes above: node x is 3-dim [type(2), length] with center/normal dropped,
+    # and all relative geometry lives in a 9-dim edge_attr re-projected at every hop. It is
+    # therefore routed to edge_model.EdgeMatcher rather than GnnMatcher (which hardcodes
+    # in_dim=7 and unpacks a 5-value forward) -- see the branch in _load_gnn_matcher.
+    #
+    # The subfolder below is a PATH-EXISTENCE STUB only: this model ships its own norm_stats.pt
+    # (which carries edge_mean/edge_std as well as mean/std), and that short-circuits
+    # _load_data_raw, so the preprocessed folder named here is never actually read.
+    #
+    # Two fields in its best_trial_results.json are NOT trustworthy -- it records heads=7 while
+    # both checkpoints were built with heads=6, and its real_f1 has never reproduced. EdgeMatcher
+    # derives every structural dim from the weights and warns on the disagreement. See
+    # PROVENANCE.txt in the model folder.
+    "adj_no_glob_65_edge":                 ("MatchingModel_EdgeAwareGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    # Second edge-feature model, same architecture family as the entry above but larger
+    # (hidden 256 / out_dim 64 / heads 7 / edge_hidden_dim 8, 4 layers). Routed to
+    # edge_model.EdgeMatcher by the class-name branch in _load_gnn_matcher. As above, the
+    # subfolder is only a path-existence stub: this model ships its own norm_stats.pt carrying
+    # all four tensors (mean/std + edge_mean/edge_std), which short-circuits _load_data_raw.
+    #
+    # METADATA WARNING: best_val_model.pt (epoch 42) holds Optuna trial 85's weights, but BOTH
+    # json sidecars (best_trial_results.json and best_trial_results_real.json) describe trial 88
+    # -- the study's best by val_loss. They disagree on out_dim (16 vs the checkpoint's 64),
+    # edge_hidden_dim (32 vs 8), heads (8 vs 7) and sinkhorn_tau (0.3530 vs trial 85's 0.5564).
+    # Confirmed by unpickling study.pkl (needs a logNEI_candidates_func stub in __main__) and
+    # finding the one trial whose dims match the weights. The load is safe regardless because
+    # edge_model.infer_hparams derives every structural dim from the state_dict and warns on each
+    # disagreement; only the Sinkhorn pair still comes from the json, and tau was measured to make
+    # no difference to the Hungarian F1. Do NOT quote either sidecar's real_f1 -- those describe a
+    # different trial, and that field has never reproduced for any model in this project.
+    "adj_glob_65_edgefeat_rooms":          ("MatchingModel_EdgeAwareGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
 }
 _DEFAULT_DATA_EQUAL = _DEFAULT_GNN_PATH / "preprocessed" / "graph_matching" / "equal"
 
@@ -3614,6 +3703,22 @@ def _load_gnn_matcher(model_name):
             "Real-GNN mode selected but the following path(s) don't exist:\n"
             + "\n".join(f"  - {p}" for p in missing)
         )
+    if model_class_name == "MatchingModel_EdgeAwareGATv2SinkhornWBCE":
+        # Different architecture entirely (3-dim node x, 9-dim edge_attr, a 2-value forward),
+        # so GnnMatcher cannot load it -- see _MODEL_CONFIGS. EdgeMatcher already implements
+        # this module's matcher protocol: match(a, s) -> (pairs, ints, a_nodes, s_nodes) with
+        # ints = {affinity, sim_normed, S, perm}, plus clear_cache()/name/display.
+        # `data_partial` is checked for existence above but never read on this path.
+        try:
+            import edge_model as _edge_model  # sibling repo, already on sys.path via _PGM_PATH
+        except ImportError as exc:
+            raise RuntimeError(
+                f"Edge-feature model '{model_name}' selected but its dependencies are "
+                f"missing ({exc}).\nIt needs torch / torch_geometric / pygmtools and "
+                "graph_matching_gnn/graph_matching/edge_model.py."
+            ) from exc
+        return _edge_model.EdgeMatcher(str(model_save_path))
+
     try:
         return GnnMatcher(
             model_save_path=str(model_save_path),
