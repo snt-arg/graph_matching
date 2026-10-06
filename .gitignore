@@ -138,3 +138,12 @@ graph_matching/Gen_Samples_clean/
 graph_matching/MSD_Samples/
 graph_matching/graph_dicts/GEN_*/
 graph_matching/graph_dicts/MSD_*/
+
+# Buildings imported from the Revit-style CSV exports, and the exports themselves
+# (meshes, previews and the generator scripts that produced them). Converted to the
+# Prior.pkl / Online.pkl / ground_truth.json triple by csv_to_graph_dict.py, which is
+# likewise local-only — so these environments live on this machine, not in the history.
+graph_matching/csv_to_graph_dict.py
+graph_matching/graph_dicts/generated_buildings/
+graph_matching/graph_dicts/building_*/
+graph_matching/graph_dicts/shaheer_bello/
