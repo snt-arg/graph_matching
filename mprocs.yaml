@@ -5,21 +5,27 @@ procs:
   s_graphs_sim:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/platform/velodyne_points base_frame:=base_footprint"'
     autostart: false
-  s_graphs_real:
+  s_graphs_real_smapper:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=true lidar_topic:=/ouster/points base_frame:=base_link"'
     autostart: false
+  s_graphs_real_spot:
+    shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch lidar_situational_graphs s_graphs_launch.py compute_odom:=false lidar_topic:=/platform/velodyne_points base_frame:=body"'
+    autostart: false  
   rosbag_sim:
     shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/simulation/C1F2"'
-    autostart: true
-  rosbag_real:
-    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/Real/C1F2/C1F2_ros2 --clock"'
     autostart: false
+  rosbag_real:
+    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/ssd/datasets/clk_blashett/right_house_floors/1_F0_0-340s --clock; rc=\$?; echo; echo \"=== rosbag_real: playback FINISHED at \$(date +%H:%M:%S) (exit code \$rc) ===\""'
+    autostart: true
   is_graphs_sim:
     shell: 'bash -c "sleep 2 && source /opt/ros/jazzy/setup.bash && sleep 1 && source ~/workspace/install/setup.bash && ros2 launch is_graphs is_graph_launch.py lidar_topic:=/platform/velodyne_points compute_odom:=true base_frame:=base_footprint"'
-    autostart: true
-  is_graphs_real:
-    shell: 'bash -c "sleep 2 && source /opt/ros/jazzy/setup.bash && sleep 1 && source ~/workspace/install/setup.bash && ros2 launch is_graphs is_graph_launch.py lidar_topic:=/platform/velodyne_points compute_odom:=false base_frame:=body"'
     autostart: false
+  is_graphs_real_spot:
+    shell: 'bash -c "sleep 2 && source /opt/ros/jazzy/setup.bash && sleep 1 && source ~/workspace/install/setup.bash && ros2 launch is_graphs is_graph_launch.py lidar_topic:=/platform/velodyne_points compute_odom:=false base_frame:=body"'
+    autostart: true
+  is_graphs_real_smapper:
+    shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch is_graphs is_graph_launch.py compute_odom:=true lidar_topic:=/ouster/points base_frame:=base_link"'
+    autostart: false  
   matching:
     shell: 'bash -c "source /opt/ros/jazzy/setup.bash && source ~/workspace/install/setup.bash && ros2 launch graph_matching graph_matching.launch.py"'
     autostart: true

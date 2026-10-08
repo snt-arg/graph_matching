@@ -107,6 +107,7 @@ class GraphMatchingNode(Node):
         self.original_planes = {}
         self.prior_original_planes = {}
         self.graphs_gnn = {}    # Stores graphs in NetworkX format for GNN
+        self.online_saved_at_match = False  # once True, only the matching trigger writes Online.pkl
         # self.graphs_msg_cache = {}  # Store original GraphMsg for later GNN conversion
 
         #Use parameters from ROS2 parameter server to select with matcher to use
@@ -732,9 +733,11 @@ class GraphMatchingNode(Node):
                             limits=limits)
         
         
-        if is_prior:
-            G.filterout_unparented_nodes()
-                
+        # Disabled: dropped every A-graph wall not listed among a room's w1..w4, e.g. 60 of
+        # 74 walls for Rez-de-chauss_e_s02. Online already had this filter disabled.
+        # if is_prior:
+        #     G.filterout_unparented_nodes()
+
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
         # visualize_nxgraph_3d(G, G.name, visualize_alone=True, include_node_ids=True, blocking=True)    
@@ -1361,14 +1364,6 @@ class GraphMatchingNode(Node):
         self.gm.graphs[graph["name"]].set_name(graph["name"]) # Set the name of the graph in the wrapper for later reference (e.g. during visualization)
         # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
 
-        # Always save the latest graph to disk regardless of matcher mode.
-        graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
-        os.makedirs(graph_dicts_dir, exist_ok=True)
-        save_path = os.path.join(graph_dicts_dir, f"{graph['name']}.pkl")
-        with open(save_path, "wb") as pickle_file:
-            pickle.dump(nx.DiGraph(self.gm.graphs[graph["name"]].graph), pickle_file)
-        self.get_logger().info(f"Saved {graph['name']} graph -> {save_path}")
-
         if self.use_pgm:
             if graph["name"] != "Prior" and not self.original_planes:
                 self.get_logger().warn(f'Skipping GNN conversion for {graph["name"]}: original_planes not yet received from /s_graphs/all_map_planes')
@@ -1387,6 +1382,13 @@ class GraphMatchingNode(Node):
                     with open(os.path.join(graph_dicts_dir, "Prior.pkl"), "wb") as pickle_file:
                         pickle.dump(gnn_wrapper, pickle_file)
                     self.get_logger().info(f"Saved Prior graph to {graph_dicts_dir}/Prior.pkl")
+                elif graph["name"] == "Online" and not self.online_saved_at_match:
+                    # Until matching first fires, keep Online.pkl at the latest GNN-format
+                    # state, so a session that never reaches the room threshold still
+                    # leaves an Online.pkl the dashboard can load.
+                    with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
+                        pickle.dump(gnn_wrapper, pickle_file)
+                    self.get_logger().info(f"Saved Online graph (pre-match) to {graph_dicts_dir}/Online.pkl")
 
 
 
@@ -1412,6 +1414,7 @@ class GraphMatchingNode(Node):
                 graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
                 with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
                     pickle.dump(self.graphs_gnn["Online"], pickle_file)
+                self.online_saved_at_match = True
                 self.get_logger().info(f"Saved Online graph to {graph_dicts_dir}/Online.pkl")
 
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
