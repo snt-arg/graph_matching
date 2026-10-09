@@ -55,6 +55,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QShortcut,
     QSizePolicy,
+    QSpinBox,
     QStackedWidget,
     QToolButton,
     QVBoxLayout,
@@ -807,6 +808,14 @@ _METRIC_ROW_SPEC = (
     ("gt_total",    "GT pairs"),
     ("pred_total",  "Pred pairs"),
     ("match_time",  "Match time (s)"),
+)
+
+# Extra rows of the combined Metrics box only (not the per-edge-type sections): the per-cell
+# std across the MC Dropout passes, "—" when the current result is not an MCD run.
+_MCD_ROW_SPEC = (
+    ("mcd_std_of",   "MCD std of"),
+    ("mcd_std_mean", "MCD std, all cells"),
+    ("mcd_std_pred", "MCD std, pred pairs"),
 )
 
 # Rows for the "Relative graph informations" box: S's current displacement
@@ -2033,6 +2042,114 @@ class SwitchablePanel(QWidget):
         self._editor_panel.apply_view(elev, azim)
 
 
+class ScoreDistributionPanel(QWidget):
+    """Sinkhorn-score distributions split by ground truth: the A x S cells that ARE true matches
+    vs every other cell, each drawn as its fitted Gaussian N(mean, std) so the two are
+    comparable despite non-matches outnumbering matches ~100:1. The dashed line is where the
+    curves cross (equal density); their overlap is where a score threshold confuses the classes.
+    AUROC = P(a true-match cell scores higher than a non-match cell); 0.5 = no separation."""
+
+    def __init__(self, title, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(2)
+        header = QLabel(title)
+        header.setStyleSheet("font-weight: 600; font-size: 12px;")
+        layout.addWidget(header)
+        self._fig = Figure()
+        FigureCanvasQTAgg(self._fig)
+        self._canvas = self._fig.canvas
+        self._canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._canvas.setMinimumHeight(200)
+        layout.addWidget(NavigationToolbar2QT(self._canvas, self))
+        layout.addWidget(self._canvas, stretch=1)
+        self.setMinimumWidth(360)
+
+    @staticmethod
+    def _auroc(pos, neg):
+        """Mann-Whitney AUROC with ties counted as 1/2 (no sklearn dependency)."""
+        if len(pos) == 0 or len(neg) == 0:
+            return None
+        allv = np.concatenate([pos, neg])
+        order = allv.argsort(kind="mergesort")
+        ranks = np.empty(len(allv))
+        sorted_v = allv[order]
+        i = 0
+        while i < len(sorted_v):   # average ranks over ties
+            j = i
+            while j + 1 < len(sorted_v) and sorted_v[j + 1] == sorted_v[i]:
+                j += 1
+            ranks[order[i:j + 1]] = (i + j) / 2.0 + 1.0
+            i = j + 1
+        r_pos = ranks[:len(pos)].sum()
+        return (r_pos - len(pos) * (len(pos) + 1) / 2.0) / (len(pos) * len(neg))
+
+    @staticmethod
+    def _gaussian_crossing(g1, g2):
+        """x between the two means where N(mu1, s1) and N(mu2, s2) have equal density, if any."""
+        (m1, s1), (m2, s2) = g1, g2
+        a = 1 / (2 * s1 ** 2) - 1 / (2 * s2 ** 2)
+        b = m2 / s2 ** 2 - m1 / s1 ** 2
+        c = m1 ** 2 / (2 * s1 ** 2) - m2 ** 2 / (2 * s2 ** 2) - np.log(s2 / s1)
+        roots = [-c / b] if abs(a) < 1e-12 else np.roots([a, b, c])
+        lo, hi = min(m1, m2), max(m1, m2)
+        real = [float(r.real) for r in np.atleast_1d(roots) if abs(np.imag(r)) < 1e-9 and lo <= r.real <= hi]
+        return real[0] if real else None
+
+    def update_scores(self, S, a_nodes, s_nodes, gt_pairs, subtitle=""):
+        self._fig.clear()
+        ax = self._fig.add_subplot(111)
+        if S is None:
+            ax.text(0.5, 0.5, "no Sinkhorn matrix", ha="center", va="center", transform=ax.transAxes)
+            self._canvas.draw_idle()
+            return
+        S = np.asarray(S, dtype=float)
+        a_idx = {str(n): i for i, n in enumerate(a_nodes)}
+        s_idx = {str(n): j for j, n in enumerate(s_nodes)}
+        gt_mask = np.zeros(S.shape, dtype=bool)
+        for a_id, s_id in gt_pairs or ():
+            i, j = a_idx.get(str(a_id)), s_idx.get(str(s_id))
+            if i is not None and j is not None:
+                gt_mask[i, j] = True
+        pos, neg = S[gt_mask], S[~gt_mask]
+        # Each class drawn as its fitted Gaussian N(mu, sigma) (mean / sample std of its scores).
+        fits = []
+        for vals, color, label in ((neg, "tab:red", "not a match"), (pos, "tab:green", "GT match")):
+            if len(vals) == 0:
+                continue
+            mu = float(vals.mean())
+            sigma = float(vals.std(ddof=1)) if len(vals) > 1 else 0.0
+            fits.append((mu, max(sigma, 1e-6), color, f"{label} ({len(vals)} cells): μ={mu:.3f}, σ={sigma:.3f}"))
+        if fits:
+            lo = min(mu - 4 * sg for mu, sg, *_ in fits)
+            hi = max(mu + 4 * sg for mu, sg, *_ in fits)
+            x = np.linspace(max(lo, 0.0), hi, 600)
+            for mu, sg, color, label in fits:
+                pdf = np.exp(-0.5 * ((x - mu) / sg) ** 2) / (sg * np.sqrt(2 * np.pi))
+                ax.plot(x, pdf, color=color, lw=1.6, label=label)
+                ax.fill_between(x, pdf, color=color, alpha=0.25)
+                ax.axvline(mu, color=color, lw=0.8, ls=":")
+            if len(fits) == 2:
+                cross = self._gaussian_crossing(fits[0][:2], fits[1][:2])
+                if cross is not None:
+                    ax.axvline(cross, color="k", lw=1.0, ls="--", label=f"curves cross at S={cross:.3f}")
+        if len(pos) == 0:
+            ax.text(0.5, 0.9, "no GT pairs for this environment", ha="center",
+                    transform=ax.transAxes, fontsize=8)
+        auc = self._auroc(pos, neg)
+        title = "Sinkhorn score distribution"
+        if auc is not None:
+            title += f"  ·  AUROC {auc:.3f}"
+        ax.set_title(f"{title}\n{subtitle}" if subtitle else title, fontsize=9)
+        ax.set_xlabel("Sinkhorn score S[a, s]", fontsize=8)
+        ax.set_ylabel("Gaussian density", fontsize=8)
+        ax.tick_params(labelsize=7)
+        ax.legend(fontsize=7, loc="upper right")
+        self._fig.tight_layout()
+        self._canvas.draw_idle()
+
+
 class Dashboard(QMainWindow):
     def __init__(self, matcher, model_name=None):
         super().__init__()
@@ -2060,6 +2177,59 @@ class Dashboard(QMainWindow):
         )
         self._model_btn.clicked.connect(self._on_select_model)
         top.addWidget(self._model_btn)
+
+        # Monte Carlo Dropout (edge-feature models only): N stochastic passes with the
+        # embedding dropout layers on at rate p, averaging either the Sinkhorn score or the
+        # normalised affinity per cell. See edge_model.EdgeMatcher._forward_mcd.
+        top.addSpacing(16)
+        self._mcd_btn = QPushButton("MCD")
+        self._mcd_btn.setCheckable(True)
+        top.addWidget(self._mcd_btn)
+        top.addWidget(QLabel("passes:"))
+        self._mcd_passes = QSpinBox()
+        self._mcd_passes.setRange(2, 200)
+        self._mcd_passes.setValue(30)
+        top.addWidget(self._mcd_passes)
+        top.addWidget(QLabel("average:"))
+        self._mcd_mode = QComboBox()
+        self._mcd_mode.addItem("Sinkhorn", "sinkhorn")
+        self._mcd_mode.addItem("Affinity", "affinity")
+        self._mcd_mode.setToolTip(
+            "Sinkhorn: mean/std of the Sinkhorn score per cell, Hungarian on the mean.\n"
+            "Affinity: mean/std of the normalised affinity per cell, then one Sinkhorn + Hungarian."
+        )
+        top.addWidget(self._mcd_mode)
+        top.addWidget(QLabel("p:"))
+        self._mcd_p = QDoubleSpinBox()
+        self._mcd_p.setRange(0.0, 0.9)
+        self._mcd_p.setDecimals(3)
+        self._mcd_p.setSingleStep(0.01)
+        self._mcd_p.setToolTip("Dropout rate of the embedding dropout layers during the MC passes.")
+        top.addWidget(self._mcd_p)
+        top.addWidget(QLabel("attn p:"))
+        self._mcd_p_attn = QDoubleSpinBox()
+        self._mcd_p_attn.setRange(0.0, 0.9)
+        self._mcd_p_attn.setDecimals(3)
+        self._mcd_p_attn.setSingleStep(0.01)
+        self._mcd_p_attn.setToolTip(
+            "Dropout rate on the GATv2 attention coefficients during the MC passes (0 = off).\n"
+            "PGM_class's MC path (matching_synthetic_dataset.py) switches this on at the trained rate.")
+        top.addWidget(self._mcd_p_attn)
+        self._mcd_warn = QLabel("")
+        self._mcd_warn.setStyleSheet("color: #c0392b;")
+        top.addWidget(self._mcd_warn)
+        # Debounce: a spinbox drag or a burst of changes triggers one re-run, 300 ms after
+        # the last change (an MCD run costs `passes` forward passes).
+        self._mcd_timer = QTimer(self)
+        self._mcd_timer.setSingleShot(True)
+        self._mcd_timer.setInterval(300)
+        self._mcd_timer.timeout.connect(self._on_mcd_changed)
+        self._mcd_btn.toggled.connect(lambda _checked: self._mcd_timer.start())
+        self._mcd_passes.valueChanged.connect(lambda _v: self._kick_mcd())
+        self._mcd_mode.currentIndexChanged.connect(lambda _i: self._kick_mcd())
+        self._mcd_p.valueChanged.connect(lambda _v: self._kick_mcd())
+        self._mcd_p_attn.valueChanged.connect(lambda _v: self._kick_mcd())
+        self._sync_mcd_controls()
 
         top.addStretch(1)
         root.addLayout(top)
@@ -2091,6 +2261,7 @@ class Dashboard(QMainWindow):
         self._dryrun_panel = GraphPanel("A + S — dry-run matcher")
         self._affinity_panel = GraphPanel("A + S — affinity")
         self._simnormed_panel = GraphPanel("A + S — sim_normed")
+        self._score_dist_panel = ScoreDistributionPanel("Sinkhorn scores: GT matches vs non-matches")
 
         # Metrics column for the right of the grid. Top is the combined
         # (all-types) box, below it three collapsible sections — one per
@@ -2105,7 +2276,9 @@ class Dashboard(QMainWindow):
         _combined_layout = QVBoxLayout(self._metrics_box)
         _combined_layout.setContentsMargins(8, 6, 8, 6)
         _combined_layout.setSpacing(2)
-        self._metric_labels = _build_metric_rows(_combined_layout)
+        self._metric_labels = _build_metric_rows(
+            _combined_layout, _METRIC_ROW_SPEC + _MCD_ROW_SPEC
+        )
         _mc_layout.addWidget(self._metrics_box)
 
         # S's current displacement from A — dx/dy/rotation, live-tracking
@@ -2165,6 +2338,8 @@ class Dashboard(QMainWindow):
         # so the column stays at its content width; the six 3D panels keep
         # their existing column shares.
         self._grid.addWidget(self._metrics_container, 1, 3)
+        # Score distribution sits in the cell above the Metrics column.
+        self._grid.addWidget(self._score_dist_panel, 0, 3)
         self._grid.setColumnStretch(0, 1)
         self._grid.setColumnStretch(1, 1)
         self._grid.setColumnStretch(2, 1)
@@ -3201,9 +3376,92 @@ class Dashboard(QMainWindow):
         self._current_model_name = selected
         self._model_btn.setText(selected)
         self.setWindowTitle(f"Graph Matching Dashboard — {self._matcher.display}")
+        self._sync_mcd_controls()
 
         if self._current_a is not None and self._current_s is not None:
             self._on_recompute()
+
+    # ── Monte Carlo Dropout controls ─────────────────────────────────────────────────────────
+
+    def _sync_mcd_controls(self):
+        """Reset the MCD controls for the current matcher: off, p back to the model's trained
+        dropout, and greyed out unless the matcher implements MCD (edge-feature models)."""
+        supported = getattr(self._matcher, "supports_mcd", False)
+        blockers = [QSignalBlocker(w) for w in
+                    (self._mcd_btn, self._mcd_passes, self._mcd_mode, self._mcd_p,
+                     self._mcd_p_attn)]
+        self._mcd_btn.setChecked(False)
+        trained = float(getattr(self._matcher, "trained_dropout_emb", 0.0))
+        self._mcd_p.setValue(trained)
+        trained_attn = float(getattr(self._matcher, "trained_attn_dropout", 0.0))
+        self._mcd_p_attn.setValue(trained_attn)
+        del blockers
+        if supported:
+            self._matcher.set_mcd(False)
+        for w in (self._mcd_btn, self._mcd_passes, self._mcd_mode, self._mcd_p,
+                  self._mcd_p_attn):
+            w.setEnabled(supported)
+        self._mcd_btn.setToolTip(
+            f"Monte Carlo Dropout: average over N stochastic forward passes "
+            f"(model trained with dropout_emb = {trained:.3f}, attn_dropout = {trained_attn:.3f})."
+            if supported else
+            "MCD is available only for the edge-feature models "
+            "(adj_no_glob_65_edge, adj_glob_65_edgefeat_rooms)."
+        )
+        self._update_mcd_warning()
+
+    def _update_mcd_warning(self):
+        if not getattr(self._matcher, "supports_mcd", False):
+            self._mcd_warn.setText("")
+            return
+        p, p_attn = self._mcd_p.value(), self._mcd_p_attn.value()
+        trained = float(getattr(self._matcher, "trained_dropout_emb", 0.0))
+        trained_attn = float(getattr(self._matcher, "trained_attn_dropout", 0.0))
+        notes = []
+        if p <= 0.0 and p_attn <= 0.0:
+            notes.append("p = attn p = 0: all passes identical")
+        if p > trained + 1e-9:
+            notes.append(f"p > trained ({trained:.3f})")
+        if p_attn > trained_attn + 1e-9:
+            notes.append(f"attn p > trained ({trained_attn:.3f})")
+        self._mcd_warn.setText(" · ".join(notes))
+
+    def _kick_mcd(self):
+        self._update_mcd_warning()
+        if self._mcd_btn.isChecked():   # settings only matter while MCD is on
+            self._mcd_timer.start()
+
+    def _on_mcd_changed(self):
+        if not getattr(self._matcher, "supports_mcd", False):
+            return
+        self._matcher.set_mcd(
+            self._mcd_btn.isChecked(),
+            passes=self._mcd_passes.value(),
+            mode=self._mcd_mode.currentData(),
+            p=self._mcd_p.value(),
+            p_attn=self._mcd_p_attn.value(),
+        )
+        self._update_mcd_warning()
+        self._rerun_matcher()
+
+    def _rerun_matcher(self):
+        """Re-run matching on the current graphs and refresh the panels. Unlike `_on_recompute`
+        this takes no undo snapshot and does not rebuild edges: only the matcher changed."""
+        if self._current_a is None or self._current_s is None:
+            return
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            _t0 = time.perf_counter()
+            pred, ints, a_nodes, s_nodes = self._matcher.match(self._current_a, self._current_s)
+            self._match_time_s = time.perf_counter() - _t0
+        finally:
+            QApplication.restoreOverrideCursor()
+        self._current_pred = pred
+        self._current_ints = ints
+        self._current_a_nodes = a_nodes
+        self._current_s_nodes = s_nodes
+        self._refresh_combined()
+        self._apply_shared_view()
 
     def _on_recompute(self):
         """Pull the edited graphs out of the editor panels and re-run the
@@ -3507,6 +3765,14 @@ class Dashboard(QMainWindow):
                 enable_hover=enable_hover,
             )
 
+        if self._current_ints is not None:
+            meta = self._current_ints.get("mcd")
+            sub = (f"MCD mean of {meta['passes']} passes ({meta['mode']})" if meta
+                   else "single forward pass")
+            self._score_dist_panel.update_scores(
+                self._current_ints.get("S"), self._current_a_nodes, self._current_s_nodes,
+                self._current_gt, subtitle=f"{self._current_env} · {sub}",
+            )
         self._apply_shared_view()
 
     def _update_metrics(self, a_nodes, s_nodes):
@@ -3524,6 +3790,7 @@ class Dashboard(QMainWindow):
             self._current_gt, self._current_pred, total_all,
         )
         combined["match_time"] = self._match_time_s
+        combined.update(self._mcd_std_metrics())
         self._fill_metric_labels(self._metric_labels, combined)
 
         a_types = _node_type_map(self._current_a)
@@ -3547,6 +3814,23 @@ class Dashboard(QMainWindow):
             )
             m = _compute_classification_metrics(gt_sub, pred_sub, total_sub)
             self._fill_metric_labels(self._metric_labels_by_type[key], m)
+
+    def _mcd_std_metrics(self):
+        """Mean per-cell std across the MC Dropout passes: over every A x S cell, and over the
+        cells Hungarian picked. Std of S in "sinkhorn" mode, of sim_normed in "affinity" mode."""
+        ints = self._current_ints or {}
+        unc = ints.get("uncertainty")
+        if unc is None:
+            return {"mcd_std_of": None, "mcd_std_mean": None, "mcd_std_pred": None}
+        unc = np.asarray(unc)
+        perm = np.asarray(ints["perm"]) > 0
+        meta = ints.get("mcd", {})
+        of = "S" if meta.get("mode") == "sinkhorn" else "sim_normed"
+        return {
+            "mcd_std_of": f"{of} (N={meta.get('passes', '?')})",
+            "mcd_std_mean": f"{unc.mean():.4g}",
+            "mcd_std_pred": f"{unc[perm].mean():.4g}" if perm.any() else None,
+        }
 
     @staticmethod
     def _fill_metric_labels(labels, metrics):
