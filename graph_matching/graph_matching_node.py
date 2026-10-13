@@ -34,6 +34,7 @@ import tempfile
 
 from rclpy.node import Node
 from .utils import *
+from .topology_rules import symmetrize as _symmetrize_edges
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 from tf2_ros.buffer_interface import BufferInterface
@@ -1032,17 +1033,27 @@ class GraphMatchingNode(Node):
                 G.graph.add_edge(ws_neighbors[0], ws_neighbors[-1])
 
         
-        # # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
-        # # Training data has every ws connected to exactly one room — orphan ws nodes
-        # # are a structural pattern the GNN was never trained on and hurt match quality.
-        # orphan_ws = [
-        #     n for n, d in G.graph.nodes(data=True)
-        #     if d.get("type") == "ws"
-        #     and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
-        # ]
-        # if orphan_ws:
-        #     self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
-        #     G.graph.remove_nodes_from(orphan_ws)
+        # Remove isolated ws nodes (no room predecessor) for both Prior and Online.
+        # Training data has every ws connected to exactly one room — orphan ws nodes
+        # are a structural pattern the GNN was never trained on and hurt match quality
+        # (with them kept in the Prior, adj_glob_65_edgefeat_rooms scored F1 0.000 on every
+        # clk_blashett / clk_redange run). The raw-level Prior filter above stays disabled.
+        # if not is_prior:
+        orphan_ws = [
+            n for n, d in G.graph.nodes(data=True)
+            if d.get("type") == "ws"
+            and not any(G.graph.nodes[p].get("type") == "room" for p in G.graph.predecessors(n))
+        ]
+        if orphan_ws:
+            self.get_logger().warn(f"[{G.name}] Removing {len(orphan_ws)} orphan ws nodes with no room connection: {orphan_ws}")
+            G.graph.remove_nodes_from(orphan_ws)
+
+        # Every edge above is added in ONE direction (room->ws, room_i->room_j, the forward ws
+        # ring), but the GNNs were trained on fully reciprocal graphs. For the edge-feature models
+        # a missing reverse edge is not just half the messages: each direction carries a different
+        # feature row (room-framed vs wall-framed), so half the rows would be absent.
+        n_added = _symmetrize_edges(G.graph)
+        self.get_logger().info(f"[{G.name}] Added {n_added} reverse edges (graph now reciprocal)")
 
         # G.from_2D_to_3D()
         # G._add_complete_viz_attributes_to_graph()
@@ -1373,9 +1384,9 @@ class GraphMatchingNode(Node):
                 self.get_logger().info(f'Converted {graph["name"]} to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
 
                 # Always save Prior immediately.
-                # Online is saved only at the matching trigger (>= 4 rooms) so the
+                # Online is saved only at the matching trigger (>= 1 room) so the
                 # pickle always reflects the state actually used for matching, not a
-                # later callback where SLAM may have merged rooms back below 4.
+                # later callback where SLAM may have lost every room again.
                 graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
                 os.makedirs(graph_dicts_dir, exist_ok=True)
                 if graph["name"] == "Prior":
@@ -1409,7 +1420,7 @@ class GraphMatchingNode(Node):
         if graph["name"] == "Online" and len(room_ids)>=3:
             self.get_logger().info(f"Starting match!")
             # Save Online pickle here — every time matching fires — so the pickle
-            # always holds the most recent >= 4-room state used for matching.
+            # always holds the most recent >= 1-room state used for matching.
             if self.use_pgm and "Online" in self.graphs_gnn:
                 graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
                 with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
