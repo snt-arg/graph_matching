@@ -114,8 +114,53 @@ class GraphMatchingNode(Node):
         #Use parameters from ROS2 parameter server to select with matcher to use
         self.use_pgm = self.get_parameter_or('use_pgm', Parameter('use_pgm', Parameter.Type.BOOL, False)).value
         """ use_pgm: is already set as true in the /graph_matching/config/params.yaml"""
+        # Matching starts once the Online graph has this many rooms.
+        self.match_min_rooms = self.get_parameter_or('match_min_rooms', Parameter('match_min_rooms', Parameter.Type.INTEGER, 3)).value
+        # Publish unique matches on graph_matching/unique_match, the topic is_graphs merges the
+        # A-graph from. Off by default (the publish call had been commented out).
+        self.publish_unique_match = self.get_parameter_or('publish_unique_match', Parameter('publish_unique_match', Parameter.Type.BOOL, False)).value
+        # GNN loaded once in this process instead of a subprocess that reloads torch + model per call.
+        self.pgm_in_process = self.get_parameter_or('pgm_in_process', Parameter('pgm_in_process', Parameter.Type.BOOL, True)).value
+        # GNN only (in-process): drop assignments whose Sinkhorn soft score is below this value before the
+        # split->plane vote and publishing. 0.0 = off (default, unchanged behaviour).
+        self.pgm_min_score = float(self.get_parameter_or('pgm_min_score', Parameter('pgm_min_score', Parameter.Type.DOUBLE, 0.0)).value)
+        # GNN only: verify the voted pairs before publishing (gnn_verify.py: classic CLIPPER joint consistency on
+        # rooms and walls, consistency with the pairs already published, refusal while the observed part of the
+        # building fits several alignments). pgm_min_score is the candidate cut t_c. Off by default.
+        # pgm_verify_cfg: JSON overrides of gnn_verify.DEFAULTS, e.g. '{"global_consistency": 0.9}'.
+        self.pgm_verify = self.get_parameter_or('pgm_verify', Parameter('pgm_verify', Parameter.Type.BOOL, False)).value
+        self.pgm_verify_cfg = json.loads(self.get_parameter_or('pgm_verify_cfg', Parameter('pgm_verify_cfg', Parameter.Type.STRING, '{}')).value or '{}')
+        self.pgm_published = {}  # (kind, online original id) -> prior original id, pairs the verified GNN published
+        # GNN only: never match before the Online graph has this many rooms, whatever match_min_rooms (the general
+        # trigger, shared with the classic matcher) is set to.
+        self.pgm_min_rooms = int(self.get_parameter_or('pgm_min_rooms', Parameter('pgm_min_rooms', Parameter.Type.INTEGER, 2)).value)
+        self._pgm_last_S = None
+        # Real-time deadline (ms) for any matcher: a result computed in longer than this is not published (it was
+        # matched on a graph that is_graphs has already replaced, every map_cloud_update_interval = 3 s). 0 = off.
+        self.match_deadline_ms = float(self.get_parameter_or('match_deadline_ms', Parameter('match_deadline_ms', Parameter.Type.DOUBLE, 0.0)).value)
+        # Optional CSV with one row per matcher call (timing + outcome); "" = off.
+        self.match_timing_csv = self.get_parameter_or('match_timing_csv', Parameter('match_timing_csv', Parameter.Type.STRING, '')).value
+        # Paired evaluation: at every trigger BOTH matchers run on the same Online graph. use_pgm still
+        # picks the live matcher (the only one that can reach graph_matching/unique_match); the other
+        # one only computes and logs. Each matcher's unique match also goes to
+        # graph_matching/paired_match/<matcher> and the call id to graph_matching/paired_call, which
+        # is_graphs (whatif_dir) uses to merge each matcher into its own copy of the graph.
+        self.paired_matchers = self.get_parameter_or('paired_matchers', Parameter('paired_matchers', Parameter.Type.BOOL, False)).value
+        # Paired mode without the shadow run: only the live matcher computes, the per-call logging stays (for the GT
+        # check). The shadow runs before the live result is published, so a slow shadow delays the live matcher.
+        self.shadow_matcher = self.get_parameter_or('shadow_matcher', Parameter('shadow_matcher', Parameter.Type.BOOL, True)).value
+        # Debug: before every classic call, pickle its input (Prior/Online GraphWrappers + stored match memory) to
+        # online_calls/classic_call_<id>.pkl next to match_timing_csv, for an offline replay of GraphMatcher.match.
+        self.save_classic_inputs = self.get_parameter_or('save_classic_inputs', Parameter('save_classic_inputs', Parameter.Type.BOOL, False)).value
+        self.match_call_id = 0
+        if self.paired_matchers:
+            from std_msgs.msg import Int32 as Int32Msg
+            self.paired_match_publishers = {m: self.create_publisher(MatchMsg, f'graph_matching/paired_match/{m}', 10)
+                                            for m in ("classic", "gnn")}
+            self.paired_call_publisher = self.create_publisher(Int32Msg, 'graph_matching/paired_call', 10)
+            self._int32_msg = Int32Msg
 
-        if self.use_pgm:
+        if self.use_pgm or self.paired_matchers:
             self.setup_pgm()
             self.create_subscription(PlanesDataMsg, '/s_graphs/all_map_planes', self.all_planes_callback_wrapper, 10)
             self.get_logger().info('Using PGM matcher')
@@ -138,6 +183,19 @@ class GraphMatchingNode(Node):
         """And the full path to the PGM inference script, that is the pgm_inference_wrapper.py."""
         
         """PGM setup."""
+        if self.pgm_in_process:
+            # Same model as pgm_inference_wrapper.py (its MODEL constant), loaded once. Only the
+            # edge-feature models are supported here: edge_model.EdgeMatcher is their only loader.
+            gnn_src = "/root/workspace/src/graph_matching_gnn/graph_matching"
+            if gnn_src not in sys.path:
+                sys.path.append(gnn_src)
+            import edge_model
+            import pgm_inference_wrapper
+            model_dir = os.path.join("/root/workspace/src/graph_matching_gnn/GNN/models/partial_graph_matching",
+                                     pgm_inference_wrapper.MODEL)
+            self.pgm_matcher = edge_model.EdgeMatcher(model_dir)
+            self.get_logger().info(f"PGM mode enabled (in-process, model {pgm_inference_wrapper.MODEL})")
+            return
         self.get_logger().info("PGM mode enabled (using subprocess)")
 
 
@@ -1064,6 +1122,99 @@ class GraphMatchingNode(Node):
 
 
 
+    def log_match_timing(self, graph, matcher, match_ms, n_rooms, success, n_hypotheses, unique_published,
+                         role="live"):
+        """One line per matcher call in the log, and a CSV row when match_timing_csv is set."""
+        self.get_logger().info(f"[MATCH_TIMING] call={self.match_call_id} matcher={matcher} role={role} "
+                               f"t_ms={match_ms:.1f} online_rooms={n_rooms} "
+                               f"success={success} hypotheses={n_hypotheses} unique_published={unique_published}")
+        if not self.match_timing_csv:
+            return
+        # Graph messages carry no header: the row is stamped with the node clock (wall time when the
+        # bag plays without --clock); the report maps it to the bag's sim stamps.
+        n_planes = sum(1 for n in graph.get("nodes", []) if n[1].get("type") == "Plane")
+        new = not os.path.exists(self.match_timing_csv)
+        with open(self.match_timing_csv, "a") as f:
+            if new:
+                f.write("node_time,matcher,t_ms,online_rooms,online_planes,success,hypotheses,unique_published,"
+                        "role,call_id\n")
+            f.write(f"{self.get_clock().now().nanoseconds / 1e9:.3f},{matcher},{match_ms:.2f},{n_rooms},{n_planes},"
+                    f"{int(bool(success))},{n_hypotheses},{int(unique_published)},{role},{self.match_call_id}\n")
+
+    def publish_paired(self, results, live):
+        """Paired mode, after both matchers ran on the same Online graph: each matcher's unique match
+        on graph_matching/paired_match/<matcher>, then the call id on graph_matching/paired_call.
+        With match_timing_csv set, also writes next to it match_pairs.jsonl (every hypothesis of
+        every matcher, for the GT check) and online_calls/call_<id>.pkl (the GNN-format Online
+        graph the call matched, which carries the wall geometry the GT check needs)."""
+        for m, ((m_success, m_matches, _, _), _) in results.items():
+            if m_success and m_matches and len(m_matches) == 1:
+                self.paired_match_publishers[m].publish(self.generate_match_msg(m_matches[0]))
+        self.paired_call_publisher.publish(self._int32_msg(data=self.match_call_id))
+        if not self.match_timing_csv:
+            return
+        out = os.path.dirname(os.path.abspath(self.match_timing_csv))
+        now = self.get_clock().now().nanoseconds / 1e9
+        with open(os.path.join(out, "match_pairs.jsonl"), "a") as f:
+            for m, ((m_success, m_matches, _, _), m_ms) in results.items():
+                hyps = [[[int(p["origin_node"]), int(p["target_node"]), p["origin_node_attrs"]["type"]]
+                         for p in h] for h in (m_matches or [])]
+                f.write(json.dumps({"call_id": self.match_call_id, "node_time": now, "matcher": m,
+                                    "role": "live" if m == live else "shadow", "t_ms": round(m_ms, 2),
+                                    "success": bool(m_success), "hypotheses": hyps,
+                                    "deadline_miss": bool(self.match_deadline_ms > 0 and m_ms > self.match_deadline_ms),
+                                    "late_match": getattr(self, "_late_match", {}).get(m, False)}) + "\n")
+        if "Online" in self.graphs_gnn:
+            os.makedirs(os.path.join(out, "online_calls"), exist_ok=True)
+            with open(os.path.join(out, "online_calls", f"call_{self.match_call_id}.pkl"), "wb") as f:
+                pickle.dump(self.graphs_gnn["Online"], f)
+
+    def _pgm_matrix_in_process(self, graph1, graph2):
+        """(0/1 Hungarian matrix, g1 node order, g2 node order) from the GNN loaded in setup_pgm.
+        Same contract as the matrix pgm_inference_wrapper.py writes, so the code after it is shared."""
+        _, ints, g1_nodes, g2_nodes = self.pgm_matcher.match(self.graphs_gnn[graph1], self.graphs_gnn[graph2])
+        perm = np.asarray(ints["perm"])
+        self._pgm_last_S = np.asarray(ints["S"])  # Sinkhorn soft scores, same layout as perm (pair score for the verifier)
+        if self.pgm_min_score > 0:
+            # keep only assignments whose Sinkhorn soft score reaches pgm_min_score (0 = off)
+            keep = np.asarray(ints["S"]) >= self.pgm_min_score
+            dropped = int(((perm > 0.7) & ~keep).sum())
+            perm = perm * keep
+            if dropped:
+                self.get_logger().info(f"[PGM_MIN_SCORE] dropped {dropped} assignments with soft score < {self.pgm_min_score}")
+        return perm, list(g1_nodes), list(g2_nodes)
+
+    def _verify_pgm_matches(self, matches, graph1, graph2):
+        """gnn_verify on the voted GNN pairs; -> the pairs to publish (possibly none). The published memory is only
+        updated when this GNN is the live, publishing matcher (a shadow GNN merges nothing)."""
+        from graph_matching import gnn_verify
+
+        def dicts(gw):
+            rooms, planes = {}, {}
+            for n, a in gw.get_attributes_of_all_nodes():
+                if a.get("type") == "Finite Room":
+                    rooms[str(n)] = np.asarray(a["Geometric_info"], float)[:3]
+                elif a.get("type") == "Plane":
+                    planes[str(n)] = np.asarray(a["Geometric_info"], float)[:6]
+            return rooms, planes
+
+        pr, pp = dicts(self.gm.graphs[graph1])
+        orr, op = dicts(self.gm.graphs[graph2])
+        cand = [{"prior": str(m["origin_node"]), "online": str(m["target_node"]),
+                 "kind": "room" if m["origin_node_attrs"]["type"] == "Finite Room" else "plane",
+                 "score": m["sinkhorn"], "match": m} for m in matches]
+        new, info = gnn_verify.verify(cand, pr, pp, orr, op, self.pgm_published, self.gm.params, self.pgm_verify_cfg)
+        self.get_logger().info(
+            f"[PGM_VERIFY] call {self.match_call_id}: {len(cand)} candidates -> {info.get('reason')}, publish {len(new)} "
+            f"(rooms {info.get('rooms_kept')}/{info.get('rooms_in')} avg {info.get('room_avg', 0):.2f}, walls "
+            f"{info.get('walls_kept')}/{info.get('walls_in')} avg {info.get('wall_avg', 0):.2f}, alignments "
+            f"{info.get('sym_best')}/{info.get('sym_rival')}, {info.get('time_dropped', 0)} contradicting, "
+            f"{info.get('ms', 0):.1f} ms)")
+        if self.use_pgm and self.publish_unique_match:
+            for c in new:
+                self.pgm_published[(c["kind"], c["online"])] = c["prior"]
+        return [c["match"] for c in new]
+
     def run_pgm_matching(self, graph1, graph2):
         """Run PGM matching on two graphs."""
         try:
@@ -1074,57 +1225,59 @@ class GraphMatchingNode(Node):
             self.get_logger().info(f"Running PGM on {graph1} ({g1.number_of_nodes()} nodes) "
                                 f"vs {graph2} ({g2.number_of_nodes()} nodes)")
 
-
-            # Create temporary files
-            with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f1:
-                g1_path = f1.name
-                pickle.dump(g1, f1)
+            if self.pgm_in_process:
+                matching_matrix, g1_nodes, g2_nodes = self._pgm_matrix_in_process(graph1, graph2)
+            else:
+                # Create temporary files
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f1:
+                    g1_path = f1.name
+                    pickle.dump(g1, f1)
             
-            with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f2:
-                g2_path = f2.name
-                pickle.dump(g2, f2)
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f2:
+                    g2_path = f2.name
+                    pickle.dump(g2, f2)
             
-            with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f3:
-                output_path = f3.name
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f3:
+                    output_path = f3.name
             
-            # Run subprocess (Note: susbprocess run has to return 0 for the code to proceed, otherwise it will jump to the except block and return no matches)
-            result = subprocess.run(
-                [self.pgm_python, self.pgm_script, g1_path, g2_path, output_path],
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
+                # Run subprocess (Note: susbprocess run has to return 0 for the code to proceed, otherwise it will jump to the except block and return no matches)
+                result = subprocess.run(
+                    [self.pgm_python, self.pgm_script, g1_path, g2_path, output_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
+                )
             
-            # Log output
-            if result.stdout:
-                for line in result.stdout.strip().split('\n'):
-                    if line:
-                        self.get_logger().info(f"[PGM] {line}")
+                # Log output
+                if result.stdout:
+                    for line in result.stdout.strip().split('\n'):
+                        if line:
+                            self.get_logger().info(f"[PGM] {line}")
             
-            if result.stderr:
-                for line in result.stderr.strip().split('\n'):
-                    if line:
-                        self.get_logger().warn(f"[PGM stderr] {line}")
+                if result.stderr:
+                    for line in result.stderr.strip().split('\n'):
+                        if line:
+                            self.get_logger().warn(f"[PGM stderr] {line}")
             
-            if result.returncode != 0:
-                self.get_logger().error(f"PGM inference failed with code: {result.returncode}")
+                if result.returncode != 0:
+                    self.get_logger().error(f"PGM inference failed with code: {result.returncode}")
+                    os.unlink(g1_path)
+                    os.unlink(g2_path)
+                    os.unlink(output_path)
+                    return False, [], [], []
+            
+                # Load result
+                with open(output_path, 'rb') as f:
+                    pgm_result = pickle.load(f)
+            
+                matching_matrix = pgm_result['matching_matrix']
+                g1_nodes = pgm_result['g1_nodes']
+                g2_nodes = pgm_result['g2_nodes']
+            
+                # Clean up
                 os.unlink(g1_path)
                 os.unlink(g2_path)
                 os.unlink(output_path)
-                return False, [], [], []
-            
-            # Load result
-            with open(output_path, 'rb') as f:
-                pgm_result = pickle.load(f)
-            
-            matching_matrix = pgm_result['matching_matrix']
-            g1_nodes = pgm_result['g1_nodes']
-            g2_nodes = pgm_result['g2_nodes']
-            
-            # Clean up
-            os.unlink(g1_path)
-            os.unlink(g2_path)
-            os.unlink(output_path)
             
             # Convert matrix to classic match format for visualization
             matches = []
@@ -1178,7 +1331,8 @@ class GraphMatchingNode(Node):
                         "type": target_node["original_type"],
                         **target_attrs
                     },
-                    "score": float(matching_matrix[row, col])
+                    "score": float(matching_matrix[row, col]),
+                    "sinkhorn": float(self._pgm_last_S[row, col]) if self.pgm_in_process and self._pgm_last_S is not None else 1.0,
                 })
             
             # # DEBUG: log raw GNN matches before dedup to diagnose missing wall matches
@@ -1210,10 +1364,14 @@ class GraphMatchingNode(Node):
                 m = vote_list[0]
                 if m["origin_node"] not in used_origins and m["target_node"] not in used_targets:
                     m["score"] = len(vote_list)  # number of split pairs agreeing on this match
+                    m["sinkhorn"] = max(v["sinkhorn"] for v in vote_list)
                     unique_matches.append(m)
                     used_origins.add(m["origin_node"])
                     used_targets.add(m["target_node"])
             matches = unique_matches
+
+            if self.pgm_verify:
+                matches = self._verify_pgm_matches(matches, graph1, graph2)
 
             if matches:
                 self.get_logger().info(f"PGM found {len(matches)} correspondences")
@@ -1375,7 +1533,7 @@ class GraphMatchingNode(Node):
         self.gm.graphs[graph["name"]].set_name(graph["name"]) # Set the name of the graph in the wrapper for later reference (e.g. during visualization)
         # options = {'node_color': self.gm.graphs[graph["name"]].define_draw_color_option_by_node_type(), 'node_size': 50, 'width': 2, 'with_labels' : True}
 
-        if self.use_pgm:
+        if self.use_pgm or self.paired_matchers:
             if graph["name"] != "Prior" and not self.original_planes:
                 self.get_logger().warn(f'Skipping GNN conversion for {graph["name"]}: original_planes not yet received from /s_graphs/all_map_planes')
             else:
@@ -1417,11 +1575,11 @@ class GraphMatchingNode(Node):
         # ### Match
         room_ids = list(self.gm.graphs[graph["name"]].filter_graph_by_node_types("Finite Room").get_nodes_ids())
         self.get_logger().info(f"Number of rooms: {len(room_ids)}, IDs: {room_ids}")
-        if graph["name"] == "Online" and len(room_ids)>=3:
+        if graph["name"] == "Online" and len(room_ids)>=self.match_min_rooms:
             self.get_logger().info(f"Starting match!")
             # Save Online pickle here — every time matching fires — so the pickle
             # always holds the most recent >= 1-room state used for matching.
-            if self.use_pgm and "Online" in self.graphs_gnn:
+            if (self.use_pgm or self.paired_matchers) and "Online" in self.graphs_gnn:
                 graph_dicts_dir = "/root/workspace/src/graph_matching/graph_matching/graph_dicts"
                 with open(os.path.join(graph_dicts_dir, "Online.pkl"), "wb") as pickle_file:
                     pickle.dump(self.graphs_gnn["Online"], pickle_file)
@@ -1431,20 +1589,43 @@ class GraphMatchingNode(Node):
             # prior_room_nodes = list(self.gm.graphs['Prior'].filter_graph_by_node_attributes({'type': 'Finite Room'}).get_nodes_ids())
             # self.gm.graphs["Prior"].remove_nodes(["58", "57", "56", "55", "54", "53", "52"])
             ### ROOM NODES IN A-GRAPH: 51, 52, 53, 54, 55, 56, 57, 58
-            if self.use_pgm:
-                # # For PGM convert Prior to GNN format on-demand if not already done
-                # # Prior always arrives first, so this block is redundant
-                # if "Prior" not in self.graphs_gnn and "Prior" in self.gm.graphs:
-                #     self.get_logger().info(f"Converting Prior graph to DiGraph format on-demand...")
-                #     gnn_wrapper = self.convert_wrapper_to_gnn_format(self.gm.graphs["Prior"])
-                #     self.graphs_gnn["Prior"] = gnn_wrapper
-                #     self.get_logger().info(f'Converted Prior to DiGraph format: {gnn_wrapper.graph.number_of_nodes()} nodes, {gnn_wrapper.graph.number_of_edges()} edges')
-                #if "Prior" not in self.graphs_gnn:
-                #    self.get_logger().warn("Prior graph not yet received, skipping PGM matching")
-                #    return
-                success, matches, matches_full, matches_dev = self.run_pgm_matching("Prior", "Online")
-            else:
-                success, matches, matches_full, matches_dev = self.gm.match("Prior", "Online", add_deviations=True)
+            # The live matcher runs first, so its time is not affected by the shadow one.
+            self.match_call_id += 1
+            live = "gnn" if self.use_pgm else "classic"
+            order = [live] + ([m for m in ("gnn", "classic") if m != live] if self.paired_matchers and self.shadow_matcher else [])
+            results, memory = {}, {}
+            for m in order:
+                if self.match_deadline_ms > 0:   # snapshot (untimed): a late call must leave no trace in the matcher
+                    memory[m] = (copy.deepcopy((self.gm.stored_match_graph, self.gm.stored_match_graph_dev))
+                                 if m == "classic" else dict(self.pgm_published))
+                if m == "classic" and self.save_classic_inputs and self.match_timing_csv:
+                    out = os.path.join(os.path.dirname(os.path.abspath(self.match_timing_csv)), "online_calls")
+                    os.makedirs(out, exist_ok=True)
+                    with open(os.path.join(out, f"classic_call_{self.match_call_id}.pkl"), "wb") as f:
+                        pickle.dump({"Prior": self.gm.graphs["Prior"], "Online": self.gm.graphs["Online"],
+                                     "stored_match_graph": self.gm.stored_match_graph,
+                                     "stored_match_graph_dev": self.gm.stored_match_graph_dev}, f)
+                _t0 = time.perf_counter()
+                if m == "gnn" and len(room_ids) < self.pgm_min_rooms:
+                    self.get_logger().info(f"GNN waits: {len(room_ids)} Online rooms < pgm_min_rooms {self.pgm_min_rooms}")
+                    r = (False, [], [], [])
+                elif m == "gnn":
+                    r = self.run_pgm_matching("Prior", "Online")
+                else:
+                    r = self.gm.match("Prior", "Online", add_deviations=True)
+                results[m] = (r, (time.perf_counter() - _t0) * 1e3)
+            missed = {m for m, (_, m_ms) in results.items() if self.match_deadline_ms > 0 and m_ms > self.match_deadline_ms}
+            # whether each late call had produced a unique match before it was dropped (logged as late_match)
+            self._late_match = {m: bool(results[m][0][0] and results[m][0][1] and len(results[m][0][1]) == 1) for m in missed}
+            for m in missed:
+                self.get_logger().warn(f"[DEADLINE_MISS] call={self.match_call_id} matcher={m} "
+                                       f"t_ms={results[m][1]:.1f} > {self.match_deadline_ms:.0f}: result dropped, matcher memory restored")
+                results[m] = ((False, [], [], []), results[m][1])
+                if m == "classic":
+                    self.gm.stored_match_graph, self.gm.stored_match_graph_dev = memory[m]
+                else:
+                    self.pgm_published = memory[m]
+            (success, matches, matches_full, matches_dev), match_ms = results[live]
             # self.get_logger().info(f"DBG success: {success}")
             # self.get_logger().info(f"DBG matches: {matches}")
             # self.get_logger().info(f"DBG matches_full: {matches_full}")
@@ -1468,9 +1649,21 @@ class GraphMatchingNode(Node):
 
 
 
+            unique_published = False
+            if success and len(matches) == 1 and self.publish_unique_match:
+                self.unique_match_publisher.publish(self.generate_match_msg(matches[0]))
+                unique_published = True
+            for m, ((m_success, m_matches, _, _), m_ms) in results.items():
+                self.log_match_timing(graph, m, m_ms, len(room_ids), m_success,
+                                      len(m_matches) if m_matches else 0,
+                                      unique_published if m == live else False,
+                                      role="live" if m == live else "shadow")
+            if self.paired_matchers:
+                self.publish_paired(results, live)
+
             if success and len(matches) == 1:
                 unique_match_msg = self.generate_match_msg(matches[0])
-                # self.unique_match_publisher.publish(unique_match_msg)
+                # self.unique_match_publisher.publish(unique_match_msg)   # see publish_unique_match above
                 # unique_match_visualization_inc_msg = self.generate_match_visualization_msg(matches[0])
                 # self.unique_match_visualization_inc_publisher.publish(unique_match_visualization_inc_msg)
                 unique_match_visualization_full_msg = self.generate_match_visualization_msg(matches_full[0])

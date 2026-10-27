@@ -674,8 +674,12 @@ class GraphMatcher():
                 if lvl == 1:
                     working_node_matches = working_node_attrs["match"]
                     working_node_score = working_node_attrs["score_intralevel"]
+                    # stored (incremental) matches can name nodes that are no longer in the current graphs (S-Graphs
+                    # ids are not permanent: planes merged / re-created, rooms cancelled by the is_graphs room
+                    # filter); skip them instead of raising KeyError, which killed the node mid-run
                     working_node_tuples = [{"origin_node" : int(working_node_match[0]), "target_node" : int(working_node_match[1]), "score" : working_node_score,\
-                                    "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches]
+                                    "origin_node_attrs" : G1_nodes[working_node_match[0]], "target_node_attrs" : G2_nodes[working_node_match[1]]} for working_node_match in working_node_matches
+                                    if working_node_match[0] in G1_nodes and working_node_match[1] in G2_nodes]
                     # self.logger.info(f"flag working_node_matches {working_node_matches}")
                 else:
                     working_node_tuples = []
@@ -684,6 +688,8 @@ class GraphMatcher():
                     working_node_split_scores = working_node_attrs["split_scores"]
                     for i, working_node_split_match in enumerate(working_node_split_matches):
                         for pair in working_node_split_match:
+                            if pair[0] not in G1_nodes or pair[1] not in G2_nodes:  # stale stored match, see above
+                                continue
                             pair_dictionary = {"origin_node" : int(pair[0]), "target_node" : int(pair[1]), "score" : working_node_split_scores[i],\
                                     "origin_node_attrs" : G1_nodes[pair[0]], "target_node_attrs" : G2_nodes[pair[1]]}
                             working_node_tuples.append(pair_dictionary)
@@ -856,6 +862,9 @@ class GraphMatcher():
             if self.stored_match_graph:
                 stored_match_graph = copy.deepcopy(self.stored_match_graph)
                 stored_match_graph_lvl_match = stored_match_graph.get_attributes_of_node(stored_match_graph.find_nodes_by_attrs({"type": merged_levels[1], "combination_type" : "group","merge_lvl": 1})[0])["match"]
+                G1_ids, G2_ids = set(G1_full.graph.nodes), set(G2_full.graph.nodes)
+                stored_match_graph_lvl_match = [m for m in stored_match_graph_lvl_match if m[0] in G1_ids and m[1] in G2_ids]
+            if self.stored_match_graph and stored_match_graph_lvl_match:
                 stored_match_graph_lvl_data = np.array([(copy.deepcopy(G1_full.get_attributes_of_node(match[0])["Geometric_info"]), copy.deepcopy(G2_full.get_attributes_of_node(match[1])["Geometric_info"])) for match in stored_match_graph_lvl_match])
                 data1, data2, A_numerical = self.add_parents_data(data1, data2, A_numerical, stored_match_graph_lvl_data[:,0,:], stored_match_graph_lvl_data[:,1,:])
                 # data1 = self.geometric_info_transformation(data1, merged_levels[1], G1_full.get_attributes_of_node(parent_node_attrs["match"][0])["Geometric_info"])

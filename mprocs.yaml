@@ -15,7 +15,7 @@ procs:
     shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/simulation/C1F2"'
     autostart: false
   rosbag_real:
-    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/ssd/datasets/clk_redange/runs_ros2/middle_house_2_bag --clock; rc=\$?; echo; echo \"=== rosbag_real: playback FINISHED at \$(date +%H:%M:%S) (exit code \$rc) ===\""'
+    shell: 'bash -c "sleep 3 && source /opt/ros/jazzy/setup.bash && sleep 3 && ros2 bag play ~/workspace/src/datasets/ssd/datasets/clk_blashett/left_house_floors/2025-09-08-09-59-10/1_F0_0-180s --clock; rc=\$?; echo; echo \"=== rosbag_real: playback FINISHED at \$(date +%H:%M:%S) (exit code \$rc) ===\""'
     autostart: true
   is_graphs_sim:
     shell: 'bash -c "sleep 2 && source /opt/ros/jazzy/setup.bash && sleep 1 && source ~/workspace/install/setup.bash && ros2 launch is_graphs is_graph_launch.py lidar_topic:=/platform/velodyne_points compute_odom:=true base_frame:=base_footprint"'

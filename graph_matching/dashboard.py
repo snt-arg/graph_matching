@@ -84,6 +84,8 @@ GRAPH_DICTS_DIR = Path(__file__).parent / "graph_dicts"
 #                                             3-dim node x + 9-dim edge_attr; loaded by edge_model.EdgeMatcher)
 #   "adj_glob_65_edgefeat_rooms"          → MatchingModel_EdgeAwareGATv2SinkhornWBCE (edge-feature rework,
 #                                             larger: hidden 256 / out 64 / heads 7 / edge_hidden 8)
+#   "Final model"                         → MatchingModel_EdgeAwareGATv2SinkhornWBCE, folder
+#                                             adj_glob_65_edgefeat_rooms_hp_real (see _MODEL_DIRS)
 MODEL = "ws_room_dropout_noise_inc_WBCE"
 
 # Make the dry-run matcher importable: it lives in the sibling graph_matching_gnn repo.
@@ -3406,7 +3408,7 @@ class Dashboard(QMainWindow):
             f"(model trained with dropout_emb = {trained:.3f}, attn_dropout = {trained_attn:.3f})."
             if supported else
             "MCD is available only for the edge-feature models "
-            "(adj_no_glob_65_edge, adj_glob_65_edgefeat_rooms)."
+            "(adj_no_glob_65_edge, adj_glob_65_edgefeat_rooms, Final model)."
         )
         self._update_mcd_warning()
 
@@ -3960,6 +3962,16 @@ _MODEL_CONFIGS = {
     # no difference to the Hungarian F1. Do NOT quote either sidecar's real_f1 -- those describe a
     # different trial, and that field has never reproduced for any model in this project.
     "adj_glob_65_edgefeat_rooms":          ("MatchingModel_EdgeAwareGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+    # Third edge-feature model, trained 2026-10-18 (folder adj_glob_65_edgefeat_rooms_hp_real; the
+    # live model of graph_matching_node). Dims from the weights: hidden 256 / out 64 / heads 8 /
+    # edge_hidden 16, 3 layers; best_val_model.pt is epoch 17. The Sinkhorn pair is not in the
+    # checkpoint -- it comes from the training run's params JSON, see PROVENANCE.txt in the folder.
+    # Shown as "Final model" so it is not confused with the other adj_glob_65* entries.
+    "Final model":                         ("MatchingModel_EdgeAwareGATv2SinkhornWBCE", "ws_room_dropout_noise_inc"),
+}
+# Display name → model folder, for entries whose picker name is not the folder name.
+_MODEL_DIRS = {
+    "Final model": "adj_glob_65_edgefeat_rooms_hp_real",
 }
 _DEFAULT_DATA_EQUAL = _DEFAULT_GNN_PATH / "preprocessed" / "graph_matching" / "equal"
 
@@ -3977,7 +3989,8 @@ def _load_gnn_matcher(model_name):
             f"Unknown MODEL '{model_name}'. Choose from: {list(_MODEL_CONFIGS.keys())}"
         )
     model_class_name, data_subfolder = _MODEL_CONFIGS[model_name]
-    model_save_path = _DEFAULT_GNN_PATH / "models" / "partial_graph_matching" / model_name
+    model_save_path = (_DEFAULT_GNN_PATH / "models" / "partial_graph_matching"
+                       / _MODEL_DIRS.get(model_name, model_name))
     data_equal = _DEFAULT_DATA_EQUAL
     data_partial = _DEFAULT_GNN_PATH / "preprocessed" / "partial_graph_matching" / data_subfolder
 
