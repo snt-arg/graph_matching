@@ -522,7 +522,8 @@ class GraphMatcher():
             else:
                 raise ValueError("Wrong parent_data")
 
-            transformed = transform_plane_definition(data, -parent_data[:3], rotation, self.logger)
+            # +centre: plane_6_params_to_4_params returns +p.n, so -centre would add to the offset (as in gnn_verify.py)
+            transformed = transform_plane_definition(data, parent_data[:3], rotation, self.logger)
         else: # TODO: translate room
             transformed = data
 

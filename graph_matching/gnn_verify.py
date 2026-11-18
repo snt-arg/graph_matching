@@ -42,6 +42,16 @@ DEFAULTS = {
     "normal_tol": 0.95,    # cos: same orientation
     "sym_margin": 0.1,     # refuse if a rival alignment scores >= (1 - sym_margin) * best
     "rival_sep": 1.0,      # m: alignments closer than this (and same yaw) are the same hypothesis
+    # 4b. landing (2026-11-07, off by default): the pairwise wall invariant of step 4 cannot see a reflection, so in a
+    # rectangular room an Online wall paired with the OPPOSITE Prior wall (or two opposite walls swapped) is fully
+    # consistent. Under the rigid alignment of the kept room pairs each kept wall must face the same way as its Prior
+    # partner (and, with land_offset, lie within land_tol of it). land_mode "drop" removes failing walls and re-checks
+    # the floors below, "refuse" publishes nothing if any kept wall fails.
+    "use_land": False,
+    "land_offset": False,
+    "land_tol": 1.0,       # m: offset tolerance of a landed wall (room centres of partly seen rooms shift ~1 m)
+    "land_mode": "drop",
+    "land_room_sep": 2.0,  # m: two room pairs at least this far apart fix the yaw; otherwise the walls vote
 }
 
 
@@ -112,6 +122,53 @@ def _score_alignment(R, t, prior, online, cfg):
         dd = np.abs(qd[:, None] - pd[None, :])
         s += int(((cos > cfg["normal_tol"]) & (dd < cfg["align_tol"])).any(axis=1).sum())
     return s
+
+
+def landing(rooms_k, walls_k, prior_rooms, prior_planes, online_rooms, online_planes, cfg):
+    """Step 4b. -> (walls that land, info). Yaw candidates: dominant wall direction + k*90 deg; the two most separated
+    kept room pairs pick k (their centre vector), else the kept walls vote (a tie is ambiguous: nothing lands)."""
+    if not walls_k:
+        return [], {"land": "no walls"}
+    P = {c["prior"]: prior_planes[c["prior"]] for c in walls_k}
+    O = {c["online"]: online_planes[c["online"]] for c in walls_k}
+    pids, pn, pd = _plane_lines(P)
+    oids, on, od = _plane_lines(O)
+    pn_of = {i: (pn[k], pd[k]) for k, i in enumerate(pids)}
+    on_of = {i: (on[k], od[k]) for k, i in enumerate(oids)}
+    yaw0 = _dominant_yaw(pn) - _dominant_yaw(on)
+    cands = [yaw0 + k * np.pi / 2 for k in range(4)]
+    rot = lambda y: np.array([[np.cos(y), -np.sin(y)], [np.sin(y), np.cos(y)]])
+    faces = lambda R: [float((R @ on_of[c["online"]][0]) @ pn_of[c["prior"]][0]) > cfg["normal_tol"] for c in walls_k]
+    yaw, how = None, None
+    if len(rooms_k) >= 2:
+        best = max(((a, b) for i, a in enumerate(rooms_k) for b in rooms_k[i + 1:]),
+                   key=lambda ab: np.linalg.norm(np.asarray(online_rooms[ab[0]["online"]][:2], float)
+                                                 - np.asarray(online_rooms[ab[1]["online"]][:2], float)))
+        vo = np.asarray(online_rooms[best[1]["online"]][:2], float) - np.asarray(online_rooms[best[0]["online"]][:2], float)
+        vp = np.asarray(prior_rooms[best[1]["prior"]][:2], float) - np.asarray(prior_rooms[best[0]["prior"]][:2], float)
+        if min(np.linalg.norm(vo), np.linalg.norm(vp)) >= cfg["land_room_sep"]:
+            yr = np.arctan2(vp[1], vp[0]) - np.arctan2(vo[1], vo[0])
+            yaw = min(cands, key=lambda y: abs((y - yr + np.pi) % (2 * np.pi) - np.pi))
+            how = "rooms"
+    if yaw is None:
+        votes = [sum(faces(rot(y))) for y in cands]
+        top = max(votes)
+        if votes.count(top) > 1:
+            return [], {"land": "ambiguous yaw", "land_votes": votes}
+        yaw, how = cands[int(np.argmax(votes))], "walls"
+    R = rot(yaw)
+    ok = faces(R)
+    if cfg["land_offset"]:
+        t = np.mean([np.asarray(prior_rooms[c["prior"]][:2], float) - R @ np.asarray(online_rooms[c["online"]][:2], float)
+                     for c in rooms_k], axis=0)
+        for i, c in enumerate(walls_k):
+            n_o, d_o = on_of[c["online"]]
+            n_p, d_p = pn_of[c["prior"]]
+            # rotated line: (R n_o).x' = d_o + (R n_o).t ; same facing, so compare offsets directly
+            ok[i] = ok[i] and abs(d_o + (R @ n_o) @ t - d_p) < cfg["land_tol"]
+    landed = [c for c, k in zip(walls_k, ok) if k]
+    return landed, {"land": how, "land_yaw_deg": round(float(np.degrees(yaw)), 1),
+                    "land_failed": len(walls_k) - len(landed)}
 
 
 def uniqueness(prior_rooms, prior_planes, online_rooms, online_planes, verified, cfg):
@@ -189,9 +246,9 @@ def verify(candidates, prior_rooms, prior_planes, online_rooms, online_planes, p
         frame = max(rooms_k, key=lambda c: (c.get("anchor", False), c["score"]))
         fp = np.asarray(prior_rooms[frame["prior"]], float)[:3]
         fo = np.asarray(online_rooms[frame["online"]], float)[:3]
-        I = np.eye(3)
-        D1 = transform_plane_definition(np.array([prior_planes[c["prior"]] for c in walls], float), -fp, I) if walls else []
-        D2 = transform_plane_definition(np.array([online_planes[c["online"]] for c in walls], float), -fo, I) if walls else []
+        I = np.eye(3)  # +centre: plane_6_params_to_4_params returns +p.n, so -centre would add to the offset
+        D1 = transform_plane_definition(np.array([prior_planes[c["prior"]] for c in walls], float), fp, I) if walls else []
+        D2 = transform_plane_definition(np.array([online_planes[c["online"]] for c in walls], float), fo, I) if walls else []
         kw, avg_w, _ = _clipper_subset("points&normal", D1, D2, params)
         walls_k = [walls[i] for i in kw]
         info.update(walls_in=len(walls), walls_kept=len(walls_k), wall_avg=avg_w)
@@ -199,6 +256,16 @@ def verify(candidates, prior_rooms, prior_planes, online_rooms, online_planes, p
             info["reason"] = "walls"
             info["ms"] = (time.perf_counter() - t0) * 1e3
             return [], info
+        # 4b. landing (off by default)
+        if cfg["use_land"] and walls_k:
+            landed, linfo = landing(rooms_k, walls_k, prior_rooms, prior_planes, online_rooms, online_planes, cfg)
+            info.update(linfo)
+            if len(landed) < len(walls_k) and (cfg["land_mode"] == "refuse" or not landed):
+                info["reason"] = "walls do not land"
+                info["ms"] = (time.perf_counter() - t0) * 1e3
+                return [], info
+            walls_k = landed
+            info["walls_landed"] = len(walls_k)
         if len(walls_k) < cfg["min_walls"] or (walls and len(walls_k) / len(walls) < cfg["min_wall_ratio"]):
             info["reason"] = "too few consistent walls"
             info["ms"] = (time.perf_counter() - t0) * 1e3

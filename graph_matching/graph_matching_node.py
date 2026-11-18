@@ -130,6 +130,8 @@ class GraphMatchingNode(Node):
         # pgm_verify_cfg: JSON overrides of gnn_verify.DEFAULTS, e.g. '{"global_consistency": 0.9}'.
         self.pgm_verify = self.get_parameter_or('pgm_verify', Parameter('pgm_verify', Parameter.Type.BOOL, False)).value
         self.pgm_verify_cfg = json.loads(self.get_parameter_or('pgm_verify_cfg', Parameter('pgm_verify_cfg', Parameter.Type.STRING, '{}')).value or '{}')
+        if self.pgm_verify:
+            self.get_logger().info(f"[PGM_VERIFY] cfg {json.dumps(self.pgm_verify_cfg, sort_keys=True)}")
         self.pgm_published = {}  # (kind, online original id) -> prior original id, pairs the verified GNN published
         # GNN only: never match before the Online graph has this many rooms, whatever match_min_rooms (the general
         # trigger, shared with the classic matcher) is set to.
@@ -1209,7 +1211,9 @@ class GraphMatchingNode(Node):
             f"(rooms {info.get('rooms_kept')}/{info.get('rooms_in')} avg {info.get('room_avg', 0):.2f}, walls "
             f"{info.get('walls_kept')}/{info.get('walls_in')} avg {info.get('wall_avg', 0):.2f}, alignments "
             f"{info.get('sym_best')}/{info.get('sym_rival')}, {info.get('time_dropped', 0)} contradicting, "
-            f"{info.get('ms', 0):.1f} ms)")
+            f"{info.get('ms', 0):.1f} ms"
+            + (f", land {info.get('land')} yaw {info.get('land_yaw_deg')} failed {info.get('land_failed')}"
+               if 'land' in info else "") + ")")
         if self.use_pgm and self.publish_unique_match:
             for c in new:
                 self.pgm_published[(c["kind"], c["online"])] = c["prior"]
